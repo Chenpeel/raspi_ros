@@ -1,6 +1,7 @@
 # 树莓派ROS 2舵机控制系统Docker配置
 
-FROM ros:jazzy-ros-base
+# 指定ARM64架构（树莓派）
+FROM --platform=linux/arm64 ros:jazzy-ros-base
 
 # 设置环境变量
 ENV DEBIAN_FRONTEND=noninteractive
