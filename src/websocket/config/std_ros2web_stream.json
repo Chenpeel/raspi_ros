@@ -1,0 +1,52 @@
+{
+    "character_name": "robot",
+    "timestamp": "2025-11-28T12:34:56.789Z",
+
+    "servo_states": {
+        "bus_servos": [
+            {
+                "servo_id": 1,
+                "angle": 90.5,
+                "status": "ok"
+            },
+            {
+                "servo_id": 2,
+                "angle": 45.0,
+                "status": "ok"
+            }
+        ],
+        "pwm_servos": [
+            {
+                "servo_id": 1,
+                "angle": 120.0,
+                "status": "ok"
+            },
+            {
+                "servo_id": 2,
+                "angle": 60.0,
+                "status": "ok"
+            }
+        ]
+    },
+
+    "system_state": {
+        "movement_active": false,
+        "listening": true,
+        "action": "idle",
+        "led_state": "off",
+        "pause": false
+    },
+
+    "sensors": {
+        "left_foot": false,
+        "right_foot": false,
+        "left_antenna": 0.0,
+        "right_antenna": 0.0
+    },
+
+    "response": {
+        "code": 200,
+        "message": "success",
+        "details": "everything operates normally"
+    }
+}

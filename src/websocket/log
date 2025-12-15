@@ -1,0 +1,2125 @@
+============================= test session starts ==============================
+platform linux -- Python 3.11.14, pytest-9.0.2, pluggy-1.6.0 -- /home/chenpeel/.miniconda3/envs/ros/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/chenpeel/work/repo/jiyuan/ros/src/websocket
+plugins: ament-copyright-0.17.3, ament-pep257-0.17.3, launch-testing-3.4.9, ament-lint-0.17.3, ament-flake8-0.17.3, launch-testing-ros-0.26.10, ament-xmllint-0.17.3
+collecting ... collected 95 items
+
+test/test_copyright.py::test_copyright SKIPPED (No copyright header ...) [  1%]
+test/test_flake8.py::test_flake8 FAILED                                  [  2%]
+test/test_message_handler.py::TestMessageHandler::test_parse_message_valid_json PASSED [  3%]
+test/test_message_handler.py::TestMessageHandler::test_parse_message_invalid_json PASSED [  4%]
+test/test_message_handler.py::TestMessageHandler::test_get_message_type_heartbeat PASSED [  5%]
+test/test_message_handler.py::TestMessageHandler::test_get_message_type_servo_control PASSED [  6%]
+test/test_message_handler.py::TestMessageHandler::test_get_message_type_case_insensitive PASSED [  7%]
+test/test_message_handler.py::TestMessageHandler::test_get_message_type_inferred_servo PASSED [  8%]
+test/test_message_handler.py::TestMessageHandler::test_get_message_type_inferred_heartbeat PASSED [  9%]
+test/test_message_handler.py::TestMessageHandler::test_get_message_type_unknown PASSED [ 10%]
+test/test_message_handler.py::TestMessageHandler::test_parse_bcp_protocol_bus_servo PASSED [ 11%]
+test/test_message_handler.py::TestMessageHandler::test_parse_bcp_protocol_pca_servo PASSED [ 12%]
+test/test_message_handler.py::TestMessageHandler::test_parse_bcp_protocol_with_port PASSED [ 13%]
+test/test_message_handler.py::TestMessageHandler::test_parse_full_format_servo_id PASSED [ 14%]
+test/test_message_handler.py::TestMessageHandler::test_parse_full_format_angle PASSED [ 15%]
+test/test_message_handler.py::TestMessageHandler::test_parse_full_format_channel PASSED [ 16%]
+test/test_message_handler.py::TestMessageHandler::test_parse_servo_control_invalid_data PASSED [ 17%]
+test/test_message_handler.py::TestMessageHandler::test_us_to_angle_conversion PASSED [ 18%]
+test/test_message_handler.py::TestMessageHandler::test_angle_to_us_conversion PASSED [ 20%]
+test/test_message_handler.py::TestMessageHandler::test_register_handler PASSED [ 21%]
+test/test_message_handler.py::TestMessageHandler::test_register_multiple_handlers PASSED [ 22%]
+test/test_message_handler.py::TestMessageHandler::test_process_message_heartbeat FAILED [ 23%]
+test/test_message_handler.py::TestMessageHandler::test_process_message_status_query FAILED [ 24%]
+test/test_message_handler.py::TestMessageHandler::test_process_message_with_custom_handler FAILED [ 25%]
+test/test_message_handler.py::TestMessageHandler::test_process_message_unknown_type FAILED [ 26%]
+test/test_message_handler.py::TestMessageHandler::test_is_servo_control_detection PASSED [ 27%]
+test/test_message_handler.py::TestMessageHandler::test_parse_servo_with_mixed_case_keys PASSED [ 28%]
+test/test_message_handler.py::TestMessageType::test_message_type_values PASSED [ 29%]
+test/test_message_handler.py::TestMessageType::test_message_type_from_string PASSED [ 30%]
+test/test_message_handler.py::TestMessageHandlerEdgeCases::test_parse_empty_message PASSED [ 31%]
+test/test_message_handler.py::TestMessageHandlerEdgeCases::test_parse_servo_with_string_values PASSED [ 32%]
+test/test_message_handler.py::TestMessageHandlerEdgeCases::test_parse_servo_with_invalid_types PASSED [ 33%]
+test/test_message_handler.py::TestMessageHandlerEdgeCases::test_us_to_angle_with_negative_values PASSED [ 34%]
+test/test_message_handler.py::TestMessageHandlerEdgeCases::test_angle_to_us_with_extreme_values PASSED [ 35%]
+test/test_message_handler.py::TestMessageHandlerEdgeCases::test_get_message_type_with_none PASSED [ 36%]
+test/test_message_handler.py::TestMessageHandlerEdgeCases::test_parse_servo_with_default_speed PASSED [ 37%]
+test/test_message_handler.py::TestMessageHandlerEdgeCases::test_parse_servo_with_default_port PASSED [ 38%]
+test/test_pep257.py::test_pep257 FAILED                                  [ 40%]
+test/test_stream_schemas.py::TestStreamSchemas::test_load_web2ros_schema PASSED [ 41%]
+test/test_stream_schemas.py::TestStreamSchemas::test_load_ros2web_schema PASSED [ 42%]
+test/test_stream_schemas.py::TestStreamSchemas::test_validate_web_command_bcp_protocol PASSED [ 43%]
+test/test_stream_schemas.py::TestStreamSchemas::test_validate_web_command_full_format PASSED [ 44%]
+test/test_stream_schemas.py::TestStreamSchemas::test_validate_web_command_invalid PASSED [ 45%]
+test/test_stream_schemas.py::TestStreamSchemas::test_validate_jiyuan_response_valid PASSED [ 46%]
+test/test_stream_schemas.py::TestStreamSchemas::test_validate_jiyuan_response_missing_fields PASSED [ 47%]
+test/test_stream_schemas.py::TestStreamSchemas::test_create_servo_command_bus_servo PASSED [ 48%]
+test/test_stream_schemas.py::TestStreamSchemas::test_create_servo_command_pca_servo PASSED [ 49%]
+test/test_stream_schemas.py::TestStreamSchemas::test_create_servo_command_default_values PASSED [ 50%]
+test/test_stream_schemas.py::TestStreamSchemas::test_create_jiyuan_response_basic PASSED [ 51%]
+test/test_stream_schemas.py::TestStreamSchemas::test_create_jiyuan_response_with_servo_states PASSED [ 52%]
+test/test_stream_schemas.py::TestStreamSchemas::test_create_jiyuan_response_with_system_info PASSED [ 53%]
+test/test_stream_schemas.py::TestStreamSchemas::test_create_jiyuan_response_default_servo_states PASSED [ 54%]
+test/test_stream_schemas.py::TestStreamSchemas::test_create_jiyuan_response_default_current_status PASSED [ 55%]
+test/test_stream_schemas.py::TestStreamSchemasWithCustomConfig::test_load_from_custom_config_dir PASSED [ 56%]
+test/test_stream_schemas.py::TestStreamSchemasWithCustomConfig::test_load_from_nonexistent_dir PASSED [ 57%]
+test/test_stream_schemas.py::TestStreamSchemasWithCustomConfig::test_load_invalid_json_file PASSED [ 58%]
+test/test_stream_schemas.py::TestGetStreamSchemas::test_get_stream_schemas_singleton PASSED [ 60%]
+test/test_stream_schemas.py::TestGetStreamSchemas::test_get_stream_schemas_returns_valid_instance PASSED [ 61%]
+test/test_stream_schemas.py::TestStreamSchemasEdgeCases::test_validate_empty_dict PASSED [ 62%]
+test/test_stream_schemas.py::TestStreamSchemasEdgeCases::test_create_servo_command_with_zero_values PASSED [ 63%]
+test/test_stream_schemas.py::TestStreamSchemasEdgeCases::test_create_servo_command_with_extreme_values PASSED [ 64%]
+test/test_stream_schemas.py::TestStreamSchemasEdgeCases::test_validate_web_command_with_partial_fields PASSED [ 65%]
+test/test_stream_schemas.py::TestStreamSchemasEdgeCases::test_create_jiyuan_response_with_error_code PASSED [ 66%]
+test/test_stream_schemas.py::TestStreamSchemasEdgeCases::test_create_jiyuan_response_empty_servo_states PASSED [ 67%]
+test/test_stream_schemas.py::TestStreamSchemasEdgeCases::test_create_servo_command_pca_ignores_speed PASSED [ 68%]
+test/test_websocket_handler.py::TestWebSocketHandler::test_handle_heartbeat_message FAILED [ 69%]
+test/test_websocket_handler.py::TestWebSocketHandler::test_handle_heartbeat_updates_timestamp FAILED [ 70%]
+test/test_websocket_handler.py::TestWebSocketHandler::test_handle_servo_control_message FAILED [ 71%]
+test/test_websocket_handler.py::TestWebSocketHandler::test_handle_invalid_servo_control FAILED [ 72%]
+test/test_websocket_handler.py::TestWebSocketHandler::test_handle_servo_control_with_callback FAILED [ 73%]
+test/test_websocket_handler.py::TestWebSocketHandler::test_handle_status_query_message FAILED [ 74%]
+test/test_websocket_handler.py::TestWebSocketHandler::test_handle_status_query_with_callback FAILED [ 75%]
+test/test_websocket_handler.py::TestWebSocketHandler::test_handle_register_message FAILED [ 76%]
+test/test_websocket_handler.py::TestWebSocketHandler::test_handle_broadcast_message FAILED [ 77%]
+test/test_websocket_handler.py::TestWebSocketHandler::test_handle_private_message FAILED [ 78%]
+test/test_websocket_handler.py::TestWebSocketHandler::test_handle_invalid_json FAILED [ 80%]
+test/test_websocket_handler.py::TestWebSocketHandler::test_handle_unknown_message_type FAILED [ 81%]
+test/test_websocket_handler.py::TestWebSocketHandler::test_update_servo_state_bus_servo PASSED [ 82%]
+test/test_websocket_handler.py::TestWebSocketHandler::test_update_servo_state_pca_servo PASSED [ 83%]
+test/test_websocket_handler.py::TestWebSocketHandler::test_update_servo_state_multiple_servos PASSED [ 84%]
+test/test_websocket_handler.py::TestWebSocketHandler::test_update_system_state PASSED [ 85%]
+test/test_websocket_handler.py::TestWebSocketHandler::test_get_uptime PASSED [ 86%]
+test/test_websocket_handler.py::TestWebSocketHandler::test_register_message_handler PASSED [ 87%]
+test/test_websocket_handler.py::TestWebSocketHandler::test_heartbeat_callback_exception_handling FAILED [ 88%]
+test/test_websocket_handler.py::TestWebSocketHandler::test_servo_command_callback_exception_handling FAILED [ 89%]
+test/test_websocket_handler.py::TestWebSocketHandler::test_status_query_callback_exception_handling FAILED [ 90%]
+test/test_websocket_handler.py::TestWebSocketHandlerEdgeCases::test_handle_empty_message FAILED [ 91%]
+test/test_websocket_handler.py::TestWebSocketHandlerEdgeCases::test_handle_empty_dict_message FAILED [ 92%]
+test/test_websocket_handler.py::TestWebSocketHandlerEdgeCases::test_servo_control_without_callback FAILED [ 93%]
+test/test_websocket_handler.py::TestWebSocketHandlerEdgeCases::test_status_query_returns_servo_state FAILED [ 94%]
+test/test_websocket_handler.py::TestWebSocketHandlerEdgeCases::test_get_supported_commands PASSED [ 95%]
+test/test_websocket_handler.py::TestWebSocketHandlerEdgeCases::test_broadcast_without_servo_content FAILED [ 96%]
+test/test_websocket_handler.py::TestWebSocketHandlerEdgeCases::test_private_without_servo_content FAILED [ 97%]
+test/test_websocket_handler.py::TestWebSocketHandlerEdgeCases::test_initial_servo_state_empty PASSED [ 98%]
+test/test_websocket_handler.py::TestWebSocketHandlerEdgeCases::test_initial_system_state_has_defaults PASSED [100%]
+
+=================================== FAILURES ===================================
+_________________________________ test_flake8 __________________________________
+
+    @pytest.mark.flake8
+    @pytest.mark.linter
+    def test_flake8():
+        rc, errors = main_with_errors(argv=[])
+>       assert rc == 0, \
+            'Found %d code style errors / warnings:\n' % len(errors) + \
+            '\n'.join(errors)
+E       AssertionError: Found 153 code style errors / warnings:
+E         ./example_server.py:7:1: F401 'json' imported but unused
+E         ./example_server.py:8:1: F401 'jiyuan_websocket.WebSocketHandler' imported but unused
+E         ./example_server.py:14:1: W293 blank line contains whitespace
+E         ./example_server.py:23:1: W293 blank line contains whitespace
+E         ./example_server.py:57:1: W293 blank line contains whitespace
+E         ./example_server.py:61:1: W293 blank line contains whitespace
+E         ./example_server.py:69:1: W293 blank line contains whitespace
+E         ./example_server.py:73:1: W293 blank line contains whitespace
+E         ./example_server.py:76:1: W293 blank line contains whitespace
+E         ./example_server.py:82:1: W293 blank line contains whitespace
+E         ./raspberry_pi_client_example.py:124:19: F541 f-string is missing placeholders
+E         ./raspberry_pi_client_example.py:127:19: F541 f-string is missing placeholders
+E         ./raspberry_pi_client_example.py:178:23: F541 f-string is missing placeholders
+E         ./raspberry_pi_client_example.py:196:35: F541 f-string is missing placeholders
+E         ./test/test_stream_schemas.py:5:1: F401 'pytest' imported but unused
+E         ./test/test_stream_schemas.py:9:1: F401 'pathlib.Path' imported but unused
+E         ./test/test_websocket_handler.py:9:1: F401 'websocket_bridge.message_handler.MessageType' imported but unused
+E         ./websocket_bridge/message_handler.py:313:9: E722 do not use bare 'except'
+E         ./websocket_bridge/message_handler.py:322:9: E722 do not use bare 'except'
+E         ./websocket_bridge/stream_schemas.py:12:1: W293 blank line contains whitespace
+E         ./websocket_bridge/stream_schemas.py:16:1: W293 blank line contains whitespace
+E         ./websocket_bridge/stream_schemas.py:23:1: W293 blank line contains whitespace
+E         ./websocket_bridge/stream_schemas.py:33:1: W293 blank line contains whitespace
+E         ./websocket_bridge/stream_schemas.py:37:1: W293 blank line contains whitespace
+E         ./websocket_bridge/stream_schemas.py:41:1: W293 blank line contains whitespace
+E         ./websocket_bridge/stream_schemas.py:45:1: W293 blank line contains whitespace
+E         ./websocket_bridge/stream_schemas.py:48:1: W293 blank line contains whitespace
+E         ./websocket_bridge/stream_schemas.py:55:1: W293 blank line contains whitespace
+E         ./websocket_bridge/stream_schemas.py:59:1: W293 blank line contains whitespace
+E         ./websocket_bridge/stream_schemas.py:61:100: E501 line too long (100 > 99 characters)
+E         ./websocket_bridge/stream_schemas.py:63:1: W293 blank line contains whitespace
+E         ./websocket_bridge/stream_schemas.py:65:1: W293 blank line contains whitespace
+E         ./websocket_bridge/stream_schemas.py:69:1: W293 blank line contains whitespace
+E         ./websocket_bridge/stream_schemas.py:72:1: W293 blank line contains whitespace
+E         ./websocket_bridge/stream_schemas.py:78:1: W293 blank line contains whitespace
+E         ./websocket_bridge/stream_schemas.py:84:1: W293 blank line contains whitespace
+E         ./websocket_bridge/stream_schemas.py:86:1: W293 blank line contains whitespace
+E         ./websocket_bridge/stream_schemas.py:87:67: W291 trailing whitespace
+E         ./websocket_bridge/stream_schemas.py:88:28: E128 continuation line under-indented for visual indent
+E         ./websocket_bridge/stream_schemas.py:88:60: W291 trailing whitespace
+E         ./websocket_bridge/stream_schemas.py:89:28: E128 continuation line under-indented for visual indent
+E         ./websocket_bridge/stream_schemas.py:92:1: W293 blank line contains whitespace
+E         ./websocket_bridge/stream_schemas.py:99:1: W293 blank line contains whitespace
+E         ./websocket_bridge/stream_schemas.py:104:1: W293 blank line contains whitespace
+E         ./websocket_bridge/stream_schemas.py:112:1: W293 blank line contains whitespace
+E         ./websocket_bridge/stream_schemas.py:114:30: E128 continuation line under-indented for visual indent
+E         ./websocket_bridge/stream_schemas.py:115:30: E128 continuation line under-indented for visual indent
+E         ./websocket_bridge/websocket_handler.py:7:1: F401 'asyncio' imported but unused
+E         ./websocket_bridge/websocket_handler.py:10:1: F401 '.error_codes.InvalidServoCommandException' imported but unused
+E         ./websocket_bridge/websocket_handler.py:10:1: F401 '.error_codes.ServoCommandFailedException' imported but unused
+E         ./websocket_bridge/websocket_handler.py:25:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:31:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:43:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:48:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:57:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:61:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:66:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:70:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:75:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:79:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:84:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:88:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:94:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:98:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:101:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:109:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:112:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:115:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:131:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:135:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:141:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:148:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:150:19: F541 f-string is missing placeholders
+E         ./websocket_bridge/websocket_handler.py:151:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:153:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:192:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:202:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:204:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:208:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:217:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:220:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:222:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:226:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:229:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:237:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:239:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:243:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:245:19: F541 f-string is missing placeholders
+E         ./websocket_bridge/websocket_handler.py:246:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:254:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:262:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:264:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:284:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:297:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:301:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:315:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:319:1: W293 blank line contains whitespace
+E         ./websocket_bridge/websocket_handler.py:326:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:9:1: F401 'sys' imported but unused
+E         ./websocket_bridge/ws_server.py:10:1: F401 'typing.Optional' imported but unused
+E         ./websocket_bridge/ws_server.py:31:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:42:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:47:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:51:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:55:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:59:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:63:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:75:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:78:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:82:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:86:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:94:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:98:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:100:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:104:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:111:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:113:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:117:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:124:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:125:80: W291 trailing whitespace
+E         ./websocket_bridge/ws_server.py:126:38: E128 continuation line under-indented for visual indent
+E         ./websocket_bridge/ws_server.py:129:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:137:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:139:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:144:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:159:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:167:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:170:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:177:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:183:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:186:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:189:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:192:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:196:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:202:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:210:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:215:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:217:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:220:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:223:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:224:71: W291 trailing whitespace
+E         ./websocket_bridge/ws_server.py:225:29: E128 continuation line under-indented for visual indent
+E         ./websocket_bridge/ws_server.py:228:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:238:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:242:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:246:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:253:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:260:21: E128 continuation line under-indented for visual indent
+E         ./websocket_bridge/ws_server.py:276:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:278:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:292:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:298:1: W293 blank line contains whitespace
+E         ./websocket_bridge/ws_server.py:300:1: W293 blank line contains whitespace
+E       assert 1 == 0
+
+test/test_flake8.py:23: AssertionError
+----------------------------- Captured stdout call -----------------------------
+
+./example_server.py:7:1: F401 'json' imported but unused
+import json
+^
+
+./example_server.py:8:1: F401 'jiyuan_websocket.WebSocketHandler' imported but unused
+from jiyuan_websocket import JiyuanWebSocketServer, WebSocketHandler
+^
+
+./example_server.py:14:1: W293 blank line contains whitespace
+    """
+    处理舵机命令的示例回调
+    
+    Args:
+        servo_cmd: 舵机控制命令
+    """
+^
+
+./example_server.py:23:1: W293 blank line contains whitespace
+    
+^
+
+./example_server.py:57:1: W293 blank line contains whitespace
+    
+^
+
+./example_server.py:61:1: W293 blank line contains whitespace
+    
+^
+
+./example_server.py:69:1: W293 blank line contains whitespace
+    
+^
+
+./example_server.py:73:1: W293 blank line contains whitespace
+    
+^
+
+./example_server.py:76:1: W293 blank line contains whitespace
+    
+^
+
+./example_server.py:82:1: W293 blank line contains whitespace
+    
+^
+
+./raspberry_pi_client_example.py:124:19: F541 f-string is missing placeholders
+            print(f"[Client] 心跳检测 - 服务器在线")
+                  ^
+
+./raspberry_pi_client_example.py:127:19: F541 f-string is missing placeholders
+            print(f"[Client] 设备注册成功")
+                  ^
+
+./raspberry_pi_client_example.py:178:23: F541 f-string is missing placeholders
+                print(f"[Client] 发送注册消息")
+                      ^
+
+./raspberry_pi_client_example.py:196:35: F541 f-string is missing placeholders
+                            print(f"[Client] 发送心跳")
+                                  ^
+
+./test/test_stream_schemas.py:5:1: F401 'pytest' imported but unused
+import pytest
+^
+
+./test/test_stream_schemas.py:9:1: F401 'pathlib.Path' imported but unused
+from pathlib import Path
+^
+
+./test/test_websocket_handler.py:9:1: F401 'websocket_bridge.message_handler.MessageType' imported but unused
+from websocket_bridge.message_handler import MessageType
+^
+
+./websocket_bridge/message_handler.py:313:9: E722 do not use bare 'except'
+        except:
+        ^
+
+./websocket_bridge/message_handler.py:322:9: E722 do not use bare 'except'
+        except:
+        ^
+
+./websocket_bridge/stream_schemas.py:12:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/stream_schemas.py:16:1: W293 blank line contains whitespace
+        """
+        初始化 Stream Schemas
+        
+        Args:
+            config_dir: 配置文件目录，如果为 None，则使用包内默认配置
+        """
+^
+
+./websocket_bridge/stream_schemas.py:23:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/stream_schemas.py:33:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/stream_schemas.py:37:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/stream_schemas.py:41:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/stream_schemas.py:45:1: W293 blank line contains whitespace
+        """
+        验证来自 Web 的命令格式
+        
+        Args:
+            data: 接收到的 JSON 对象
+            
+        Returns:
+            bool: 是否符合格式
+        """
+^
+
+./websocket_bridge/stream_schemas.py:48:1: W293 blank line contains whitespace
+        """
+        验证来自 Web 的命令格式
+        
+        Args:
+            data: 接收到的 JSON 对象
+            
+        Returns:
+            bool: 是否符合格式
+        """
+^
+
+./websocket_bridge/stream_schemas.py:55:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/stream_schemas.py:59:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/stream_schemas.py:61:100: E501 line too long (100 > 99 characters)
+        if any(key in data for key in ['id', 'servo_id', 'channel', 'c', 'angle', 'position', 'p']):
+                                                                                                   ^
+
+./websocket_bridge/stream_schemas.py:63:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/stream_schemas.py:65:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/stream_schemas.py:69:1: W293 blank line contains whitespace
+        """
+        验证来自 Jiyuan 的响应格式
+        
+        Args:
+            data: 要验证的 JSON 对象
+            
+        Returns:
+            bool: 是否符合格式
+        """
+^
+
+./websocket_bridge/stream_schemas.py:72:1: W293 blank line contains whitespace
+        """
+        验证来自 Jiyuan 的响应格式
+        
+        Args:
+            data: 要验证的 JSON 对象
+            
+        Returns:
+            bool: 是否符合格式
+        """
+^
+
+./websocket_bridge/stream_schemas.py:78:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/stream_schemas.py:84:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/stream_schemas.py:86:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/stream_schemas.py:87:67: W291 trailing whitespace
+    def create_servo_command(self, servo_type: str, servo_id: int, 
+                                                                  ^
+
+./websocket_bridge/stream_schemas.py:88:28: E128 continuation line under-indented for visual indent
+                           position: int, speed: int = 100, 
+                           ^
+
+./websocket_bridge/stream_schemas.py:88:60: W291 trailing whitespace
+                           position: int, speed: int = 100, 
+                                                           ^
+
+./websocket_bridge/stream_schemas.py:89:28: E128 continuation line under-indented for visual indent
+                           port: int = 0) -> Dict[str, Any]:
+                           ^
+
+./websocket_bridge/stream_schemas.py:92:1: W293 blank line contains whitespace
+        """
+        创建标准的舵机控制命令
+        
+        Args:
+            servo_type: "bus" 或 "pca"
+            servo_id: 舵机 ID 或通道号
+            position: 位置 (0-180 度或 0-4095 tick)
+            speed: 速度 (1-255, 仅总线舵机)
+            port: 总线舵机端口 (0-based)
+            
+        Returns:
+            dict: 标准命令格式
+        """
+^
+
+./websocket_bridge/stream_schemas.py:99:1: W293 blank line contains whitespace
+        """
+        创建标准的舵机控制命令
+        
+        Args:
+            servo_type: "bus" 或 "pca"
+            servo_id: 舵机 ID 或通道号
+            position: 位置 (0-180 度或 0-4095 tick)
+            speed: 速度 (1-255, 仅总线舵机)
+            port: 总线舵机端口 (0-based)
+            
+        Returns:
+            dict: 标准命令格式
+        """
+^
+
+./websocket_bridge/stream_schemas.py:104:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/stream_schemas.py:112:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/stream_schemas.py:114:30: E128 continuation line under-indented for visual indent
+                             servo_states: Optional[Dict] = None,
+                             ^
+
+./websocket_bridge/stream_schemas.py:115:30: E128 continuation line under-indented for visual indent
+                             system_info: Optional[Dict] = None) -> Dict[str, Any]:
+                             ^
+
+./websocket_bridge/websocket_handler.py:7:1: F401 'asyncio' imported but unused
+import asyncio
+^
+
+./websocket_bridge/websocket_handler.py:10:1: F401 '.error_codes.InvalidServoCommandException' imported but unused
+from .error_codes import (
+^
+
+./websocket_bridge/websocket_handler.py:10:1: F401 '.error_codes.ServoCommandFailedException' imported but unused
+from .error_codes import (
+^
+
+./websocket_bridge/websocket_handler.py:25:1: W293 blank line contains whitespace
+    """
+    WebSocket 通信处理器
+    
+    1. 维护 WebSocket 连接
+    2. 解析来自 Web 的消息
+    3. 转发到 ROS 2 话题
+    4. 订阅 ROS 2 状态并回传 Web
+    """
+^
+
+./websocket_bridge/websocket_handler.py:31:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/websocket_handler.py:43:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/websocket_handler.py:48:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/websocket_handler.py:57:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/websocket_handler.py:61:1: W293 blank line contains whitespace
+        """
+        注册舵机命令回调
+        
+        Args:
+            callback: async def callback(servo_cmd: dict) -> None
+        """
+^
+
+./websocket_bridge/websocket_handler.py:66:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/websocket_handler.py:70:1: W293 blank line contains whitespace
+        """
+        注册心跳处理回调
+        
+        Args:
+            callback: async def callback() -> None
+        """
+^
+
+./websocket_bridge/websocket_handler.py:75:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/websocket_handler.py:79:1: W293 blank line contains whitespace
+        """
+        注册状态查询回调
+        
+        Args:
+            callback: async def callback() -> dict
+        """
+^
+
+./websocket_bridge/websocket_handler.py:84:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/websocket_handler.py:88:1: W293 blank line contains whitespace
+        """
+        为特定消息类型注册处理器
+        
+        Args:
+            msg_type: 消息类型 (如 "servo_control", "heartbeat" 等)
+            callback: async def callback(data: dict) -> Optional[str]
+        """
+^
+
+./websocket_bridge/websocket_handler.py:94:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/websocket_handler.py:98:1: W293 blank line contains whitespace
+        """
+        处理接收到的 WebSocket 消息
+        
+        Args:
+            raw_message: 原始 JSON 字符串
+            
+        Returns:
+            str: 响应消息，或 None
+        """
+^
+
+./websocket_bridge/websocket_handler.py:101:1: W293 blank line contains whitespace
+        """
+        处理接收到的 WebSocket 消息
+        
+        Args:
+            raw_message: 原始 JSON 字符串
+            
+        Returns:
+            str: 响应消息，或 None
+        """
+^
+
+./websocket_bridge/websocket_handler.py:109:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/websocket_handler.py:112:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/websocket_handler.py:115:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/websocket_handler.py:131:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/websocket_handler.py:135:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/websocket_handler.py:141:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/websocket_handler.py:148:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/websocket_handler.py:150:19: F541 f-string is missing placeholders
+            print(f"[WebSocketHandler] 发送心跳响应")
+                  ^
+
+./websocket_bridge/websocket_handler.py:151:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/websocket_handler.py:153:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/websocket_handler.py:192:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/websocket_handler.py:202:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/websocket_handler.py:204:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/websocket_handler.py:208:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/websocket_handler.py:217:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/websocket_handler.py:220:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/websocket_handler.py:222:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/websocket_handler.py:226:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/websocket_handler.py:229:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/websocket_handler.py:237:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/websocket_handler.py:239:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/websocket_handler.py:243:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/websocket_handler.py:245:19: F541 f-string is missing placeholders
+            print(f"[WebSocketHandler] 收到私有消息")
+                  ^
+
+./websocket_bridge/websocket_handler.py:246:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/websocket_handler.py:254:1: W293 blank line contains whitespace
+            
+^
+
+./websocket_bridge/websocket_handler.py:262:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/websocket_handler.py:264:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/websocket_handler.py:284:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/websocket_handler.py:297:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/websocket_handler.py:301:1: W293 blank line contains whitespace
+        """
+        更新舵机状态
+        
+        Args:
+            servo_id: 舵机 ID
+            servo_type: 舵机类型 ("bus" 或 "pca")
+            position: 当前位置
+        """
+^
+
+./websocket_bridge/websocket_handler.py:315:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/websocket_handler.py:319:1: W293 blank line contains whitespace
+        """
+        更新系统状态
+        
+        Args:
+            cpu_temp: CPU 温度
+            free_memory: 空闲内存
+            uptime: 运行时间
+        """
+^
+
+./websocket_bridge/websocket_handler.py:326:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/ws_server.py:9:1: F401 'sys' imported but unused
+import sys
+^
+
+./websocket_bridge/ws_server.py:10:1: F401 'typing.Optional' imported but unused
+from typing import Set, Optional
+^
+
+./websocket_bridge/ws_server.py:31:1: W293 blank line contains whitespace
+        """
+        初始化 WebSocket 服务器
+        
+        Args:
+            host: 监听地址
+            port: 监听端口
+            device_id: 设备 ID
+            debug: 是否启用调试日志
+        """
+^
+
+./websocket_bridge/ws_server.py:42:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/ws_server.py:47:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/ws_server.py:51:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/ws_server.py:55:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/ws_server.py:59:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/ws_server.py:63:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/ws_server.py:75:1: W293 blank line contains whitespace
+            
+^
+
+./websocket_bridge/ws_server.py:78:1: W293 blank line contains whitespace
+            
+^
+
+./websocket_bridge/ws_server.py:82:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/ws_server.py:86:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/ws_server.py:94:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/ws_server.py:98:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/ws_server.py:100:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/ws_server.py:104:1: W293 blank line contains whitespace
+        """
+        处理客户端连接
+        
+        Args:
+            websocket: WebSocket 连接
+            path: 连接路径
+        """
+^
+
+./websocket_bridge/ws_server.py:111:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/ws_server.py:113:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/ws_server.py:117:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/ws_server.py:124:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/ws_server.py:125:80: W291 trailing whitespace
+    async def _process_client_message(self, websocket: WebSocketServerProtocol, 
+                                                                               ^
+
+./websocket_bridge/ws_server.py:126:38: E128 continuation line under-indented for visual indent
+                                     message: str):
+                                     ^
+
+./websocket_bridge/ws_server.py:129:1: W293 blank line contains whitespace
+        """
+        处理来自客户端的消息
+        
+        Args:
+            websocket: WebSocket 连接
+            message: 消息内容
+        """
+^
+
+./websocket_bridge/ws_server.py:137:1: W293 blank line contains whitespace
+            
+^
+
+./websocket_bridge/ws_server.py:139:1: W293 blank line contains whitespace
+            
+^
+
+./websocket_bridge/ws_server.py:144:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/ws_server.py:159:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/ws_server.py:167:1: W293 blank line contains whitespace
+                
+^
+
+./websocket_bridge/ws_server.py:170:1: W293 blank line contains whitespace
+                
+^
+
+./websocket_bridge/ws_server.py:177:1: W293 blank line contains whitespace
+                
+^
+
+./websocket_bridge/ws_server.py:183:1: W293 blank line contains whitespace
+                
+^
+
+./websocket_bridge/ws_server.py:186:1: W293 blank line contains whitespace
+                
+^
+
+./websocket_bridge/ws_server.py:189:1: W293 blank line contains whitespace
+            
+^
+
+./websocket_bridge/ws_server.py:192:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/ws_server.py:196:1: W293 blank line contains whitespace
+        """
+        广播状态更新到所有连接的客户端
+        
+        Args:
+            status_dict: 状态字典
+        """
+^
+
+./websocket_bridge/ws_server.py:202:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/ws_server.py:210:1: W293 blank line contains whitespace
+            
+^
+
+./websocket_bridge/ws_server.py:215:1: W293 blank line contains whitespace
+            
+^
+
+./websocket_bridge/ws_server.py:217:1: W293 blank line contains whitespace
+            
+^
+
+./websocket_bridge/ws_server.py:220:1: W293 blank line contains whitespace
+        
+^
+
+./websocket_bridge/ws_server.py:223:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/ws_server.py:224:71: W291 trailing whitespace
+    async def send_to_client(self, websocket: WebSocketServerProtocol, 
+                                                                      ^
+
+./websocket_bridge/ws_server.py:225:29: E128 continuation line under-indented for visual indent
+                            message: dict):
+                            ^
+
+./websocket_bridge/ws_server.py:228:1: W293 blank line contains whitespace
+        """
+        向特定客户端发送消息
+        
+        Args:
+            websocket: 目标连接
+            message: 消息字典
+        """
+^
+
+./websocket_bridge/ws_server.py:238:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/ws_server.py:242:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/ws_server.py:246:1: W293 blank line contains whitespace
+        """
+        更新舵机状态
+        
+        Args:
+            servo_id: 舵机 ID
+            servo_type: 舵机类型 ("bus" 或 "pca")
+            position: 当前位置
+        """
+^
+
+./websocket_bridge/ws_server.py:253:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/ws_server.py:260:21: E128 continuation line under-indented for visual indent
+                    device_id: str = "default", debug: bool = False):
+                    ^
+
+./websocket_bridge/ws_server.py:276:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/ws_server.py:278:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/ws_server.py:292:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/ws_server.py:298:1: W293 blank line contains whitespace
+    
+^
+
+./websocket_bridge/ws_server.py:300:1: W293 blank line contains whitespace
+    
+^
+
+7     E128 continuation line under-indented for visual indent
+1     E501 line too long (100 > 99 characters)
+2     E722 do not use bare 'except'
+10    F401 'json' imported but unused
+6     F541 f-string is missing placeholders
+4     W291 trailing whitespace
+123   W293 blank line contains whitespace
+
+16 files checked
+153 errors
+
+'E'-type errors: 10
+'F'-type errors: 16
+'W'-type errors: 127
+
+Checked files:
+
+* ./example_server.py
+* ./setup.py
+* ./raspberry_pi_client_example.py
+* ./websocket_bridge/logger.py
+* ./websocket_bridge/__init__.py
+* ./websocket_bridge/error_codes.py
+* ./websocket_bridge/message_handler.py
+* ./websocket_bridge/websocket_handler.py
+* ./websocket_bridge/ws_server.py
+* ./websocket_bridge/stream_schemas.py
+* ./test/test_pep257.py
+* ./test/test_flake8.py
+* ./test/test_websocket_handler.py
+* ./test/test_copyright.py
+* ./test/test_stream_schemas.py
+* ./test/test_message_handler.py
+______________ TestMessageHandler.test_process_message_heartbeat _______________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+_____________ TestMessageHandler.test_process_message_status_query _____________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+_________ TestMessageHandler.test_process_message_with_custom_handler __________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+_____________ TestMessageHandler.test_process_message_unknown_type _____________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+_________________________________ test_pep257 __________________________________
+
+    @pytest.mark.linter
+    @pytest.mark.pep257
+    def test_pep257():
+        rc = main(argv=['.', 'test'])
+>       assert rc == 0, 'Found code style errors / warnings'
+E       AssertionError: Found code style errors / warnings
+E       assert 1 == 0
+
+test/test_pep257.py:23: AssertionError
+----------------------------- Captured stdout call -----------------------------
+checking ./example_server.py
+checking ./raspberry_pi_client_example.py
+checking ./setup.py
+checking ./test/test_copyright.py
+checking ./test/test_flake8.py
+checking ./test/test_message_handler.py
+checking ./test/test_pep257.py
+checking ./test/test_stream_schemas.py
+checking ./test/test_websocket_handler.py
+checking ./websocket_bridge/__init__.py
+checking ./websocket_bridge/error_codes.py
+checking ./websocket_bridge/logger.py
+checking ./websocket_bridge/message_handler.py
+checking ./websocket_bridge/stream_schemas.py
+checking ./websocket_bridge/websocket_handler.py
+checking ./websocket_bridge/ws_server.py
+checking test/test_copyright.py
+checking test/test_flake8.py
+checking test/test_message_handler.py
+checking test/test_pep257.py
+checking test/test_stream_schemas.py
+checking test/test_websocket_handler.py
+----------------------------- Captured stderr call -----------------------------
+./example_server.py:2 at module level: D200: One-line docstring should fit on one line with quotes (found 3)
+./example_server.py:2 at module level: D400: First line should end with a period (not '统')
+./example_server.py:2 at module level: D415: First line should end with a period, question mark, or exclamation point (not '统')
+./example_server.py:12 in public function `example_servo_command_handler`: D400: First line should end with a period (not '调')
+./example_server.py:12 in public function `example_servo_command_handler`: D415: First line should end with a period, question mark, or exclamation point (not '调')
+./example_server.py:12 in public function `example_servo_command_handler`: D413: Missing blank line after last section ('Args')
+./example_server.py:12 in public function `example_servo_command_handler`: D407: Missing dashed underline after section ('Args')
+./example_server.py:28 in public function `example_status_query_handler`: D205: 1 blank line required between summary line and description (found 0)
+./example_server.py:28 in public function `example_status_query_handler`: D400: First line should end with a period (not '调')
+./example_server.py:28 in public function `example_status_query_handler`: D415: First line should end with a period, question mark, or exclamation point (not '调')
+./example_server.py:56 in public function `main`: D202: No blank lines allowed after function docstring (found 1)
+./example_server.py:56 in public function `main`: D400: First line should end with a period (not '数')
+./example_server.py:56 in public function `main`: D415: First line should end with a period, question mark, or exclamation point (not '数')
+./raspberry_pi_client_example.py:1 at module level: D205: 1 blank line required between summary line and description (found 0)
+./raspberry_pi_client_example.py:1 at module level: D400: First line should end with a period (not '置')
+./raspberry_pi_client_example.py:1 at module level: D415: First line should end with a period, question mark, or exclamation point (not '置')
+./raspberry_pi_client_example.py:39 in public function `control_bus_servo`: D400: First line should end with a period (not '机')
+./raspberry_pi_client_example.py:39 in public function `control_bus_servo`: D415: First line should end with a period, question mark, or exclamation point (not '机')
+./raspberry_pi_client_example.py:39 in public function `control_bus_servo`: D413: Missing blank line after last section ('Args')
+./raspberry_pi_client_example.py:39 in public function `control_bus_servo`: D407: Missing dashed underline after section ('Args')
+./raspberry_pi_client_example.py:51 in public function `control_pca_servo`: D400: First line should end with a period (not '机')
+./raspberry_pi_client_example.py:51 in public function `control_pca_servo`: D415: First line should end with a period, question mark, or exclamation point (not '机')
+./raspberry_pi_client_example.py:51 in public function `control_pca_servo`: D413: Missing blank line after last section ('Args')
+./raspberry_pi_client_example.py:51 in public function `control_pca_servo`: D407: Missing dashed underline after section ('Args')
+./raspberry_pi_client_example.py:66 in public function `handle_message`: D400: First line should end with a period (not '息')
+./raspberry_pi_client_example.py:66 in public function `handle_message`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+./raspberry_pi_client_example.py:66 in public function `handle_message`: D413: Missing blank line after last section ('Args')
+./raspberry_pi_client_example.py:66 in public function `handle_message`: D407: Missing dashed underline after section ('Args')
+./raspberry_pi_client_example.py:160 in public function `websocket_client`: D200: One-line docstring should fit on one line with quotes (found 3)
+./raspberry_pi_client_example.py:160 in public function `websocket_client`: D400: First line should end with a period (not '辑')
+./raspberry_pi_client_example.py:160 in public function `websocket_client`: D415: First line should end with a period, question mark, or exclamation point (not '辑')
+./raspberry_pi_client_example.py:160 in public function `websocket_client`: D403: First word of the first line should be properly capitalized ('Websocket', not 'WebSocket')
+./raspberry_pi_client_example.py:210 in public function `main`: D400: First line should end with a period (not '数')
+./raspberry_pi_client_example.py:210 in public function `main`: D415: First line should end with a period, question mark, or exclamation point (not '数')
+./test/test_message_handler.py:1 at module level: D200: One-line docstring should fit on one line with quotes (found 3)
+./test/test_message_handler.py:1 at module level: D400: First line should end with a period (not '试')
+./test/test_message_handler.py:1 at module level: D415: First line should end with a period, question mark, or exclamation point (not '试')
+./test/test_message_handler.py:11 in public class `TestMessageHandler`: D400: First line should end with a period (not '件')
+./test/test_message_handler.py:11 in public class `TestMessageHandler`: D415: First line should end with a period, question mark, or exclamation point (not '件')
+./test/test_message_handler.py:14 in public method `setup_method`: D400: First line should end with a period (not '化')
+./test/test_message_handler.py:14 in public method `setup_method`: D415: First line should end with a period, question mark, or exclamation point (not '化')
+./test/test_message_handler.py:18 in public method `test_parse_message_valid_json`: D400: First line should end with a period (not '息')
+./test/test_message_handler.py:18 in public method `test_parse_message_valid_json`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+./test/test_message_handler.py:27 in public method `test_parse_message_invalid_json`: D400: First line should end with a period (not '息')
+./test/test_message_handler.py:27 in public method `test_parse_message_invalid_json`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+./test/test_message_handler.py:34 in public method `test_get_message_type_heartbeat`: D400: First line should end with a period (not '型')
+./test/test_message_handler.py:34 in public method `test_get_message_type_heartbeat`: D415: First line should end with a period, question mark, or exclamation point (not '型')
+./test/test_message_handler.py:41 in public method `test_get_message_type_servo_control`: D400: First line should end with a period (not '型')
+./test/test_message_handler.py:41 in public method `test_get_message_type_servo_control`: D415: First line should end with a period, question mark, or exclamation point (not '型')
+./test/test_message_handler.py:48 in public method `test_get_message_type_case_insensitive`: D400: First line should end with a period (not '感')
+./test/test_message_handler.py:48 in public method `test_get_message_type_case_insensitive`: D415: First line should end with a period, question mark, or exclamation point (not '感')
+./test/test_message_handler.py:58 in public method `test_get_message_type_inferred_servo`: D400: First line should end with a period (not '型')
+./test/test_message_handler.py:58 in public method `test_get_message_type_inferred_servo`: D415: First line should end with a period, question mark, or exclamation point (not '型')
+./test/test_message_handler.py:66 in public method `test_get_message_type_inferred_heartbeat`: D400: First line should end with a period (not '型')
+./test/test_message_handler.py:66 in public method `test_get_message_type_inferred_heartbeat`: D415: First line should end with a period, question mark, or exclamation point (not '型')
+./test/test_message_handler.py:74 in public method `test_get_message_type_unknown`: D400: First line should end with a period (not '型')
+./test/test_message_handler.py:74 in public method `test_get_message_type_unknown`: D415: First line should end with a period, question mark, or exclamation point (not '型')
+./test/test_message_handler.py:81 in public method `test_parse_bcp_protocol_bus_servo`: D400: First line should end with a period (not '机')
+./test/test_message_handler.py:81 in public method `test_parse_bcp_protocol_bus_servo`: D415: First line should end with a period, question mark, or exclamation point (not '机')
+./test/test_message_handler.py:93 in public method `test_parse_bcp_protocol_pca_servo`: D400: First line should end with a period (not '机')
+./test/test_message_handler.py:93 in public method `test_parse_bcp_protocol_pca_servo`: D415: First line should end with a period, question mark, or exclamation point (not '机')
+./test/test_message_handler.py:104 in public method `test_parse_bcp_protocol_with_port`: D400: First line should end with a period (not '段')
+./test/test_message_handler.py:104 in public method `test_parse_bcp_protocol_with_port`: D415: First line should end with a period, question mark, or exclamation point (not '段')
+./test/test_message_handler.py:113 in public method `test_parse_full_format_servo_id`: D400: First line should end with a period (not 'd')
+./test/test_message_handler.py:113 in public method `test_parse_full_format_servo_id`: D415: First line should end with a period, question mark, or exclamation point (not 'd')
+./test/test_message_handler.py:124 in public method `test_parse_full_format_angle`: D400: First line should end with a period (not '段')
+./test/test_message_handler.py:124 in public method `test_parse_full_format_angle`: D415: First line should end with a period, question mark, or exclamation point (not '段')
+./test/test_message_handler.py:133 in public method `test_parse_full_format_channel`: D400: First line should end with a period (not ')')
+./test/test_message_handler.py:133 in public method `test_parse_full_format_channel`: D415: First line should end with a period, question mark, or exclamation point (not ')')
+./test/test_message_handler.py:143 in public method `test_parse_servo_control_invalid_data`: D400: First line should end with a period (not '据')
+./test/test_message_handler.py:143 in public method `test_parse_servo_control_invalid_data`: D415: First line should end with a period, question mark, or exclamation point (not '据')
+./test/test_message_handler.py:154 in public method `test_us_to_angle_conversion`: D400: First line should end with a period (not '换')
+./test/test_message_handler.py:154 in public method `test_us_to_angle_conversion`: D415: First line should end with a period, question mark, or exclamation point (not '换')
+./test/test_message_handler.py:170 in public method `test_angle_to_us_conversion`: D400: First line should end with a period (not '换')
+./test/test_message_handler.py:170 in public method `test_angle_to_us_conversion`: D415: First line should end with a period, question mark, or exclamation point (not '换')
+./test/test_message_handler.py:186 in public method `test_register_handler`: D400: First line should end with a period (not '器')
+./test/test_message_handler.py:186 in public method `test_register_handler`: D415: First line should end with a period, question mark, or exclamation point (not '器')
+./test/test_message_handler.py:197 in public method `test_register_multiple_handlers`: D400: First line should end with a period (not '器')
+./test/test_message_handler.py:197 in public method `test_register_multiple_handlers`: D415: First line should end with a period, question mark, or exclamation point (not '器')
+./test/test_message_handler.py:211 in public method `test_process_message_heartbeat`: D400: First line should end with a period (not '息')
+./test/test_message_handler.py:211 in public method `test_process_message_heartbeat`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+./test/test_message_handler.py:223 in public method `test_process_message_status_query`: D400: First line should end with a period (not '息')
+./test/test_message_handler.py:223 in public method `test_process_message_status_query`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+./test/test_message_handler.py:235 in public method `test_process_message_with_custom_handler`: D400: First line should end with a period (not '息')
+./test/test_message_handler.py:235 in public method `test_process_message_with_custom_handler`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+./test/test_message_handler.py:250 in public method `test_process_message_unknown_type`: D400: First line should end with a period (not '息')
+./test/test_message_handler.py:250 in public method `test_process_message_unknown_type`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+./test/test_message_handler.py:258 in public method `test_is_servo_control_detection`: D400: First line should end with a period (not '测')
+./test/test_message_handler.py:258 in public method `test_is_servo_control_detection`: D415: First line should end with a period, question mark, or exclamation point (not '测')
+./test/test_message_handler.py:270 in public method `test_parse_servo_with_mixed_case_keys`: D400: First line should end with a period (not '令')
+./test/test_message_handler.py:270 in public method `test_parse_servo_with_mixed_case_keys`: D415: First line should end with a period, question mark, or exclamation point (not '令')
+./test/test_message_handler.py:280 in public class `TestMessageType`: D400: First line should end with a period (not '试')
+./test/test_message_handler.py:280 in public class `TestMessageType`: D415: First line should end with a period, question mark, or exclamation point (not '试')
+./test/test_message_handler.py:283 in public method `test_message_type_values`: D400: First line should end with a period (not '值')
+./test/test_message_handler.py:283 in public method `test_message_type_values`: D415: First line should end with a period, question mark, or exclamation point (not '值')
+./test/test_message_handler.py:293 in public method `test_message_type_from_string`: D400: First line should end with a period (not '型')
+./test/test_message_handler.py:293 in public method `test_message_type_from_string`: D415: First line should end with a period, question mark, or exclamation point (not '型')
+./test/test_message_handler.py:302 in public class `TestMessageHandlerEdgeCases`: D400: First line should end with a period (not '试')
+./test/test_message_handler.py:302 in public class `TestMessageHandlerEdgeCases`: D415: First line should end with a period, question mark, or exclamation point (not '试')
+./test/test_message_handler.py:305 in public method `setup_method`: D400: First line should end with a period (not '化')
+./test/test_message_handler.py:305 in public method `setup_method`: D415: First line should end with a period, question mark, or exclamation point (not '化')
+./test/test_message_handler.py:309 in public method `test_parse_empty_message`: D400: First line should end with a period (not '息')
+./test/test_message_handler.py:309 in public method `test_parse_empty_message`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+./test/test_message_handler.py:314 in public method `test_parse_servo_with_string_values`: D400: First line should end with a period (not '令')
+./test/test_message_handler.py:314 in public method `test_parse_servo_with_string_values`: D415: First line should end with a period, question mark, or exclamation point (not '令')
+./test/test_message_handler.py:324 in public method `test_parse_servo_with_invalid_types`: D400: First line should end with a period (not '令')
+./test/test_message_handler.py:324 in public method `test_parse_servo_with_invalid_types`: D415: First line should end with a period, question mark, or exclamation point (not '令')
+./test/test_message_handler.py:332 in public method `test_us_to_angle_with_negative_values`: D400: First line should end with a period (not '度')
+./test/test_message_handler.py:332 in public method `test_us_to_angle_with_negative_values`: D415: First line should end with a period, question mark, or exclamation point (not '度')
+./test/test_message_handler.py:337 in public method `test_angle_to_us_with_extreme_values`: D400: First line should end with a period (not '秒')
+./test/test_message_handler.py:337 in public method `test_angle_to_us_with_extreme_values`: D415: First line should end with a period, question mark, or exclamation point (not '秒')
+./test/test_message_handler.py:343 in public method `test_get_message_type_with_none`: D400: First line should end with a period (not '型')
+./test/test_message_handler.py:343 in public method `test_get_message_type_with_none`: D415: First line should end with a period, question mark, or exclamation point (not '型')
+./test/test_message_handler.py:349 in public method `test_parse_servo_with_default_speed`: D400: First line should end with a period (not '值')
+./test/test_message_handler.py:349 in public method `test_parse_servo_with_default_speed`: D415: First line should end with a period, question mark, or exclamation point (not '值')
+./test/test_message_handler.py:357 in public method `test_parse_servo_with_default_port`: D400: First line should end with a period (not '值')
+./test/test_message_handler.py:357 in public method `test_parse_servo_with_default_port`: D415: First line should end with a period, question mark, or exclamation point (not '值')
+./test/test_stream_schemas.py:1 at module level: D200: One-line docstring should fit on one line with quotes (found 3)
+./test/test_stream_schemas.py:1 at module level: D400: First line should end with a period (not '试')
+./test/test_stream_schemas.py:1 at module level: D415: First line should end with a period, question mark, or exclamation point (not '试')
+./test/test_stream_schemas.py:14 in public class `TestStreamSchemas`: D400: First line should end with a period (not '件')
+./test/test_stream_schemas.py:14 in public class `TestStreamSchemas`: D415: First line should end with a period, question mark, or exclamation point (not '件')
+./test/test_stream_schemas.py:17 in public method `setup_method`: D400: First line should end with a period (not '化')
+./test/test_stream_schemas.py:17 in public method `setup_method`: D415: First line should end with a period, question mark, or exclamation point (not '化')
+./test/test_stream_schemas.py:22 in public method `test_load_web2ros_schema`: D400: First line should end with a period (not '义')
+./test/test_stream_schemas.py:22 in public method `test_load_web2ros_schema`: D415: First line should end with a period, question mark, or exclamation point (not '义')
+./test/test_stream_schemas.py:31 in public method `test_load_ros2web_schema`: D400: First line should end with a period (not '义')
+./test/test_stream_schemas.py:31 in public method `test_load_ros2web_schema`: D415: First line should end with a period, question mark, or exclamation point (not '义')
+./test/test_stream_schemas.py:40 in public method `test_validate_web_command_bcp_protocol`: D400: First line should end with a period (not '令')
+./test/test_stream_schemas.py:40 in public method `test_validate_web_command_bcp_protocol`: D415: First line should end with a period, question mark, or exclamation point (not '令')
+./test/test_stream_schemas.py:46 in public method `test_validate_web_command_full_format`: D400: First line should end with a period (not '令')
+./test/test_stream_schemas.py:46 in public method `test_validate_web_command_full_format`: D415: First line should end with a period, question mark, or exclamation point (not '令')
+./test/test_stream_schemas.py:56 in public method `test_validate_web_command_invalid`: D400: First line should end with a period (not '令')
+./test/test_stream_schemas.py:56 in public method `test_validate_web_command_invalid`: D415: First line should end with a period, question mark, or exclamation point (not '令')
+./test/test_stream_schemas.py:67 in public method `test_validate_jiyuan_response_valid`: D400: First line should end with a period (not '应')
+./test/test_stream_schemas.py:67 in public method `test_validate_jiyuan_response_valid`: D415: First line should end with a period, question mark, or exclamation point (not '应')
+./test/test_stream_schemas.py:80 in public method `test_validate_jiyuan_response_missing_fields`: D400: First line should end with a period (not '应')
+./test/test_stream_schemas.py:80 in public method `test_validate_jiyuan_response_missing_fields`: D415: First line should end with a period, question mark, or exclamation point (not '应')
+./test/test_stream_schemas.py:93 in public method `test_create_servo_command_bus_servo`: D400: First line should end with a period (not '令')
+./test/test_stream_schemas.py:93 in public method `test_create_servo_command_bus_servo`: D415: First line should end with a period, question mark, or exclamation point (not '令')
+./test/test_stream_schemas.py:109 in public method `test_create_servo_command_pca_servo`: D400: First line should end with a period (not '令')
+./test/test_stream_schemas.py:109 in public method `test_create_servo_command_pca_servo`: D415: First line should end with a period, question mark, or exclamation point (not '令')
+./test/test_stream_schemas.py:121 in public method `test_create_servo_command_default_values`: D400: First line should end with a period (not '值')
+./test/test_stream_schemas.py:121 in public method `test_create_servo_command_default_values`: D415: First line should end with a period, question mark, or exclamation point (not '值')
+./test/test_stream_schemas.py:133 in public method `test_create_jiyuan_response_basic`: D400: First line should end with a period (not '应')
+./test/test_stream_schemas.py:133 in public method `test_create_jiyuan_response_basic`: D415: First line should end with a period, question mark, or exclamation point (not '应')
+./test/test_stream_schemas.py:145 in public method `test_create_jiyuan_response_with_servo_states`: D400: First line should end with a period (not '应')
+./test/test_stream_schemas.py:145 in public method `test_create_jiyuan_response_with_servo_states`: D415: First line should end with a period, question mark, or exclamation point (not '应')
+./test/test_stream_schemas.py:160 in public method `test_create_jiyuan_response_with_system_info`: D400: First line should end with a period (not '应')
+./test/test_stream_schemas.py:160 in public method `test_create_jiyuan_response_with_system_info`: D415: First line should end with a period, question mark, or exclamation point (not '应')
+./test/test_stream_schemas.py:175 in public method `test_create_jiyuan_response_default_servo_states`: D400: First line should end with a period (not '态')
+./test/test_stream_schemas.py:175 in public method `test_create_jiyuan_response_default_servo_states`: D415: First line should end with a period, question mark, or exclamation point (not '态')
+./test/test_stream_schemas.py:182 in public method `test_create_jiyuan_response_default_current_status`: D400: First line should end with a period (not '态')
+./test/test_stream_schemas.py:182 in public method `test_create_jiyuan_response_default_current_status`: D415: First line should end with a period, question mark, or exclamation point (not '态')
+./test/test_stream_schemas.py:193 in public class `TestStreamSchemasWithCustomConfig`: D400: First line should end with a period (not '试')
+./test/test_stream_schemas.py:193 in public class `TestStreamSchemasWithCustomConfig`: D415: First line should end with a period, question mark, or exclamation point (not '试')
+./test/test_stream_schemas.py:196 in public method `test_load_from_custom_config_dir`: D400: First line should end with a period (not '载')
+./test/test_stream_schemas.py:196 in public method `test_load_from_custom_config_dir`: D415: First line should end with a period, question mark, or exclamation point (not '载')
+./test/test_stream_schemas.py:223 in public method `test_load_from_nonexistent_dir`: D400: First line should end with a period (not '载')
+./test/test_stream_schemas.py:223 in public method `test_load_from_nonexistent_dir`: D415: First line should end with a period, question mark, or exclamation point (not '载')
+./test/test_stream_schemas.py:231 in public method `test_load_invalid_json_file`: D400: First line should end with a period (not '件')
+./test/test_stream_schemas.py:231 in public method `test_load_invalid_json_file`: D415: First line should end with a period, question mark, or exclamation point (not '件')
+./test/test_stream_schemas.py:251 in public class `TestGetStreamSchemas`: D400: First line should end with a period (not '试')
+./test/test_stream_schemas.py:251 in public class `TestGetStreamSchemas`: D415: First line should end with a period, question mark, or exclamation point (not '试')
+./test/test_stream_schemas.py:254 in public method `test_get_stream_schemas_singleton`: D400: First line should end with a period (not '式')
+./test/test_stream_schemas.py:254 in public method `test_get_stream_schemas_singleton`: D415: First line should end with a period, question mark, or exclamation point (not '式')
+./test/test_stream_schemas.py:262 in public method `test_get_stream_schemas_returns_valid_instance`: D400: First line should end with a period (not '象')
+./test/test_stream_schemas.py:262 in public method `test_get_stream_schemas_returns_valid_instance`: D415: First line should end with a period, question mark, or exclamation point (not '象')
+./test/test_stream_schemas.py:271 in public class `TestStreamSchemasEdgeCases`: D400: First line should end with a period (not '试')
+./test/test_stream_schemas.py:271 in public class `TestStreamSchemasEdgeCases`: D415: First line should end with a period, question mark, or exclamation point (not '试')
+./test/test_stream_schemas.py:274 in public method `setup_method`: D400: First line should end with a period (not '化')
+./test/test_stream_schemas.py:274 in public method `setup_method`: D415: First line should end with a period, question mark, or exclamation point (not '化')
+./test/test_stream_schemas.py:278 in public method `test_validate_empty_dict`: D400: First line should end with a period (not '典')
+./test/test_stream_schemas.py:278 in public method `test_validate_empty_dict`: D415: First line should end with a period, question mark, or exclamation point (not '典')
+./test/test_stream_schemas.py:283 in public method `test_create_servo_command_with_zero_values`: D400: First line should end with a period (not '令')
+./test/test_stream_schemas.py:283 in public method `test_create_servo_command_with_zero_values`: D415: First line should end with a period, question mark, or exclamation point (not '令')
+./test/test_stream_schemas.py:298 in public method `test_create_servo_command_with_extreme_values`: D400: First line should end with a period (not '令')
+./test/test_stream_schemas.py:298 in public method `test_create_servo_command_with_extreme_values`: D415: First line should end with a period, question mark, or exclamation point (not '令')
+./test/test_stream_schemas.py:311 in public method `test_validate_web_command_with_partial_fields`: D400: First line should end with a period (not '令')
+./test/test_stream_schemas.py:311 in public method `test_validate_web_command_with_partial_fields`: D415: First line should end with a period, question mark, or exclamation point (not '令')
+./test/test_stream_schemas.py:322 in public method `test_create_jiyuan_response_with_error_code`: D400: First line should end with a period (not '应')
+./test/test_stream_schemas.py:322 in public method `test_create_jiyuan_response_with_error_code`: D415: First line should end with a period, question mark, or exclamation point (not '应')
+./test/test_stream_schemas.py:331 in public method `test_create_jiyuan_response_empty_servo_states`: D400: First line should end with a period (not '应')
+./test/test_stream_schemas.py:331 in public method `test_create_jiyuan_response_empty_servo_states`: D415: First line should end with a period, question mark, or exclamation point (not '应')
+./test/test_stream_schemas.py:346 in public method `test_create_servo_command_pca_ignores_speed`: D400: First line should end with a period (not '数')
+./test/test_stream_schemas.py:346 in public method `test_create_servo_command_pca_ignores_speed`: D415: First line should end with a period, question mark, or exclamation point (not '数')
+./test/test_websocket_handler.py:1 at module level: D200: One-line docstring should fit on one line with quotes (found 3)
+./test/test_websocket_handler.py:1 at module level: D400: First line should end with a period (not '试')
+./test/test_websocket_handler.py:1 at module level: D415: First line should end with a period, question mark, or exclamation point (not '试')
+./test/test_websocket_handler.py:13 in public class `TestWebSocketHandler`: D400: First line should end with a period (not '件')
+./test/test_websocket_handler.py:13 in public class `TestWebSocketHandler`: D415: First line should end with a period, question mark, or exclamation point (not '件')
+./test/test_websocket_handler.py:16 in public method `setup_method`: D400: First line should end with a period (not '化')
+./test/test_websocket_handler.py:16 in public method `setup_method`: D415: First line should end with a period, question mark, or exclamation point (not '化')
+./test/test_websocket_handler.py:21 in public method `test_handle_heartbeat_message`: D400: First line should end with a period (not '息')
+./test/test_websocket_handler.py:21 in public method `test_handle_heartbeat_message`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+./test/test_websocket_handler.py:34 in public method `test_handle_heartbeat_updates_timestamp`: D400: First line should end with a period (not '戳')
+./test/test_websocket_handler.py:34 in public method `test_handle_heartbeat_updates_timestamp`: D415: First line should end with a period, question mark, or exclamation point (not '戳')
+./test/test_websocket_handler.py:45 in public method `test_handle_servo_control_message`: D400: First line should end with a period (not '息')
+./test/test_websocket_handler.py:45 in public method `test_handle_servo_control_message`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+./test/test_websocket_handler.py:64 in public method `test_handle_invalid_servo_control`: D400: First line should end with a period (not '息')
+./test/test_websocket_handler.py:64 in public method `test_handle_invalid_servo_control`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+./test/test_websocket_handler.py:78 in public method `test_handle_servo_control_with_callback`: D400: First line should end with a period (not '数')
+./test/test_websocket_handler.py:78 in public method `test_handle_servo_control_with_callback`: D415: First line should end with a period, question mark, or exclamation point (not '数')
+./test/test_websocket_handler.py:104 in public method `test_handle_status_query_message`: D400: First line should end with a period (not '息')
+./test/test_websocket_handler.py:104 in public method `test_handle_status_query_message`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+./test/test_websocket_handler.py:116 in public method `test_handle_status_query_with_callback`: D400: First line should end with a period (not '数')
+./test/test_websocket_handler.py:116 in public method `test_handle_status_query_with_callback`: D415: First line should end with a period, question mark, or exclamation point (not '数')
+./test/test_websocket_handler.py:135 in public method `test_handle_register_message`: D400: First line should end with a period (not '息')
+./test/test_websocket_handler.py:135 in public method `test_handle_register_message`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+./test/test_websocket_handler.py:151 in public method `test_handle_broadcast_message`: D400: First line should end with a period (not '息')
+./test/test_websocket_handler.py:151 in public method `test_handle_broadcast_message`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+./test/test_websocket_handler.py:177 in public method `test_handle_private_message`: D400: First line should end with a period (not '息')
+./test/test_websocket_handler.py:177 in public method `test_handle_private_message`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+./test/test_websocket_handler.py:204 in public method `test_handle_invalid_json`: D400: First line should end with a period (not 'N')
+./test/test_websocket_handler.py:204 in public method `test_handle_invalid_json`: D415: First line should end with a period, question mark, or exclamation point (not 'N')
+./test/test_websocket_handler.py:213 in public method `test_handle_unknown_message_type`: D400: First line should end with a period (not '型')
+./test/test_websocket_handler.py:213 in public method `test_handle_unknown_message_type`: D415: First line should end with a period, question mark, or exclamation point (not '型')
+./test/test_websocket_handler.py:221 in public method `test_update_servo_state_bus_servo`: D400: First line should end with a period (not '态')
+./test/test_websocket_handler.py:221 in public method `test_update_servo_state_bus_servo`: D415: First line should end with a period, question mark, or exclamation point (not '态')
+./test/test_websocket_handler.py:229 in public method `test_update_servo_state_pca_servo`: D400: First line should end with a period (not '态')
+./test/test_websocket_handler.py:229 in public method `test_update_servo_state_pca_servo`: D415: First line should end with a period, question mark, or exclamation point (not '态')
+./test/test_websocket_handler.py:237 in public method `test_update_servo_state_multiple_servos`: D400: First line should end with a period (not '态')
+./test/test_websocket_handler.py:237 in public method `test_update_servo_state_multiple_servos`: D415: First line should end with a period, question mark, or exclamation point (not '态')
+./test/test_websocket_handler.py:246 in public method `test_update_system_state`: D400: First line should end with a period (not '态')
+./test/test_websocket_handler.py:246 in public method `test_update_system_state`: D415: First line should end with a period, question mark, or exclamation point (not '态')
+./test/test_websocket_handler.py:258 in public method `test_get_uptime`: D400: First line should end with a period (not '间')
+./test/test_websocket_handler.py:258 in public method `test_get_uptime`: D415: First line should end with a period, question mark, or exclamation point (not '间')
+./test/test_websocket_handler.py:268 in public method `test_register_message_handler`: D400: First line should end with a period (not '器')
+./test/test_websocket_handler.py:268 in public method `test_register_message_handler`: D415: First line should end with a period, question mark, or exclamation point (not '器')
+./test/test_websocket_handler.py:279 in public method `test_heartbeat_callback_exception_handling`: D400: First line should end with a period (not '理')
+./test/test_websocket_handler.py:279 in public method `test_heartbeat_callback_exception_handling`: D415: First line should end with a period, question mark, or exclamation point (not '理')
+./test/test_websocket_handler.py:296 in public method `test_servo_command_callback_exception_handling`: D400: First line should end with a period (not '理')
+./test/test_websocket_handler.py:296 in public method `test_servo_command_callback_exception_handling`: D415: First line should end with a period, question mark, or exclamation point (not '理')
+./test/test_websocket_handler.py:318 in public method `test_status_query_callback_exception_handling`: D400: First line should end with a period (not '理')
+./test/test_websocket_handler.py:318 in public method `test_status_query_callback_exception_handling`: D415: First line should end with a period, question mark, or exclamation point (not '理')
+./test/test_websocket_handler.py:335 in public class `TestWebSocketHandlerEdgeCases`: D400: First line should end with a period (not '试')
+./test/test_websocket_handler.py:335 in public class `TestWebSocketHandlerEdgeCases`: D415: First line should end with a period, question mark, or exclamation point (not '试')
+./test/test_websocket_handler.py:338 in public method `setup_method`: D400: First line should end with a period (not '化')
+./test/test_websocket_handler.py:338 in public method `setup_method`: D415: First line should end with a period, question mark, or exclamation point (not '化')
+./test/test_websocket_handler.py:343 in public method `test_handle_empty_message`: D400: First line should end with a period (not '息')
+./test/test_websocket_handler.py:343 in public method `test_handle_empty_message`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+./test/test_websocket_handler.py:349 in public method `test_handle_empty_dict_message`: D400: First line should end with a period (not '息')
+./test/test_websocket_handler.py:349 in public method `test_handle_empty_dict_message`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+./test/test_websocket_handler.py:358 in public method `test_servo_control_without_callback`: D400: First line should end with a period (not '制')
+./test/test_websocket_handler.py:358 in public method `test_servo_control_without_callback`: D415: First line should end with a period, question mark, or exclamation point (not '制')
+./test/test_websocket_handler.py:374 in public method `test_status_query_returns_servo_state`: D400: First line should end with a period (not '态')
+./test/test_websocket_handler.py:374 in public method `test_status_query_returns_servo_state`: D415: First line should end with a period, question mark, or exclamation point (not '态')
+./test/test_websocket_handler.py:389 in public method `test_get_supported_commands`: D400: First line should end with a period (not '表')
+./test/test_websocket_handler.py:389 in public method `test_get_supported_commands`: D415: First line should end with a period, question mark, or exclamation point (not '表')
+./test/test_websocket_handler.py:400 in public method `test_broadcast_without_servo_content`: D400: First line should end with a period (not '息')
+./test/test_websocket_handler.py:400 in public method `test_broadcast_without_servo_content`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+./test/test_websocket_handler.py:412 in public method `test_private_without_servo_content`: D400: First line should end with a period (not '息')
+./test/test_websocket_handler.py:412 in public method `test_private_without_servo_content`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+./test/test_websocket_handler.py:423 in public method `test_initial_servo_state_empty`: D400: First line should end with a period (not '空')
+./test/test_websocket_handler.py:423 in public method `test_initial_servo_state_empty`: D415: First line should end with a period, question mark, or exclamation point (not '空')
+./test/test_websocket_handler.py:428 in public method `test_initial_system_state_has_defaults`: D400: First line should end with a period (not '值')
+./test/test_websocket_handler.py:428 in public method `test_initial_system_state_has_defaults`: D415: First line should end with a period, question mark, or exclamation point (not '值')
+./websocket_bridge/__init__.py:1 at module level: D400: First line should end with a period (not '包')
+./websocket_bridge/__init__.py:1 at module level: D415: First line should end with a period, question mark, or exclamation point (not '包')
+./websocket_bridge/error_codes.py:1 at module level: D200: One-line docstring should fit on one line with quotes (found 3)
+./websocket_bridge/error_codes.py:1 at module level: D400: First line should end with a period (not '具')
+./websocket_bridge/error_codes.py:1 at module level: D415: First line should end with a period, question mark, or exclamation point (not '具')
+./websocket_bridge/error_codes.py:12 in public class `ErrorCode`: D400: First line should end with a period (not '举')
+./websocket_bridge/error_codes.py:12 in public class `ErrorCode`: D415: First line should end with a period, question mark, or exclamation point (not '举')
+./websocket_bridge/error_codes.py:40 in public class `ErrorResponse`: D400: First line should end with a period (not '器')
+./websocket_bridge/error_codes.py:40 in public class `ErrorResponse`: D415: First line should end with a period, question mark, or exclamation point (not '器')
+./websocket_bridge/error_codes.py:49 in public method `create`: D400: First line should end with a period (not '应')
+./websocket_bridge/error_codes.py:49 in public method `create`: D415: First line should end with a period, question mark, or exclamation point (not '应')
+./websocket_bridge/error_codes.py:49 in public method `create`: D413: Missing blank line after last section ('Returns')
+./websocket_bridge/error_codes.py:49 in public method `create`: D407: Missing dashed underline after section ('Returns')
+./websocket_bridge/error_codes.py:49 in public method `create`: D406: Section name should end with a newline ('Returns', not 'Returns:')
+./websocket_bridge/error_codes.py:78 in public method `get_default_message`: D400: First line should end with a period (not '息')
+./websocket_bridge/error_codes.py:78 in public method `get_default_message`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+./websocket_bridge/error_codes.py:78 in public method `get_default_message`: D413: Missing blank line after last section ('Returns')
+./websocket_bridge/error_codes.py:78 in public method `get_default_message`: D407: Missing dashed underline after section ('Returns')
+./websocket_bridge/error_codes.py:78 in public method `get_default_message`: D406: Section name should end with a newline ('Returns', not 'Returns:')
+./websocket_bridge/error_codes.py:110 in public method `is_client_error`: D400: First line should end with a period (not '）')
+./websocket_bridge/error_codes.py:110 in public method `is_client_error`: D415: First line should end with a period, question mark, or exclamation point (not '）')
+./websocket_bridge/error_codes.py:115 in public method `is_server_error`: D400: First line should end with a period (not '）')
+./websocket_bridge/error_codes.py:115 in public method `is_server_error`: D415: First line should end with a period, question mark, or exclamation point (not '）')
+./websocket_bridge/error_codes.py:120 in public method `is_connection_error`: D400: First line should end with a period (not '）')
+./websocket_bridge/error_codes.py:120 in public method `is_connection_error`: D415: First line should end with a period, question mark, or exclamation point (not '）')
+./websocket_bridge/error_codes.py:125 in public class `SuccessResponse`: D400: First line should end with a period (not '器')
+./websocket_bridge/error_codes.py:125 in public class `SuccessResponse`: D415: First line should end with a period, question mark, or exclamation point (not '器')
+./websocket_bridge/error_codes.py:133 in public method `create`: D400: First line should end with a period (not '应')
+./websocket_bridge/error_codes.py:133 in public method `create`: D415: First line should end with a period, question mark, or exclamation point (not '应')
+./websocket_bridge/error_codes.py:133 in public method `create`: D413: Missing blank line after last section ('Returns')
+./websocket_bridge/error_codes.py:133 in public method `create`: D407: Missing dashed underline after section ('Returns')
+./websocket_bridge/error_codes.py:133 in public method `create`: D406: Section name should end with a newline ('Returns', not 'Returns:')
+./websocket_bridge/error_codes.py:158 in public class `WebSocketException`: D400: First line should end with a period (not '类')
+./websocket_bridge/error_codes.py:158 in public class `WebSocketException`: D415: First line should end with a period, question mark, or exclamation point (not '类')
+./websocket_bridge/error_codes.py:166 in public method `__init__`: D400: First line should end with a period (not '常')
+./websocket_bridge/error_codes.py:166 in public method `__init__`: D415: First line should end with a period, question mark, or exclamation point (not '常')
+./websocket_bridge/error_codes.py:166 in public method `__init__`: D413: Missing blank line after last section ('Args')
+./websocket_bridge/error_codes.py:166 in public method `__init__`: D407: Missing dashed underline after section ('Args')
+./websocket_bridge/error_codes.py:180 in public method `to_response`: D400: First line should end with a period (not '应')
+./websocket_bridge/error_codes.py:180 in public method `to_response`: D415: First line should end with a period, question mark, or exclamation point (not '应')
+./websocket_bridge/error_codes.py:180 in public method `to_response`: D413: Missing blank line after last section ('Returns')
+./websocket_bridge/error_codes.py:180 in public method `to_response`: D407: Missing dashed underline after section ('Returns')
+./websocket_bridge/error_codes.py:180 in public method `to_response`: D406: Section name should end with a newline ('Returns', not 'Returns:')
+./websocket_bridge/error_codes.py:198 in public class `InvalidMessageException`: D400: First line should end with a period (not '常')
+./websocket_bridge/error_codes.py:198 in public class `InvalidMessageException`: D415: First line should end with a period, question mark, or exclamation point (not '常')
+./websocket_bridge/error_codes.py:205 in public class `InvalidServoCommandException`: D400: First line should end with a period (not '常')
+./websocket_bridge/error_codes.py:205 in public class `InvalidServoCommandException`: D415: First line should end with a period, question mark, or exclamation point (not '常')
+./websocket_bridge/error_codes.py:212 in public class `ServoCommandFailedException`: D400: First line should end with a period (not '常')
+./websocket_bridge/error_codes.py:212 in public class `ServoCommandFailedException`: D415: First line should end with a period, question mark, or exclamation point (not '常')
+./websocket_bridge/error_codes.py:219 in public class `ConnectionTimeoutException`: D400: First line should end with a period (not '常')
+./websocket_bridge/error_codes.py:219 in public class `ConnectionTimeoutException`: D415: First line should end with a period, question mark, or exclamation point (not '常')
+./websocket_bridge/logger.py:1 at module level: D200: One-line docstring should fit on one line with quotes (found 3)
+./websocket_bridge/logger.py:1 at module level: D400: First line should end with a period (not '块')
+./websocket_bridge/logger.py:1 at module level: D415: First line should end with a period, question mark, or exclamation point (not '块')
+./websocket_bridge/logger.py:16 in public function `setup_logger`: D400: First line should end with a period (not '器')
+./websocket_bridge/logger.py:16 in public function `setup_logger`: D415: First line should end with a period, question mark, or exclamation point (not '器')
+./websocket_bridge/logger.py:16 in public function `setup_logger`: D413: Missing blank line after last section ('Returns')
+./websocket_bridge/logger.py:16 in public function `setup_logger`: D407: Missing dashed underline after section ('Returns')
+./websocket_bridge/logger.py:16 in public function `setup_logger`: D406: Section name should end with a newline ('Returns', not 'Returns:')
+./websocket_bridge/logger.py:61 in public function `get_logger`: D400: First line should end with a period (not '）')
+./websocket_bridge/logger.py:61 in public function `get_logger`: D415: First line should end with a period, question mark, or exclamation point (not '）')
+./websocket_bridge/logger.py:61 in public function `get_logger`: D413: Missing blank line after last section ('Returns')
+./websocket_bridge/logger.py:61 in public function `get_logger`: D407: Missing dashed underline after section ('Returns')
+./websocket_bridge/logger.py:61 in public function `get_logger`: D406: Section name should end with a newline ('Returns', not 'Returns:')
+./websocket_bridge/logger.py:78 in public function `set_log_level`: D400: First line should end with a period (not '别')
+./websocket_bridge/logger.py:78 in public function `set_log_level`: D415: First line should end with a period, question mark, or exclamation point (not '别')
+./websocket_bridge/logger.py:78 in public function `set_log_level`: D413: Missing blank line after last section ('Args')
+./websocket_bridge/logger.py:78 in public function `set_log_level`: D407: Missing dashed underline after section ('Args')
+./websocket_bridge/message_handler.py:1 at module level: D200: One-line docstring should fit on one line with quotes (found 3)
+./websocket_bridge/message_handler.py:1 at module level: D400: First line should end with a period (not '息')
+./websocket_bridge/message_handler.py:1 at module level: D415: First line should end with a period, question mark, or exclamation point (not '息')
+./websocket_bridge/message_handler.py:15 in public class `MessageType`: D204: 1 blank line required after class docstring (found 0)
+./websocket_bridge/message_handler.py:15 in public class `MessageType`: D400: First line should end with a period (not '义')
+./websocket_bridge/message_handler.py:15 in public class `MessageType`: D415: First line should end with a period, question mark, or exclamation point (not '义')
+./websocket_bridge/message_handler.py:27 in public class `MessageHandler`: D400: First line should end with a period (not '器')
+./websocket_bridge/message_handler.py:27 in public class `MessageHandler`: D415: First line should end with a period, question mark, or exclamation point (not '器')
+./websocket_bridge/message_handler.py:30 in public method `__init__`: D400: First line should end with a period (not '器')
+./websocket_bridge/message_handler.py:30 in public method `__init__`: D415: First line should end with a period, question mark, or exclamation point (not '器')
+./websocket_bridge/message_handler.py:30 in public method `__init__`: D413: Missing blank line after last section ('Args')
+./websocket_bridge/message_handler.py:30 in public method `__init__`: D407: Missing dashed underline after section ('Args')
+./websocket_bridge/message_handler.py:51 in public method `register_handler`: D400: First line should end with a period (not '调')
+./websocket_bridge/message_handler.py:51 in public method `register_handler`: D415: First line should end with a period, question mark, or exclamation point (not '调')
+./websocket_bridge/message_handler.py:51 in public method `register_handler`: D413: Missing blank line after last section ('Args')
+./websocket_bridge/message_handler.py:51 in public method `register_handler`: D407: Missing dashed underline after section ('Args')
+./websocket_bridge/message_handler.py:65 in public method `parse_message`: D400: First line should end with a period (not '息')
+./websocket_bridge/message_handler.py:65 in public method `parse_message`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+./websocket_bridge/message_handler.py:65 in public method `parse_message`: D413: Missing blank line after last section ('Returns')
+./websocket_bridge/message_handler.py:65 in public method `parse_message`: D407: Missing dashed underline after section ('Returns')
+./websocket_bridge/message_handler.py:65 in public method `parse_message`: D406: Section name should end with a newline ('Returns', not 'Returns:')
+./websocket_bridge/message_handler.py:84 in public method `get_message_type`: D400: First line should end with a period (not '型')
+./websocket_bridge/message_handler.py:84 in public method `get_message_type`: D415: First line should end with a period, question mark, or exclamation point (not '型')
+./websocket_bridge/message_handler.py:84 in public method `get_message_type`: D413: Missing blank line after last section ('Returns')
+./websocket_bridge/message_handler.py:84 in public method `get_message_type`: D407: Missing dashed underline after section ('Returns')
+./websocket_bridge/message_handler.py:84 in public method `get_message_type`: D406: Section name should end with a newline ('Returns', not 'Returns:')
+./websocket_bridge/message_handler.py:117 in private method `_is_servo_control`: D400: First line should end with a period (not '令')
+./websocket_bridge/message_handler.py:117 in private method `_is_servo_control`: D415: First line should end with a period, question mark, or exclamation point (not '令')
+./websocket_bridge/message_handler.py:123 in public method `process_message`: D400: First line should end with a period (not '息')
+./websocket_bridge/message_handler.py:123 in public method `process_message`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+./websocket_bridge/message_handler.py:123 in public method `process_message`: D413: Missing blank line after last section ('Returns')
+./websocket_bridge/message_handler.py:123 in public method `process_message`: D407: Missing dashed underline after section ('Returns')
+./websocket_bridge/message_handler.py:123 in public method `process_message`: D406: Section name should end with a newline ('Returns', not 'Returns:')
+./websocket_bridge/message_handler.py:149 in private method `_default_handler`: D400: First line should end with a period (not '器')
+./websocket_bridge/message_handler.py:149 in private method `_default_handler`: D415: First line should end with a period, question mark, or exclamation point (not '器')
+./websocket_bridge/message_handler.py:160 in private method `_create_heartbeat_response`: D400: First line should end with a period (not '应')
+./websocket_bridge/message_handler.py:160 in private method `_create_heartbeat_response`: D415: First line should end with a period, question mark, or exclamation point (not '应')
+./websocket_bridge/message_handler.py:170 in private method `_create_status_response`: D400: First line should end with a period (not '应')
+./websocket_bridge/message_handler.py:170 in private method `_create_status_response`: D415: First line should end with a period, question mark, or exclamation point (not '应')
+./websocket_bridge/message_handler.py:186 in public method `parse_servo_control`: D400: First line should end with a period (not '）')
+./websocket_bridge/message_handler.py:186 in public method `parse_servo_control`: D415: First line should end with a period, question mark, or exclamation point (not '）')
+./websocket_bridge/message_handler.py:186 in public method `parse_servo_control`: D413: Missing blank line after last section ('Returns')
+./websocket_bridge/message_handler.py:186 in public method `parse_servo_control`: D407: Missing dashed underline after section ('Returns')
+./websocket_bridge/message_handler.py:186 in public method `parse_servo_control`: D406: Section name should end with a newline ('Returns', not 'Returns:')
+./websocket_bridge/message_handler.py:223 in private method `_parse_bcp_protocol`: D400: First line should end with a period (not '议')
+./websocket_bridge/message_handler.py:223 in private method `_parse_bcp_protocol`: D415: First line should end with a period, question mark, or exclamation point (not '议')
+./websocket_bridge/message_handler.py:261 in private method `_parse_full_format`: D400: First line should end with a period (not '令')
+./websocket_bridge/message_handler.py:261 in private method `_parse_full_format`: D415: First line should end with a period, question mark, or exclamation point (not '令')
+./websocket_bridge/message_handler.py:309 in private method `_us_to_angle`: D400: First line should end with a period (not ')')
+./websocket_bridge/message_handler.py:309 in private method `_us_to_angle`: D415: First line should end with a period, question mark, or exclamation point (not ')')
+./websocket_bridge/message_handler.py:318 in private method `_angle_to_us`: D400: First line should end with a period (not '秒')
+./websocket_bridge/message_handler.py:318 in private method `_angle_to_us`: D415: First line should end with a period, question mark, or exclamation point (not '秒')
+./websocket_bridge/stream_schemas.py:1 at module level: D200: One-line docstring should fit on one line with quotes (found 3)
+./websocket_bridge/stream_schemas.py:1 at module level: D400: First line should end with a period (not '证')
+./websocket_bridge/stream_schemas.py:1 at module level: D415: First line should end with a period, question mark, or exclamation point (not '证')
+./websocket_bridge/stream_schemas.py:11 in public class `StreamSchemas`: D400: First line should end with a period (not '类')
+./websocket_bridge/stream_schemas.py:11 in public class `StreamSchemas`: D415: First line should end with a period, question mark, or exclamation point (not '类')
+./websocket_bridge/stream_schemas.py:14 in public method `__init__`: D400: First line should end with a period (not 's')
+./websocket_bridge/stream_schemas.py:14 in public method `__init__`: D415: First line should end with a period, question mark, or exclamation point (not 's')
+./websocket_bridge/stream_schemas.py:14 in public method `__init__`: D413: Missing blank line after last section ('Args')
+./websocket_bridge/stream_schemas.py:14 in public method `__init__`: D407: Missing dashed underline after section ('Args')
+./websocket_bridge/stream_schemas.py:25 in private method `_load_schema`: D400: First line should end with a period (not '件')
+./websocket_bridge/stream_schemas.py:25 in private method `_load_schema`: D415: First line should end with a period, question mark, or exclamation point (not '件')
+./websocket_bridge/stream_schemas.py:35 in public method `get_web2jiyuan_schema`: D400: First line should end with a period (not 'a')
+./websocket_bridge/stream_schemas.py:35 in public method `get_web2jiyuan_schema`: D415: First line should end with a period, question mark, or exclamation point (not 'a')
+./websocket_bridge/stream_schemas.py:39 in public method `get_jiyuan2web_schema`: D400: First line should end with a period (not 'a')
+./websocket_bridge/stream_schemas.py:39 in public method `get_jiyuan2web_schema`: D415: First line should end with a period, question mark, or exclamation point (not 'a')
+./websocket_bridge/stream_schemas.py:43 in public method `validate_web_command`: D400: First line should end with a period (not '式')
+./websocket_bridge/stream_schemas.py:43 in public method `validate_web_command`: D415: First line should end with a period, question mark, or exclamation point (not '式')
+./websocket_bridge/stream_schemas.py:43 in public method `validate_web_command`: D413: Missing blank line after last section ('Returns')
+./websocket_bridge/stream_schemas.py:43 in public method `validate_web_command`: D407: Missing dashed underline after section ('Returns')
+./websocket_bridge/stream_schemas.py:43 in public method `validate_web_command`: D406: Section name should end with a newline ('Returns', not 'Returns:')
+./websocket_bridge/stream_schemas.py:67 in public method `validate_jiyuan_response`: D400: First line should end with a period (not '式')
+./websocket_bridge/stream_schemas.py:67 in public method `validate_jiyuan_response`: D415: First line should end with a period, question mark, or exclamation point (not '式')
+./websocket_bridge/stream_schemas.py:67 in public method `validate_jiyuan_response`: D413: Missing blank line after last section ('Returns')
+./websocket_bridge/stream_schemas.py:67 in public method `validate_jiyuan_response`: D407: Missing dashed underline after section ('Returns')
+./websocket_bridge/stream_schemas.py:67 in public method `validate_jiyuan_response`: D406: Section name should end with a newline ('Returns', not 'Returns:')
+./websocket_bridge/stream_schemas.py:90 in public method `create_servo_command`: D400: First line should end with a period (not '令')
+./websocket_bridge/stream_schemas.py:90 in public method `create_servo_command`: D415: First line should end with a period, question mark, or exclamation point (not '令')
+./websocket_bridge/stream_schemas.py:90 in public method `create_servo_command`: D413: Missing blank line after last section ('Returns')
+./websocket_bridge/stream_schemas.py:90 in public method `create_servo_command`: D407: Missing dashed underline after section ('Returns')
+./websocket_bridge/stream_schemas.py:90 in public method `create_servo_command`: D406: Section name should end with a newline ('Returns', not 'Returns:')
+./websocket_bridge/stream_schemas.py:116 in public method `create_jiyuan_response`: D400: First line should end with a period (not '）')
+./websocket_bridge/stream_schemas.py:116 in public method `create_jiyuan_response`: D415: First line should end with a period, question mark, or exclamation point (not '）')
+./websocket_bridge/stream_schemas.py:116 in public method `create_jiyuan_response`: D413: Missing blank line after last section ('Returns')
+./websocket_bridge/stream_schemas.py:116 in public method `create_jiyuan_response`: D407: Missing dashed underline after section ('Returns')
+./websocket_bridge/stream_schemas.py:116 in public method `create_jiyuan_response`: D406: Section name should end with a newline ('Returns', not 'Returns:')
+./websocket_bridge/stream_schemas.py:155 in public function `get_stream_schemas`: D400: First line should end with a period (not '例')
+./websocket_bridge/stream_schemas.py:155 in public function `get_stream_schemas`: D415: First line should end with a period, question mark, or exclamation point (not '例')
+./websocket_bridge/websocket_handler.py:1 at module level: D200: One-line docstring should fit on one line with quotes (found 3)
+./websocket_bridge/websocket_handler.py:1 at module level: D400: First line should end with a period (not '成')
+./websocket_bridge/websocket_handler.py:1 at module level: D415: First line should end with a period, question mark, or exclamation point (not '成')
+./websocket_bridge/websocket_handler.py:23 in public class `WebSocketHandler`: D400: First line should end with a period (not '器')
+./websocket_bridge/websocket_handler.py:23 in public class `WebSocketHandler`: D415: First line should end with a period, question mark, or exclamation point (not '器')
+./websocket_bridge/websocket_handler.py:33 in public method `__init__`: D400: First line should end with a period (not '器')
+./websocket_bridge/websocket_handler.py:33 in public method `__init__`: D415: First line should end with a period, question mark, or exclamation point (not '器')
+./websocket_bridge/websocket_handler.py:33 in public method `__init__`: D413: Missing blank line after last section ('Args')
+./websocket_bridge/websocket_handler.py:33 in public method `__init__`: D407: Missing dashed underline after section ('Args')
+./websocket_bridge/websocket_handler.py:59 in public method `register_servo_command_handler`: D400: First line should end with a period (not '调')
+./websocket_bridge/websocket_handler.py:59 in public method `register_servo_command_handler`: D415: First line should end with a period, question mark, or exclamation point (not '调')
+./websocket_bridge/websocket_handler.py:59 in public method `register_servo_command_handler`: D413: Missing blank line after last section ('Args')
+./websocket_bridge/websocket_handler.py:59 in public method `register_servo_command_handler`: D407: Missing dashed underline after section ('Args')
+./websocket_bridge/websocket_handler.py:68 in public method `register_heartbeat_handler`: D400: First line should end with a period (not '调')
+./websocket_bridge/websocket_handler.py:68 in public method `register_heartbeat_handler`: D415: First line should end with a period, question mark, or exclamation point (not '调')
+./websocket_bridge/websocket_handler.py:68 in public method `register_heartbeat_handler`: D413: Missing blank line after last section ('Args')
+./websocket_bridge/websocket_handler.py:68 in public method `register_heartbeat_handler`: D407: Missing dashed underline after section ('Args')
+./websocket_bridge/websocket_handler.py:77 in public method `register_status_query_handler`: D400: First line should end with a period (not '调')
+./websocket_bridge/websocket_handler.py:77 in public method `register_status_query_handler`: D415: First line should end with a period, question mark, or exclamation point (not '调')
+./websocket_bridge/websocket_handler.py:77 in public method `register_status_query_handler`: D413: Missing blank line after last section ('Args')
+./websocket_bridge/websocket_handler.py:77 in public method `register_status_query_handler`: D407: Missing dashed underline after section ('Args')
+./websocket_bridge/websocket_handler.py:86 in public method `register_message_handler`: D400: First line should end with a period (not '器')
+./websocket_bridge/websocket_handler.py:86 in public method `register_message_handler`: D415: First line should end with a period, question mark, or exclamation point (not '器')
+./websocket_bridge/websocket_handler.py:86 in public method `register_message_handler`: D413: Missing blank line after last section ('Args')
+./websocket_bridge/websocket_handler.py:86 in public method `register_message_handler`: D407: Missing dashed underline after section ('Args')
+./websocket_bridge/websocket_handler.py:96 in public method `handle_message`: D400: First line should end with a period (not '息')
+./websocket_bridge/websocket_handler.py:96 in public method `handle_message`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+./websocket_bridge/websocket_handler.py:96 in public method `handle_message`: D413: Missing blank line after last section ('Returns')
+./websocket_bridge/websocket_handler.py:96 in public method `handle_message`: D407: Missing dashed underline after section ('Returns')
+./websocket_bridge/websocket_handler.py:96 in public method `handle_message`: D406: Section name should end with a newline ('Returns', not 'Returns:')
+./websocket_bridge/websocket_handler.py:133 in private method `_handle_heartbeat`: D400: First line should end with a period (not '息')
+./websocket_bridge/websocket_handler.py:133 in private method `_handle_heartbeat`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+./websocket_bridge/websocket_handler.py:155 in private method `_handle_servo_control`: D400: First line should end with a period (not '令')
+./websocket_bridge/websocket_handler.py:155 in private method `_handle_servo_control`: D415: First line should end with a period, question mark, or exclamation point (not '令')
+./websocket_bridge/websocket_handler.py:194 in private method `_handle_status_query`: D400: First line should end with a period (not '询')
+./websocket_bridge/websocket_handler.py:194 in private method `_handle_status_query`: D415: First line should end with a period, question mark, or exclamation point (not '询')
+./websocket_bridge/websocket_handler.py:206 in private method `_handle_register`: D400: First line should end with a period (not '册')
+./websocket_bridge/websocket_handler.py:206 in private method `_handle_register`: D415: First line should end with a period, question mark, or exclamation point (not '册')
+./websocket_bridge/websocket_handler.py:224 in private method `_handle_broadcast`: D400: First line should end with a period (not '息')
+./websocket_bridge/websocket_handler.py:224 in private method `_handle_broadcast`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+./websocket_bridge/websocket_handler.py:241 in private method `_handle_private`: D400: First line should end with a period (not '息')
+./websocket_bridge/websocket_handler.py:241 in private method `_handle_private`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+./websocket_bridge/websocket_handler.py:266 in private method `_create_status_response`: D400: First line should end with a period (not '式')
+./websocket_bridge/websocket_handler.py:266 in private method `_create_status_response`: D415: First line should end with a period, question mark, or exclamation point (not '式')
+./websocket_bridge/websocket_handler.py:286 in private method `_get_supported_commands`: D400: First line should end with a period (not '表')
+./websocket_bridge/websocket_handler.py:286 in private method `_get_supported_commands`: D415: First line should end with a period, question mark, or exclamation point (not '表')
+./websocket_bridge/websocket_handler.py:299 in public method `update_servo_state`: D400: First line should end with a period (not '态')
+./websocket_bridge/websocket_handler.py:299 in public method `update_servo_state`: D415: First line should end with a period, question mark, or exclamation point (not '态')
+./websocket_bridge/websocket_handler.py:299 in public method `update_servo_state`: D413: Missing blank line after last section ('Args')
+./websocket_bridge/websocket_handler.py:299 in public method `update_servo_state`: D407: Missing dashed underline after section ('Args')
+./websocket_bridge/websocket_handler.py:317 in public method `update_system_state`: D400: First line should end with a period (not '态')
+./websocket_bridge/websocket_handler.py:317 in public method `update_system_state`: D415: First line should end with a period, question mark, or exclamation point (not '态')
+./websocket_bridge/websocket_handler.py:317 in public method `update_system_state`: D413: Missing blank line after last section ('Args')
+./websocket_bridge/websocket_handler.py:317 in public method `update_system_state`: D407: Missing dashed underline after section ('Args')
+./websocket_bridge/websocket_handler.py:328 in public method `get_uptime`: D400: First line should end with a period (not '间')
+./websocket_bridge/websocket_handler.py:328 in public method `get_uptime`: D415: First line should end with a period, question mark, or exclamation point (not '间')
+./websocket_bridge/ws_server.py:1 at module level: D205: 1 blank line required between summary line and description (found 0)
+./websocket_bridge/ws_server.py:1 at module level: D400: First line should end with a period (not '序')
+./websocket_bridge/ws_server.py:1 at module level: D415: First line should end with a period, question mark, or exclamation point (not '序')
+./websocket_bridge/ws_server.py:18 in public class `WebSocketBridgeServer`: D400: First line should end with a period (not '器')
+./websocket_bridge/ws_server.py:18 in public class `WebSocketBridgeServer`: D415: First line should end with a period, question mark, or exclamation point (not '器')
+./websocket_bridge/ws_server.py:29 in public method `__init__`: D400: First line should end with a period (not '器')
+./websocket_bridge/ws_server.py:29 in public method `__init__`: D415: First line should end with a period, question mark, or exclamation point (not '器')
+./websocket_bridge/ws_server.py:29 in public method `__init__`: D413: Missing blank line after last section ('Args')
+./websocket_bridge/ws_server.py:29 in public method `__init__`: D407: Missing dashed underline after section ('Args')
+./websocket_bridge/ws_server.py:53 in public method `set_servo_command_callback`: D400: First line should end with a period (not '调')
+./websocket_bridge/ws_server.py:53 in public method `set_servo_command_callback`: D415: First line should end with a period, question mark, or exclamation point (not '调')
+./websocket_bridge/ws_server.py:57 in public method `set_heartbeat_callback`: D400: First line should end with a period (not '调')
+./websocket_bridge/ws_server.py:57 in public method `set_heartbeat_callback`: D415: First line should end with a period, question mark, or exclamation point (not '调')
+./websocket_bridge/ws_server.py:61 in public method `set_status_query_callback`: D400: First line should end with a period (not '调')
+./websocket_bridge/ws_server.py:61 in public method `set_status_query_callback`: D415: First line should end with a period, question mark, or exclamation point (not '调')
+./websocket_bridge/ws_server.py:65 in public method `start`: D400: First line should end with a period (not '器')
+./websocket_bridge/ws_server.py:65 in public method `start`: D415: First line should end with a period, question mark, or exclamation point (not '器')
+./websocket_bridge/ws_server.py:84 in public method `stop`: D400: First line should end with a period (not '器')
+./websocket_bridge/ws_server.py:84 in public method `stop`: D415: First line should end with a period, question mark, or exclamation point (not '器')
+./websocket_bridge/ws_server.py:102 in public method `handle_client`: D400: First line should end with a period (not '接')
+./websocket_bridge/ws_server.py:102 in public method `handle_client`: D415: First line should end with a period, question mark, or exclamation point (not '接')
+./websocket_bridge/ws_server.py:102 in public method `handle_client`: D413: Missing blank line after last section ('Args')
+./websocket_bridge/ws_server.py:102 in public method `handle_client`: D407: Missing dashed underline after section ('Args')
+./websocket_bridge/ws_server.py:127 in private method `_process_client_message`: D400: First line should end with a period (not '息')
+./websocket_bridge/ws_server.py:127 in private method `_process_client_message`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+./websocket_bridge/ws_server.py:127 in private method `_process_client_message`: D413: Missing blank line after last section ('Args')
+./websocket_bridge/ws_server.py:127 in private method `_process_client_message`: D407: Missing dashed underline after section ('Args')
+./websocket_bridge/ws_server.py:161 in public method `heartbeat_loop`: D200: One-line docstring should fit on one line with quotes (found 3)
+./websocket_bridge/ws_server.py:161 in public method `heartbeat_loop`: D400: First line should end with a period (not '跳')
+./websocket_bridge/ws_server.py:161 in public method `heartbeat_loop`: D415: First line should end with a period, question mark, or exclamation point (not '跳')
+./websocket_bridge/ws_server.py:194 in public method `broadcast_status`: D400: First line should end with a period (not '端')
+./websocket_bridge/ws_server.py:194 in public method `broadcast_status`: D415: First line should end with a period, question mark, or exclamation point (not '端')
+./websocket_bridge/ws_server.py:194 in public method `broadcast_status`: D413: Missing blank line after last section ('Args')
+./websocket_bridge/ws_server.py:194 in public method `broadcast_status`: D407: Missing dashed underline after section ('Args')
+./websocket_bridge/ws_server.py:226 in public method `send_to_client`: D400: First line should end with a period (not '息')
+./websocket_bridge/ws_server.py:226 in public method `send_to_client`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+./websocket_bridge/ws_server.py:226 in public method `send_to_client`: D413: Missing blank line after last section ('Args')
+./websocket_bridge/ws_server.py:226 in public method `send_to_client`: D407: Missing dashed underline after section ('Args')
+./websocket_bridge/ws_server.py:240 in public method `get_client_count`: D400: First line should end with a period (not '数')
+./websocket_bridge/ws_server.py:240 in public method `get_client_count`: D415: First line should end with a period, question mark, or exclamation point (not '数')
+./websocket_bridge/ws_server.py:244 in public method `update_servo_state`: D400: First line should end with a period (not '态')
+./websocket_bridge/ws_server.py:244 in public method `update_servo_state`: D415: First line should end with a period, question mark, or exclamation point (not '态')
+./websocket_bridge/ws_server.py:244 in public method `update_servo_state`: D413: Missing blank line after last section ('Args')
+./websocket_bridge/ws_server.py:244 in public method `update_servo_state`: D407: Missing dashed underline after section ('Args')
+./websocket_bridge/ws_server.py:255 in public method `update_system_state`: D400: First line should end with a period (not '态')
+./websocket_bridge/ws_server.py:255 in public method `update_system_state`: D415: First line should end with a period, question mark, or exclamation point (not '态')
+./websocket_bridge/ws_server.py:261 in public function `run_server`: D400: First line should end with a period (not '器')
+./websocket_bridge/ws_server.py:261 in public function `run_server`: D415: First line should end with a period, question mark, or exclamation point (not '器')
+./websocket_bridge/ws_server.py:261 in public function `run_server`: D413: Missing blank line after last section ('Args')
+./websocket_bridge/ws_server.py:261 in public function `run_server`: D407: Missing dashed underline after section ('Args')
+test/test_message_handler.py:1 at module level: D200: One-line docstring should fit on one line with quotes (found 3)
+test/test_message_handler.py:1 at module level: D400: First line should end with a period (not '试')
+test/test_message_handler.py:1 at module level: D415: First line should end with a period, question mark, or exclamation point (not '试')
+test/test_message_handler.py:11 in public class `TestMessageHandler`: D400: First line should end with a period (not '件')
+test/test_message_handler.py:11 in public class `TestMessageHandler`: D415: First line should end with a period, question mark, or exclamation point (not '件')
+test/test_message_handler.py:14 in public method `setup_method`: D400: First line should end with a period (not '化')
+test/test_message_handler.py:14 in public method `setup_method`: D415: First line should end with a period, question mark, or exclamation point (not '化')
+test/test_message_handler.py:18 in public method `test_parse_message_valid_json`: D400: First line should end with a period (not '息')
+test/test_message_handler.py:18 in public method `test_parse_message_valid_json`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+test/test_message_handler.py:27 in public method `test_parse_message_invalid_json`: D400: First line should end with a period (not '息')
+test/test_message_handler.py:27 in public method `test_parse_message_invalid_json`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+test/test_message_handler.py:34 in public method `test_get_message_type_heartbeat`: D400: First line should end with a period (not '型')
+test/test_message_handler.py:34 in public method `test_get_message_type_heartbeat`: D415: First line should end with a period, question mark, or exclamation point (not '型')
+test/test_message_handler.py:41 in public method `test_get_message_type_servo_control`: D400: First line should end with a period (not '型')
+test/test_message_handler.py:41 in public method `test_get_message_type_servo_control`: D415: First line should end with a period, question mark, or exclamation point (not '型')
+test/test_message_handler.py:48 in public method `test_get_message_type_case_insensitive`: D400: First line should end with a period (not '感')
+test/test_message_handler.py:48 in public method `test_get_message_type_case_insensitive`: D415: First line should end with a period, question mark, or exclamation point (not '感')
+test/test_message_handler.py:58 in public method `test_get_message_type_inferred_servo`: D400: First line should end with a period (not '型')
+test/test_message_handler.py:58 in public method `test_get_message_type_inferred_servo`: D415: First line should end with a period, question mark, or exclamation point (not '型')
+test/test_message_handler.py:66 in public method `test_get_message_type_inferred_heartbeat`: D400: First line should end with a period (not '型')
+test/test_message_handler.py:66 in public method `test_get_message_type_inferred_heartbeat`: D415: First line should end with a period, question mark, or exclamation point (not '型')
+test/test_message_handler.py:74 in public method `test_get_message_type_unknown`: D400: First line should end with a period (not '型')
+test/test_message_handler.py:74 in public method `test_get_message_type_unknown`: D415: First line should end with a period, question mark, or exclamation point (not '型')
+test/test_message_handler.py:81 in public method `test_parse_bcp_protocol_bus_servo`: D400: First line should end with a period (not '机')
+test/test_message_handler.py:81 in public method `test_parse_bcp_protocol_bus_servo`: D415: First line should end with a period, question mark, or exclamation point (not '机')
+test/test_message_handler.py:93 in public method `test_parse_bcp_protocol_pca_servo`: D400: First line should end with a period (not '机')
+test/test_message_handler.py:93 in public method `test_parse_bcp_protocol_pca_servo`: D415: First line should end with a period, question mark, or exclamation point (not '机')
+test/test_message_handler.py:104 in public method `test_parse_bcp_protocol_with_port`: D400: First line should end with a period (not '段')
+test/test_message_handler.py:104 in public method `test_parse_bcp_protocol_with_port`: D415: First line should end with a period, question mark, or exclamation point (not '段')
+test/test_message_handler.py:113 in public method `test_parse_full_format_servo_id`: D400: First line should end with a period (not 'd')
+test/test_message_handler.py:113 in public method `test_parse_full_format_servo_id`: D415: First line should end with a period, question mark, or exclamation point (not 'd')
+test/test_message_handler.py:124 in public method `test_parse_full_format_angle`: D400: First line should end with a period (not '段')
+test/test_message_handler.py:124 in public method `test_parse_full_format_angle`: D415: First line should end with a period, question mark, or exclamation point (not '段')
+test/test_message_handler.py:133 in public method `test_parse_full_format_channel`: D400: First line should end with a period (not ')')
+test/test_message_handler.py:133 in public method `test_parse_full_format_channel`: D415: First line should end with a period, question mark, or exclamation point (not ')')
+test/test_message_handler.py:143 in public method `test_parse_servo_control_invalid_data`: D400: First line should end with a period (not '据')
+test/test_message_handler.py:143 in public method `test_parse_servo_control_invalid_data`: D415: First line should end with a period, question mark, or exclamation point (not '据')
+test/test_message_handler.py:154 in public method `test_us_to_angle_conversion`: D400: First line should end with a period (not '换')
+test/test_message_handler.py:154 in public method `test_us_to_angle_conversion`: D415: First line should end with a period, question mark, or exclamation point (not '换')
+test/test_message_handler.py:170 in public method `test_angle_to_us_conversion`: D400: First line should end with a period (not '换')
+test/test_message_handler.py:170 in public method `test_angle_to_us_conversion`: D415: First line should end with a period, question mark, or exclamation point (not '换')
+test/test_message_handler.py:186 in public method `test_register_handler`: D400: First line should end with a period (not '器')
+test/test_message_handler.py:186 in public method `test_register_handler`: D415: First line should end with a period, question mark, or exclamation point (not '器')
+test/test_message_handler.py:197 in public method `test_register_multiple_handlers`: D400: First line should end with a period (not '器')
+test/test_message_handler.py:197 in public method `test_register_multiple_handlers`: D415: First line should end with a period, question mark, or exclamation point (not '器')
+test/test_message_handler.py:211 in public method `test_process_message_heartbeat`: D400: First line should end with a period (not '息')
+test/test_message_handler.py:211 in public method `test_process_message_heartbeat`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+test/test_message_handler.py:223 in public method `test_process_message_status_query`: D400: First line should end with a period (not '息')
+test/test_message_handler.py:223 in public method `test_process_message_status_query`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+test/test_message_handler.py:235 in public method `test_process_message_with_custom_handler`: D400: First line should end with a period (not '息')
+test/test_message_handler.py:235 in public method `test_process_message_with_custom_handler`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+test/test_message_handler.py:250 in public method `test_process_message_unknown_type`: D400: First line should end with a period (not '息')
+test/test_message_handler.py:250 in public method `test_process_message_unknown_type`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+test/test_message_handler.py:258 in public method `test_is_servo_control_detection`: D400: First line should end with a period (not '测')
+test/test_message_handler.py:258 in public method `test_is_servo_control_detection`: D415: First line should end with a period, question mark, or exclamation point (not '测')
+test/test_message_handler.py:270 in public method `test_parse_servo_with_mixed_case_keys`: D400: First line should end with a period (not '令')
+test/test_message_handler.py:270 in public method `test_parse_servo_with_mixed_case_keys`: D415: First line should end with a period, question mark, or exclamation point (not '令')
+test/test_message_handler.py:280 in public class `TestMessageType`: D400: First line should end with a period (not '试')
+test/test_message_handler.py:280 in public class `TestMessageType`: D415: First line should end with a period, question mark, or exclamation point (not '试')
+test/test_message_handler.py:283 in public method `test_message_type_values`: D400: First line should end with a period (not '值')
+test/test_message_handler.py:283 in public method `test_message_type_values`: D415: First line should end with a period, question mark, or exclamation point (not '值')
+test/test_message_handler.py:293 in public method `test_message_type_from_string`: D400: First line should end with a period (not '型')
+test/test_message_handler.py:293 in public method `test_message_type_from_string`: D415: First line should end with a period, question mark, or exclamation point (not '型')
+test/test_message_handler.py:302 in public class `TestMessageHandlerEdgeCases`: D400: First line should end with a period (not '试')
+test/test_message_handler.py:302 in public class `TestMessageHandlerEdgeCases`: D415: First line should end with a period, question mark, or exclamation point (not '试')
+test/test_message_handler.py:305 in public method `setup_method`: D400: First line should end with a period (not '化')
+test/test_message_handler.py:305 in public method `setup_method`: D415: First line should end with a period, question mark, or exclamation point (not '化')
+test/test_message_handler.py:309 in public method `test_parse_empty_message`: D400: First line should end with a period (not '息')
+test/test_message_handler.py:309 in public method `test_parse_empty_message`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+test/test_message_handler.py:314 in public method `test_parse_servo_with_string_values`: D400: First line should end with a period (not '令')
+test/test_message_handler.py:314 in public method `test_parse_servo_with_string_values`: D415: First line should end with a period, question mark, or exclamation point (not '令')
+test/test_message_handler.py:324 in public method `test_parse_servo_with_invalid_types`: D400: First line should end with a period (not '令')
+test/test_message_handler.py:324 in public method `test_parse_servo_with_invalid_types`: D415: First line should end with a period, question mark, or exclamation point (not '令')
+test/test_message_handler.py:332 in public method `test_us_to_angle_with_negative_values`: D400: First line should end with a period (not '度')
+test/test_message_handler.py:332 in public method `test_us_to_angle_with_negative_values`: D415: First line should end with a period, question mark, or exclamation point (not '度')
+test/test_message_handler.py:337 in public method `test_angle_to_us_with_extreme_values`: D400: First line should end with a period (not '秒')
+test/test_message_handler.py:337 in public method `test_angle_to_us_with_extreme_values`: D415: First line should end with a period, question mark, or exclamation point (not '秒')
+test/test_message_handler.py:343 in public method `test_get_message_type_with_none`: D400: First line should end with a period (not '型')
+test/test_message_handler.py:343 in public method `test_get_message_type_with_none`: D415: First line should end with a period, question mark, or exclamation point (not '型')
+test/test_message_handler.py:349 in public method `test_parse_servo_with_default_speed`: D400: First line should end with a period (not '值')
+test/test_message_handler.py:349 in public method `test_parse_servo_with_default_speed`: D415: First line should end with a period, question mark, or exclamation point (not '值')
+test/test_message_handler.py:357 in public method `test_parse_servo_with_default_port`: D400: First line should end with a period (not '值')
+test/test_message_handler.py:357 in public method `test_parse_servo_with_default_port`: D415: First line should end with a period, question mark, or exclamation point (not '值')
+test/test_stream_schemas.py:1 at module level: D200: One-line docstring should fit on one line with quotes (found 3)
+test/test_stream_schemas.py:1 at module level: D400: First line should end with a period (not '试')
+test/test_stream_schemas.py:1 at module level: D415: First line should end with a period, question mark, or exclamation point (not '试')
+test/test_stream_schemas.py:14 in public class `TestStreamSchemas`: D400: First line should end with a period (not '件')
+test/test_stream_schemas.py:14 in public class `TestStreamSchemas`: D415: First line should end with a period, question mark, or exclamation point (not '件')
+test/test_stream_schemas.py:17 in public method `setup_method`: D400: First line should end with a period (not '化')
+test/test_stream_schemas.py:17 in public method `setup_method`: D415: First line should end with a period, question mark, or exclamation point (not '化')
+test/test_stream_schemas.py:22 in public method `test_load_web2ros_schema`: D400: First line should end with a period (not '义')
+test/test_stream_schemas.py:22 in public method `test_load_web2ros_schema`: D415: First line should end with a period, question mark, or exclamation point (not '义')
+test/test_stream_schemas.py:31 in public method `test_load_ros2web_schema`: D400: First line should end with a period (not '义')
+test/test_stream_schemas.py:31 in public method `test_load_ros2web_schema`: D415: First line should end with a period, question mark, or exclamation point (not '义')
+test/test_stream_schemas.py:40 in public method `test_validate_web_command_bcp_protocol`: D400: First line should end with a period (not '令')
+test/test_stream_schemas.py:40 in public method `test_validate_web_command_bcp_protocol`: D415: First line should end with a period, question mark, or exclamation point (not '令')
+test/test_stream_schemas.py:46 in public method `test_validate_web_command_full_format`: D400: First line should end with a period (not '令')
+test/test_stream_schemas.py:46 in public method `test_validate_web_command_full_format`: D415: First line should end with a period, question mark, or exclamation point (not '令')
+test/test_stream_schemas.py:56 in public method `test_validate_web_command_invalid`: D400: First line should end with a period (not '令')
+test/test_stream_schemas.py:56 in public method `test_validate_web_command_invalid`: D415: First line should end with a period, question mark, or exclamation point (not '令')
+test/test_stream_schemas.py:67 in public method `test_validate_jiyuan_response_valid`: D400: First line should end with a period (not '应')
+test/test_stream_schemas.py:67 in public method `test_validate_jiyuan_response_valid`: D415: First line should end with a period, question mark, or exclamation point (not '应')
+test/test_stream_schemas.py:80 in public method `test_validate_jiyuan_response_missing_fields`: D400: First line should end with a period (not '应')
+test/test_stream_schemas.py:80 in public method `test_validate_jiyuan_response_missing_fields`: D415: First line should end with a period, question mark, or exclamation point (not '应')
+test/test_stream_schemas.py:93 in public method `test_create_servo_command_bus_servo`: D400: First line should end with a period (not '令')
+test/test_stream_schemas.py:93 in public method `test_create_servo_command_bus_servo`: D415: First line should end with a period, question mark, or exclamation point (not '令')
+test/test_stream_schemas.py:109 in public method `test_create_servo_command_pca_servo`: D400: First line should end with a period (not '令')
+test/test_stream_schemas.py:109 in public method `test_create_servo_command_pca_servo`: D415: First line should end with a period, question mark, or exclamation point (not '令')
+test/test_stream_schemas.py:121 in public method `test_create_servo_command_default_values`: D400: First line should end with a period (not '值')
+test/test_stream_schemas.py:121 in public method `test_create_servo_command_default_values`: D415: First line should end with a period, question mark, or exclamation point (not '值')
+test/test_stream_schemas.py:133 in public method `test_create_jiyuan_response_basic`: D400: First line should end with a period (not '应')
+test/test_stream_schemas.py:133 in public method `test_create_jiyuan_response_basic`: D415: First line should end with a period, question mark, or exclamation point (not '应')
+test/test_stream_schemas.py:145 in public method `test_create_jiyuan_response_with_servo_states`: D400: First line should end with a period (not '应')
+test/test_stream_schemas.py:145 in public method `test_create_jiyuan_response_with_servo_states`: D415: First line should end with a period, question mark, or exclamation point (not '应')
+test/test_stream_schemas.py:160 in public method `test_create_jiyuan_response_with_system_info`: D400: First line should end with a period (not '应')
+test/test_stream_schemas.py:160 in public method `test_create_jiyuan_response_with_system_info`: D415: First line should end with a period, question mark, or exclamation point (not '应')
+test/test_stream_schemas.py:175 in public method `test_create_jiyuan_response_default_servo_states`: D400: First line should end with a period (not '态')
+test/test_stream_schemas.py:175 in public method `test_create_jiyuan_response_default_servo_states`: D415: First line should end with a period, question mark, or exclamation point (not '态')
+test/test_stream_schemas.py:182 in public method `test_create_jiyuan_response_default_current_status`: D400: First line should end with a period (not '态')
+test/test_stream_schemas.py:182 in public method `test_create_jiyuan_response_default_current_status`: D415: First line should end with a period, question mark, or exclamation point (not '态')
+test/test_stream_schemas.py:193 in public class `TestStreamSchemasWithCustomConfig`: D400: First line should end with a period (not '试')
+test/test_stream_schemas.py:193 in public class `TestStreamSchemasWithCustomConfig`: D415: First line should end with a period, question mark, or exclamation point (not '试')
+test/test_stream_schemas.py:196 in public method `test_load_from_custom_config_dir`: D400: First line should end with a period (not '载')
+test/test_stream_schemas.py:196 in public method `test_load_from_custom_config_dir`: D415: First line should end with a period, question mark, or exclamation point (not '载')
+test/test_stream_schemas.py:223 in public method `test_load_from_nonexistent_dir`: D400: First line should end with a period (not '载')
+test/test_stream_schemas.py:223 in public method `test_load_from_nonexistent_dir`: D415: First line should end with a period, question mark, or exclamation point (not '载')
+test/test_stream_schemas.py:231 in public method `test_load_invalid_json_file`: D400: First line should end with a period (not '件')
+test/test_stream_schemas.py:231 in public method `test_load_invalid_json_file`: D415: First line should end with a period, question mark, or exclamation point (not '件')
+test/test_stream_schemas.py:251 in public class `TestGetStreamSchemas`: D400: First line should end with a period (not '试')
+test/test_stream_schemas.py:251 in public class `TestGetStreamSchemas`: D415: First line should end with a period, question mark, or exclamation point (not '试')
+test/test_stream_schemas.py:254 in public method `test_get_stream_schemas_singleton`: D400: First line should end with a period (not '式')
+test/test_stream_schemas.py:254 in public method `test_get_stream_schemas_singleton`: D415: First line should end with a period, question mark, or exclamation point (not '式')
+test/test_stream_schemas.py:262 in public method `test_get_stream_schemas_returns_valid_instance`: D400: First line should end with a period (not '象')
+test/test_stream_schemas.py:262 in public method `test_get_stream_schemas_returns_valid_instance`: D415: First line should end with a period, question mark, or exclamation point (not '象')
+test/test_stream_schemas.py:271 in public class `TestStreamSchemasEdgeCases`: D400: First line should end with a period (not '试')
+test/test_stream_schemas.py:271 in public class `TestStreamSchemasEdgeCases`: D415: First line should end with a period, question mark, or exclamation point (not '试')
+test/test_stream_schemas.py:274 in public method `setup_method`: D400: First line should end with a period (not '化')
+test/test_stream_schemas.py:274 in public method `setup_method`: D415: First line should end with a period, question mark, or exclamation point (not '化')
+test/test_stream_schemas.py:278 in public method `test_validate_empty_dict`: D400: First line should end with a period (not '典')
+test/test_stream_schemas.py:278 in public method `test_validate_empty_dict`: D415: First line should end with a period, question mark, or exclamation point (not '典')
+test/test_stream_schemas.py:283 in public method `test_create_servo_command_with_zero_values`: D400: First line should end with a period (not '令')
+test/test_stream_schemas.py:283 in public method `test_create_servo_command_with_zero_values`: D415: First line should end with a period, question mark, or exclamation point (not '令')
+test/test_stream_schemas.py:298 in public method `test_create_servo_command_with_extreme_values`: D400: First line should end with a period (not '令')
+test/test_stream_schemas.py:298 in public method `test_create_servo_command_with_extreme_values`: D415: First line should end with a period, question mark, or exclamation point (not '令')
+test/test_stream_schemas.py:311 in public method `test_validate_web_command_with_partial_fields`: D400: First line should end with a period (not '令')
+test/test_stream_schemas.py:311 in public method `test_validate_web_command_with_partial_fields`: D415: First line should end with a period, question mark, or exclamation point (not '令')
+test/test_stream_schemas.py:322 in public method `test_create_jiyuan_response_with_error_code`: D400: First line should end with a period (not '应')
+test/test_stream_schemas.py:322 in public method `test_create_jiyuan_response_with_error_code`: D415: First line should end with a period, question mark, or exclamation point (not '应')
+test/test_stream_schemas.py:331 in public method `test_create_jiyuan_response_empty_servo_states`: D400: First line should end with a period (not '应')
+test/test_stream_schemas.py:331 in public method `test_create_jiyuan_response_empty_servo_states`: D415: First line should end with a period, question mark, or exclamation point (not '应')
+test/test_stream_schemas.py:346 in public method `test_create_servo_command_pca_ignores_speed`: D400: First line should end with a period (not '数')
+test/test_stream_schemas.py:346 in public method `test_create_servo_command_pca_ignores_speed`: D415: First line should end with a period, question mark, or exclamation point (not '数')
+test/test_websocket_handler.py:1 at module level: D200: One-line docstring should fit on one line with quotes (found 3)
+test/test_websocket_handler.py:1 at module level: D400: First line should end with a period (not '试')
+test/test_websocket_handler.py:1 at module level: D415: First line should end with a period, question mark, or exclamation point (not '试')
+test/test_websocket_handler.py:13 in public class `TestWebSocketHandler`: D400: First line should end with a period (not '件')
+test/test_websocket_handler.py:13 in public class `TestWebSocketHandler`: D415: First line should end with a period, question mark, or exclamation point (not '件')
+test/test_websocket_handler.py:16 in public method `setup_method`: D400: First line should end with a period (not '化')
+test/test_websocket_handler.py:16 in public method `setup_method`: D415: First line should end with a period, question mark, or exclamation point (not '化')
+test/test_websocket_handler.py:21 in public method `test_handle_heartbeat_message`: D400: First line should end with a period (not '息')
+test/test_websocket_handler.py:21 in public method `test_handle_heartbeat_message`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+test/test_websocket_handler.py:34 in public method `test_handle_heartbeat_updates_timestamp`: D400: First line should end with a period (not '戳')
+test/test_websocket_handler.py:34 in public method `test_handle_heartbeat_updates_timestamp`: D415: First line should end with a period, question mark, or exclamation point (not '戳')
+test/test_websocket_handler.py:45 in public method `test_handle_servo_control_message`: D400: First line should end with a period (not '息')
+test/test_websocket_handler.py:45 in public method `test_handle_servo_control_message`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+test/test_websocket_handler.py:64 in public method `test_handle_invalid_servo_control`: D400: First line should end with a period (not '息')
+test/test_websocket_handler.py:64 in public method `test_handle_invalid_servo_control`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+test/test_websocket_handler.py:78 in public method `test_handle_servo_control_with_callback`: D400: First line should end with a period (not '数')
+test/test_websocket_handler.py:78 in public method `test_handle_servo_control_with_callback`: D415: First line should end with a period, question mark, or exclamation point (not '数')
+test/test_websocket_handler.py:104 in public method `test_handle_status_query_message`: D400: First line should end with a period (not '息')
+test/test_websocket_handler.py:104 in public method `test_handle_status_query_message`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+test/test_websocket_handler.py:116 in public method `test_handle_status_query_with_callback`: D400: First line should end with a period (not '数')
+test/test_websocket_handler.py:116 in public method `test_handle_status_query_with_callback`: D415: First line should end with a period, question mark, or exclamation point (not '数')
+test/test_websocket_handler.py:135 in public method `test_handle_register_message`: D400: First line should end with a period (not '息')
+test/test_websocket_handler.py:135 in public method `test_handle_register_message`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+test/test_websocket_handler.py:151 in public method `test_handle_broadcast_message`: D400: First line should end with a period (not '息')
+test/test_websocket_handler.py:151 in public method `test_handle_broadcast_message`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+test/test_websocket_handler.py:177 in public method `test_handle_private_message`: D400: First line should end with a period (not '息')
+test/test_websocket_handler.py:177 in public method `test_handle_private_message`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+test/test_websocket_handler.py:204 in public method `test_handle_invalid_json`: D400: First line should end with a period (not 'N')
+test/test_websocket_handler.py:204 in public method `test_handle_invalid_json`: D415: First line should end with a period, question mark, or exclamation point (not 'N')
+test/test_websocket_handler.py:213 in public method `test_handle_unknown_message_type`: D400: First line should end with a period (not '型')
+test/test_websocket_handler.py:213 in public method `test_handle_unknown_message_type`: D415: First line should end with a period, question mark, or exclamation point (not '型')
+test/test_websocket_handler.py:221 in public method `test_update_servo_state_bus_servo`: D400: First line should end with a period (not '态')
+test/test_websocket_handler.py:221 in public method `test_update_servo_state_bus_servo`: D415: First line should end with a period, question mark, or exclamation point (not '态')
+test/test_websocket_handler.py:229 in public method `test_update_servo_state_pca_servo`: D400: First line should end with a period (not '态')
+test/test_websocket_handler.py:229 in public method `test_update_servo_state_pca_servo`: D415: First line should end with a period, question mark, or exclamation point (not '态')
+test/test_websocket_handler.py:237 in public method `test_update_servo_state_multiple_servos`: D400: First line should end with a period (not '态')
+test/test_websocket_handler.py:237 in public method `test_update_servo_state_multiple_servos`: D415: First line should end with a period, question mark, or exclamation point (not '态')
+test/test_websocket_handler.py:246 in public method `test_update_system_state`: D400: First line should end with a period (not '态')
+test/test_websocket_handler.py:246 in public method `test_update_system_state`: D415: First line should end with a period, question mark, or exclamation point (not '态')
+test/test_websocket_handler.py:258 in public method `test_get_uptime`: D400: First line should end with a period (not '间')
+test/test_websocket_handler.py:258 in public method `test_get_uptime`: D415: First line should end with a period, question mark, or exclamation point (not '间')
+test/test_websocket_handler.py:268 in public method `test_register_message_handler`: D400: First line should end with a period (not '器')
+test/test_websocket_handler.py:268 in public method `test_register_message_handler`: D415: First line should end with a period, question mark, or exclamation point (not '器')
+test/test_websocket_handler.py:279 in public method `test_heartbeat_callback_exception_handling`: D400: First line should end with a period (not '理')
+test/test_websocket_handler.py:279 in public method `test_heartbeat_callback_exception_handling`: D415: First line should end with a period, question mark, or exclamation point (not '理')
+test/test_websocket_handler.py:296 in public method `test_servo_command_callback_exception_handling`: D400: First line should end with a period (not '理')
+test/test_websocket_handler.py:296 in public method `test_servo_command_callback_exception_handling`: D415: First line should end with a period, question mark, or exclamation point (not '理')
+test/test_websocket_handler.py:318 in public method `test_status_query_callback_exception_handling`: D400: First line should end with a period (not '理')
+test/test_websocket_handler.py:318 in public method `test_status_query_callback_exception_handling`: D415: First line should end with a period, question mark, or exclamation point (not '理')
+test/test_websocket_handler.py:335 in public class `TestWebSocketHandlerEdgeCases`: D400: First line should end with a period (not '试')
+test/test_websocket_handler.py:335 in public class `TestWebSocketHandlerEdgeCases`: D415: First line should end with a period, question mark, or exclamation point (not '试')
+test/test_websocket_handler.py:338 in public method `setup_method`: D400: First line should end with a period (not '化')
+test/test_websocket_handler.py:338 in public method `setup_method`: D415: First line should end with a period, question mark, or exclamation point (not '化')
+test/test_websocket_handler.py:343 in public method `test_handle_empty_message`: D400: First line should end with a period (not '息')
+test/test_websocket_handler.py:343 in public method `test_handle_empty_message`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+test/test_websocket_handler.py:349 in public method `test_handle_empty_dict_message`: D400: First line should end with a period (not '息')
+test/test_websocket_handler.py:349 in public method `test_handle_empty_dict_message`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+test/test_websocket_handler.py:358 in public method `test_servo_control_without_callback`: D400: First line should end with a period (not '制')
+test/test_websocket_handler.py:358 in public method `test_servo_control_without_callback`: D415: First line should end with a period, question mark, or exclamation point (not '制')
+test/test_websocket_handler.py:374 in public method `test_status_query_returns_servo_state`: D400: First line should end with a period (not '态')
+test/test_websocket_handler.py:374 in public method `test_status_query_returns_servo_state`: D415: First line should end with a period, question mark, or exclamation point (not '态')
+test/test_websocket_handler.py:389 in public method `test_get_supported_commands`: D400: First line should end with a period (not '表')
+test/test_websocket_handler.py:389 in public method `test_get_supported_commands`: D415: First line should end with a period, question mark, or exclamation point (not '表')
+test/test_websocket_handler.py:400 in public method `test_broadcast_without_servo_content`: D400: First line should end with a period (not '息')
+test/test_websocket_handler.py:400 in public method `test_broadcast_without_servo_content`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+test/test_websocket_handler.py:412 in public method `test_private_without_servo_content`: D400: First line should end with a period (not '息')
+test/test_websocket_handler.py:412 in public method `test_private_without_servo_content`: D415: First line should end with a period, question mark, or exclamation point (not '息')
+test/test_websocket_handler.py:423 in public method `test_initial_servo_state_empty`: D400: First line should end with a period (not '空')
+test/test_websocket_handler.py:423 in public method `test_initial_servo_state_empty`: D415: First line should end with a period, question mark, or exclamation point (not '空')
+test/test_websocket_handler.py:428 in public method `test_initial_system_state_has_defaults`: D400: First line should end with a period (not '值')
+test/test_websocket_handler.py:428 in public method `test_initial_system_state_has_defaults`: D415: First line should end with a period, question mark, or exclamation point (not '值')
+743 errors
+______________ TestWebSocketHandler.test_handle_heartbeat_message ______________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+_________ TestWebSocketHandler.test_handle_heartbeat_updates_timestamp _________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+____________ TestWebSocketHandler.test_handle_servo_control_message ____________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+____________ TestWebSocketHandler.test_handle_invalid_servo_control ____________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+_________ TestWebSocketHandler.test_handle_servo_control_with_callback _________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+____________ TestWebSocketHandler.test_handle_status_query_message _____________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+_________ TestWebSocketHandler.test_handle_status_query_with_callback __________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+______________ TestWebSocketHandler.test_handle_register_message _______________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+______________ TestWebSocketHandler.test_handle_broadcast_message ______________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+_______________ TestWebSocketHandler.test_handle_private_message _______________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+________________ TestWebSocketHandler.test_handle_invalid_json _________________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+____________ TestWebSocketHandler.test_handle_unknown_message_type _____________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+_______ TestWebSocketHandler.test_heartbeat_callback_exception_handling ________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+_____ TestWebSocketHandler.test_servo_command_callback_exception_handling ______
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+______ TestWebSocketHandler.test_status_query_callback_exception_handling ______
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+___________ TestWebSocketHandlerEdgeCases.test_handle_empty_message ____________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+_________ TestWebSocketHandlerEdgeCases.test_handle_empty_dict_message _________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+______ TestWebSocketHandlerEdgeCases.test_servo_control_without_callback _______
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+_____ TestWebSocketHandlerEdgeCases.test_status_query_returns_servo_state ______
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+______ TestWebSocketHandlerEdgeCases.test_broadcast_without_servo_content ______
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+_______ TestWebSocketHandlerEdgeCases.test_private_without_servo_content _______
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+=============================== warnings summary ===============================
+websocket_bridge/ws_server.py:11
+  Warning: websockets.server.serve is deprecated
+
+../../../../../../.miniconda3/envs/ros/lib/python3.11/site-packages/websockets/legacy/__init__.py:6
+  Warning: websockets.legacy is deprecated; see https://websockets.readthedocs.io/en/stable/howto/upgrade.html for upgrade instructions
+
+websocket_bridge/ws_server.py:11
+  Warning: websockets.server.WebSocketServerProtocol is deprecated
+
+test/test_message_handler.py:209: 1 warning
+test/test_message_handler.py:221: 1 warning
+test/test_message_handler.py:233: 1 warning
+test/test_message_handler.py:248: 1 warning
+test/test_websocket_handler.py:19: 1 warning
+test/test_websocket_handler.py:32: 1 warning
+test/test_websocket_handler.py:43: 1 warning
+test/test_websocket_handler.py:62: 1 warning
+test/test_websocket_handler.py:76: 1 warning
+test/test_websocket_handler.py:102: 1 warning
+test/test_websocket_handler.py:114: 1 warning
+test/test_websocket_handler.py:133: 1 warning
+test/test_websocket_handler.py:149: 1 warning
+test/test_websocket_handler.py:175: 1 warning
+test/test_websocket_handler.py:202: 1 warning
+test/test_websocket_handler.py:211: 1 warning
+test/test_websocket_handler.py:277: 1 warning
+test/test_websocket_handler.py:294: 1 warning
+test/test_websocket_handler.py:316: 1 warning
+test/test_websocket_handler.py:341: 1 warning
+test/test_websocket_handler.py:347: 1 warning
+test/test_websocket_handler.py:356: 1 warning
+test/test_websocket_handler.py:372: 1 warning
+test/test_websocket_handler.py:398: 1 warning
+test/test_websocket_handler.py:410: 1 warning
+  Warning: Unknown pytest.mark.asyncio - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED test/test_flake8.py::test_flake8 - AssertionError: Found 153 code styl...
+FAILED test/test_message_handler.py::TestMessageHandler::test_process_message_heartbeat
+FAILED test/test_message_handler.py::TestMessageHandler::test_process_message_status_query
+FAILED test/test_message_handler.py::TestMessageHandler::test_process_message_with_custom_handler
+FAILED test/test_message_handler.py::TestMessageHandler::test_process_message_unknown_type
+FAILED test/test_pep257.py::test_pep257 - AssertionError: Found code style er...
+FAILED test/test_websocket_handler.py::TestWebSocketHandler::test_handle_heartbeat_message
+FAILED test/test_websocket_handler.py::TestWebSocketHandler::test_handle_heartbeat_updates_timestamp
+FAILED test/test_websocket_handler.py::TestWebSocketHandler::test_handle_servo_control_message
+FAILED test/test_websocket_handler.py::TestWebSocketHandler::test_handle_invalid_servo_control
+FAILED test/test_websocket_handler.py::TestWebSocketHandler::test_handle_servo_control_with_callback
+FAILED test/test_websocket_handler.py::TestWebSocketHandler::test_handle_status_query_message
+FAILED test/test_websocket_handler.py::TestWebSocketHandler::test_handle_status_query_with_callback
+FAILED test/test_websocket_handler.py::TestWebSocketHandler::test_handle_register_message
+FAILED test/test_websocket_handler.py::TestWebSocketHandler::test_handle_broadcast_message
+FAILED test/test_websocket_handler.py::TestWebSocketHandler::test_handle_private_message
+FAILED test/test_websocket_handler.py::TestWebSocketHandler::test_handle_invalid_json
+FAILED test/test_websocket_handler.py::TestWebSocketHandler::test_handle_unknown_message_type
+FAILED test/test_websocket_handler.py::TestWebSocketHandler::test_heartbeat_callback_exception_handling
+FAILED test/test_websocket_handler.py::TestWebSocketHandler::test_servo_command_callback_exception_handling
+FAILED test/test_websocket_handler.py::TestWebSocketHandler::test_status_query_callback_exception_handling
+FAILED test/test_websocket_handler.py::TestWebSocketHandlerEdgeCases::test_handle_empty_message
+FAILED test/test_websocket_handler.py::TestWebSocketHandlerEdgeCases::test_handle_empty_dict_message
+FAILED test/test_websocket_handler.py::TestWebSocketHandlerEdgeCases::test_servo_control_without_callback
+FAILED test/test_websocket_handler.py::TestWebSocketHandlerEdgeCases::test_status_query_returns_servo_state
+FAILED test/test_websocket_handler.py::TestWebSocketHandlerEdgeCases::test_broadcast_without_servo_content
+FAILED test/test_websocket_handler.py::TestWebSocketHandlerEdgeCases::test_private_without_servo_content
+============ 27 failed, 67 passed, 1 skipped, 28 warnings in 0.48s =============

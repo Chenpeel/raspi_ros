@@ -1,0 +1,33 @@
+{
+    "character_name": "robot",
+    "controller_type": "web_servo | xbox_controller",
+
+    "web_servo": {
+        "is_bus_servo": false,
+        "servo_id": 0,
+        "position": 0,
+        "speed": 1
+    },
+
+    "xbox_controller": {
+        "left_stick": {
+            "x": 0.0,
+            "y": 0.0
+        },
+        "right_stick": {
+            "x": 0.0,
+            "y": 0.0
+        },
+        "left_trigger": 0.0,
+        "right_trigger": 0.0,
+        "buttons": {
+            "A": false,
+            "B": false,
+            "X": false,
+            "Y": false,
+            "LB": false,
+            "RB": false
+        },
+        "dpad": "idle | up | down"
+    }
+}
