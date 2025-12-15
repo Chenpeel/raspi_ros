@@ -5,8 +5,10 @@ services:
         build:
             context: .
             dockerfile: Dockerfile
+            platform: linux/arm64  # 强制ARM64架构
 
         container_name: ros2_servo_control
+        platform: linux/arm64  # 运行时也使用ARM64
 
         # 特权模式，访问硬件设备
         privileged: true
