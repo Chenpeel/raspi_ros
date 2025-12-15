@@ -1,0 +1,40 @@
+# ROS 2 构建产物
+build/
+install/
+log/
+
+# Python 缓存
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# 虚拟环境
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 操作系统
+.DS_Store
+Thumbs.db
+
+# 临时文件
+*.bak
+*.tmp
+*.log
+
+
+# Unneed xml files
+mjcf/
+xmls/
+
+# instr files
+.TODOs/
