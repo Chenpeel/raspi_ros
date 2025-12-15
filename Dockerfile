@@ -26,11 +26,12 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # 安装Python依赖
-RUN pip3 install --no-cache-dir \
+# 注意：在容器环境中使用 --break-system-packages 是安全的
+# asyncio 是标准库，无需安装
+RUN pip3 install --break-system-packages --no-cache-dir \
     websockets \
     pyserial \
-    smbus2 \
-    asyncio
+    smbus2
 
 # 安装ROS 2依赖
 RUN apt-get update && apt-get install -y \
