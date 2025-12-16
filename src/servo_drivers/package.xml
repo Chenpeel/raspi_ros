@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>servo_drivers</name>
+  <version>0.1.0</version>
+  <description>ROS2舵机驱动插件 - 总线舵机和PCA9685插件实现</description>
+  <maintainer email="chgenpeel@foxmail.com">chenpeel</maintainer>
+  <license>MIT</license>
+
+  <depend>rclpy</depend>
+  <depend>servo_msgs</depend>
+  <depend>servo_hardware_interface</depend>
+
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
