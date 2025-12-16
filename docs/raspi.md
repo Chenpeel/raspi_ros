@@ -467,7 +467,7 @@ htop  # 需要安装: sudo apt install htop
 
 ---
 
-**生成时间**: 2025-12-15
+**更新时间**: 2025-12-15
 **维护者**: chenpeel
 **Docker镜像**: ROS 2 Jazzy (ros:jazzy-ros-base)
-**树莓派**: 4B/5 (ARM64)
+**树莓派**: 5B (ARM64)
