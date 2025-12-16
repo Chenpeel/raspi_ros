@@ -1,7 +1,13 @@
 # ROS 2舵机控制系统Docker配置 - 支持多架构
 
-# 使用TARGETPLATFORM构建参数自动检测平台架构
-FROM --platform=${TARGETPLATFORM:-linux/amd64} ros:jazzy-ros-base
+# 声明 BuildKit 自动注入的平台变量
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+ARG TARGETOS
+ARG TARGETARCH
+
+# 使用自动平台检测（不指定 --platform，让 Docker 自动匹配）
+FROM ros:jazzy-ros-base
 
 # 设置环境变量
 ENV DEBIAN_FRONTEND=noninteractive
@@ -9,17 +15,28 @@ ENV ROS_DISTRO=jazzy
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
 
-# 架构检测脚本 - 根据架构设置不同配置
-RUN case $(uname -m) in \
-        aarch64|armv8l) echo "ARCH=arm64" > /arch_env;; \
-        armv7l) echo "ARCH=arm32" > /arch_env;; \
-        x86_64) echo "ARCH=amd64" > /arch_env;; \
-        *) echo "ARCH=unknown" > /arch_env;; \
-    esac
-
-# 源文件架构检测
+# 配置 bash 为默认 shell
 SHELL ["/bin/bash", "-c"]
-RUN cat /arch_env && source /arch_env
+
+# 架构检测并设置环境变量
+RUN set -eux; \
+    ARCH=$(uname -m); \
+    echo "检测到架构: $ARCH"; \
+    case "$ARCH" in \
+        aarch64|armv8*) \
+            echo "ARCH=arm64" > /etc/arch_env; \
+            echo "设置架构: arm64" ;; \
+        armv7*) \
+            echo "ARCH=arm32" > /etc/arch_env; \
+            echo "设置架构: arm32" ;; \
+        x86_64|amd64) \
+            echo "ARCH=amd64" > /etc/arch_env; \
+            echo "设置架构: amd64" ;; \
+        *) \
+            echo "ARCH=unknown" > /etc/arch_env; \
+            echo "警告: 未知架构 $ARCH" ;; \
+    esac; \
+    cat /etc/arch_env
 
 # 更新apt源并安装基础工具
 RUN apt-get update && apt-get install -y \

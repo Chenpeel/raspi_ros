@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
     ros2_servo:
         build:
@@ -7,8 +5,8 @@ services:
             dockerfile: Dockerfile
         container_name: ros2_servo_control
 
-        # 平台检测 - 自动适配当前主机架构
-        platform: "${TARGETPLATFORM:-linux/amd64}"
+        # 自动适配当前主机架构（不指定 platform 让 Docker 自动检测）
+        # platform: "linux/amd64"  # 如需强制指定架构，取消此行注释并设置目标架构
 
         # 特权模式，访问硬件设备
         privileged: true
@@ -44,8 +42,6 @@ services:
             - ROS_LOCALHOST_ONLY=0
             - PYTHONUNBUFFERED=1
             - TZ=Asia/Shanghai
-            # 传递架构信息到容器内
-            - TARGETPLATFORM=${TARGETPLATFORM:-linux/amd64}
 
         # 工作目录
         working_dir: /root/ros_ws
@@ -76,7 +72,6 @@ services:
             - ROS_LOCALHOST_ONLY=0
             - PYTHONUNBUFFERED=1
             - TZ=Asia/Shanghai
-            - TARGETPLATFORM=${TARGETPLATFORM:-linux/amd64}
             - DEVELOPMENT_MODE=1
 
     # 可选：生产模式服务
