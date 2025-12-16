@@ -1,0 +1,17 @@
+# ROS2舵机控制系统Python依赖
+
+# ROS2核心依赖（消息生成）
+numpy>=1.20.0
+empy==4.2
+lark>=1.0.0
+
+# WebSocket通信
+websockets>=12.0
+
+# 硬件驱动依赖
+pyserial>=3.5
+
+# PCA9685舵机驱动（I2C）
+adafruit-circuitpython-pca9685>=3.0.0
+adafruit-circuitpython-motor>=3.0.0
+adafruit-circuitpython-servokit>=1.0.0

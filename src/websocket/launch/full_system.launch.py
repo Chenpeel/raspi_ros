@@ -97,16 +97,17 @@ def generate_launch_description():
         ]
     )
 
-    # 2. 总线舵机驱动节点
-    bus_servo_node = Node(
+    # 2. 总线舵机驱动 - 串口0 (ttyAMA0, 舵机ID: 1, 2)
+    bus_servo_node_0 = Node(
         package='servo_hardware',
         executable='bus_servo_driver',
-        name='bus_servo_driver',
+        name='bus_servo_driver_0',
         output='screen',
         parameters=[
-            {'port': serial_port},
+            {'port': '/dev/ttyAMA0'},
             {'baudrate': baudrate},
             {'default_speed': 100},
+            {'servo_ids': [1, 2]},
             {'debug': debug},
             {'log_id': True}
         ],
@@ -116,7 +117,67 @@ def generate_launch_description():
         ]
     )
 
-    # 3. PCA9685舵机驱动节点
+    # 3. 总线舵机驱动 - 串口1 (ttyAMA1, 舵机ID: 7, 3, 9, 10, 11)
+    bus_servo_node_1 = Node(
+        package='servo_hardware',
+        executable='bus_servo_driver',
+        name='bus_servo_driver_1',
+        output='screen',
+        parameters=[
+            {'port': '/dev/ttyAMA1'},
+            {'baudrate': baudrate},
+            {'default_speed': 100},
+            {'servo_ids': [7, 3, 9, 10, 11]},
+            {'debug': debug},
+            {'log_id': True}
+        ],
+        remappings=[
+            ('~/command', '/servo/command'),
+            ('~/state', '/servo/state'),
+        ]
+    )
+
+    # 4. 总线舵机驱动 - 串口2 (ttyAMA2, 舵机ID: 4, 5)
+    bus_servo_node_2 = Node(
+        package='servo_hardware',
+        executable='bus_servo_driver',
+        name='bus_servo_driver_2',
+        output='screen',
+        parameters=[
+            {'port': '/dev/ttyAMA2'},
+            {'baudrate': baudrate},
+            {'default_speed': 100},
+            {'servo_ids': [4, 5]},
+            {'debug': debug},
+            {'log_id': True}
+        ],
+        remappings=[
+            ('~/command', '/servo/command'),
+            ('~/state', '/servo/state'),
+        ]
+    )
+
+    # 5. 总线舵机驱动 - 串口3 (ttyAMA3, 舵机ID: 8, 6, 12, 13, 14)
+    bus_servo_node_3 = Node(
+        package='servo_hardware',
+        executable='bus_servo_driver',
+        name='bus_servo_driver_3',
+        output='screen',
+        parameters=[
+            {'port': '/dev/ttyAMA3'},
+            {'baudrate': baudrate},
+            {'default_speed': 100},
+            {'servo_ids': [8, 6, 12, 13, 14]},
+            {'debug': debug},
+            {'log_id': True}
+        ],
+        remappings=[
+            ('~/command', '/servo/command'),
+            ('~/state', '/servo/state'),
+        ]
+    )
+
+    # 6. PCA9685舵机驱动节点
     pca_servo_node = Node(
         package='servo_hardware',
         executable='pca_servo_driver',
@@ -146,7 +207,11 @@ def generate_launch_description():
             '========================================\n',
             '  WebSocket: ws://', ws_host, ':', ws_port, '\n',
             '  设备ID: ', device_id, '\n',
-            '  总线舵机: ', serial_port, ' @ ', baudrate, ' bps\n',
+            '  总线舵机驱动板:\n',
+            '    - /dev/ttyAMA0 @ ', baudrate, ' bps (舵机ID: 1, 2)\n',
+            '    - /dev/ttyAMA1 @ ', baudrate, ' bps (舵机ID: 3, 7, 9, 10, 11)\n',
+            '    - /dev/ttyAMA2 @ ', baudrate, ' bps (舵机ID: 4, 5)\n',
+            '    - /dev/ttyAMA3 @ ', baudrate, ' bps (舵机ID: 6, 8, 12, 13, 14)\n',
             '  PCA9685: I2C地址=0x', i2c_address, ' 总线=', i2c_bus, '\n',
             '  调试模式: ', debug, '\n',
             '========================================\n',
@@ -173,6 +238,9 @@ def generate_launch_description():
 
         # 节点
         bridge_node,
-        bus_servo_node,
+        bus_servo_node_0,
+        bus_servo_node_1,
+        bus_servo_node_2,
+        bus_servo_node_3,
         pca_servo_node,
     ])

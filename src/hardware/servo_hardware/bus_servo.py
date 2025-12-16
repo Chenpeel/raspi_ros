@@ -40,6 +40,7 @@ class BusServoDriver(Node):
         self.declare_parameter('default_speed', 100)
         self.declare_parameter('debug', False)
         self.declare_parameter('log_id', True)  # 是否打印舵机ID日志
+        self.declare_parameter('servo_ids', [])  # 本驱动板负责的舵机ID列表
 
         # 获取参数
         self.port = self.get_parameter('port').value
@@ -48,6 +49,13 @@ class BusServoDriver(Node):
         self.default_speed = self.get_parameter('default_speed').value
         self.debug = self.get_parameter('debug').value
         self.log_id = self.get_parameter('log_id').value
+        servo_ids_param = self.get_parameter('servo_ids').value
+
+        # 转换为set以提高查找效率
+        self.servo_ids = set(servo_ids_param) if servo_ids_param else set()
+
+        # 如果未配置servo_ids，则处理所有ID（向后兼容）
+        self.filter_enabled = len(self.servo_ids) > 0
 
         # 串口对象
         self.ser: Optional[serial.Serial] = None
@@ -82,7 +90,17 @@ class BusServoDriver(Node):
             10
         )
 
-        self.get_logger().info(f'总线舵机驱动已启动: {self.port}@{self.baudrate}')
+        if self.filter_enabled:
+            ids_str = ', '.join(map(str, sorted(self.servo_ids)))
+            self.get_logger().info(
+                f'总线舵机驱动已启动: {self.port}@{self.baudrate} '
+                f'(负责舵机ID: {ids_str})'
+            )
+        else:
+            self.get_logger().info(
+                f'总线舵机驱动已启动: {self.port}@{self.baudrate} '
+                f'(处理所有舵机ID)'
+            )
 
     def _init_serial(self) -> bool:
         """初始化/打开串口"""
@@ -243,6 +261,14 @@ class BusServoDriver(Node):
             servo_id = msg.servo_id
             position = msg.position
             speed = msg.speed if msg.speed > 0 else self.default_speed
+
+            # ID列表过滤：仅处理本节点负责的舵机ID
+            if self.filter_enabled and servo_id not in self.servo_ids:
+                if self.debug:
+                    self.get_logger().debug(
+                        f'忽略ID={servo_id}的命令（不在本驱动板的舵机列表中）'
+                    )
+                return
 
             # 发送舵机命令
             success = self.send_position(servo_id, position, speed)
