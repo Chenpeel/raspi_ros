@@ -8,12 +8,11 @@
 import serial
 import time
 import threading
-import json
 from typing import Optional, Set
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String
+from servo_msgs.msg import ServoCommand, ServoState
 
 
 class BusServoDriver(Node):
@@ -70,16 +69,16 @@ class BusServoDriver(Node):
 
         # 订阅舵机命令
         self.command_sub = self.create_subscription(
-            String,
-            '/servo/command',
+            ServoCommand,
+            '~/command',  # 使用私有命名空间
             self.command_callback,
             10
         )
 
         # 发布舵机状态
         self.state_pub = self.create_publisher(
-            String,
-            '/servo/state',
+            ServoState,
+            '~/state',  # 使用私有命名空间
             10
         )
 
@@ -230,41 +229,51 @@ class BusServoDriver(Node):
         time.sleep(0.005)
         return True
 
-    def command_callback(self, msg: String):
-        """处理舵机控制命令"""
+    def command_callback(self, msg: ServoCommand):
+        """处理舵机控制命令（使用ServoCommand消息）"""
         try:
-            cmd = json.loads(msg.data)
-
             # 仅处理总线舵机命令
-            if cmd.get('servo_type') != 'bus':
+            if msg.servo_type != 'bus':
+                if self.debug:
+                    self.get_logger().warn(
+                        f'忽略非总线舵机命令: servo_type={msg.servo_type}')
                 return
 
-            servo_id = cmd.get('servo_id')
-            position = cmd.get('position', 90)
-            speed = cmd.get('speed', self.default_speed)
-
-            if servo_id is None:
-                self.get_logger().error(f'命令缺少servo_id: {cmd}')
-                return
+            # 提取命令参数
+            servo_id = msg.servo_id
+            position = msg.position
+            speed = msg.speed if msg.speed > 0 else self.default_speed
 
             # 发送舵机命令
             success = self.send_position(servo_id, position, speed)
 
             if success:
                 # 发布状态反馈
-                now = self.get_clock().now()
-                state = {
-                    "servo_type": "bus",
-                    "servo_id": servo_id,
-                    "position": position,
-                    "timestamp": now.nanoseconds / 1e9  # 转换为秒（浮点数）
-                }
-                state_msg = String()
-                state_msg.data = json.dumps(state, ensure_ascii=False)
-                self.state_pub.publish(state_msg)
+                state_msg = ServoState()
+                state_msg.servo_type = "bus"
+                state_msg.servo_id = servo_id
+                state_msg.position = position
+                state_msg.load = -1  # 总线舵机不支持负载反馈
+                state_msg.temperature = -1  # 总线舵机不支持温度反馈
+                state_msg.error_code = 0  # 0表示正常
+                state_msg.stamp = self.get_clock().now().to_msg()
 
-        except (json.JSONDecodeError, KeyError) as e:
-            self.get_logger().error(f'命令解析失败: {e}')
+                self.state_pub.publish(state_msg)
+            else:
+                # 发布错误状态
+                error_msg = ServoState()
+                error_msg.servo_type = "bus"
+                error_msg.servo_id = servo_id
+                error_msg.position = position
+                error_msg.load = -1
+                error_msg.temperature = -1
+                error_msg.error_code = 1  # 1表示命令执行失败
+                error_msg.stamp = self.get_clock().now().to_msg()
+
+                self.state_pub.publish(error_msg)
+
+        except Exception as e:
+            self.get_logger().error(f'命令处理失败: {e}')
 
     def reset_servos(self):
         """复位所有已控制的舵机到中间位置(90度/1500us)"""

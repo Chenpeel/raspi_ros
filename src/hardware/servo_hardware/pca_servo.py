@@ -6,12 +6,11 @@ PCA9685舵机驱动节点 - ROS 2版本
 """
 
 import time
-import json
 from typing import Set, Optional
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String
+from servo_msgs.msg import ServoCommand, ServoState
 
 try:
     from smbus2 import SMBus
@@ -78,16 +77,16 @@ class PCA9685ServoDriver(Node):
 
         # 订阅舵机命令
         self.command_sub = self.create_subscription(
-            String,
-            '/servo/command',
+            ServoCommand,
+            '~/command',  # 使用私有命名空间
             self.command_callback,
             10
         )
 
         # 发布舵机状态
         self.state_pub = self.create_publisher(
-            String,
-            '/servo/state',
+            ServoState,
+            '~/state',  # 使用私有命名空间
             10
         )
 
@@ -234,27 +233,38 @@ class PCA9685ServoDriver(Node):
         if self.debug:
             self.get_logger().debug(f'舵机通道{channel}: 角度{angle}° → PWM值{pulse}')
 
-    def command_callback(self, msg: String):
-        """处理舵机控制命令"""
+    def command_callback(self, msg: ServoCommand):
+        """处理舵机控制命令（使用ServoCommand消息）"""
         try:
-            cmd = json.loads(msg.data)
-
             # 仅处理PCA舵机命令
-            if cmd.get('servo_type') != 'pca':
+            if msg.servo_type != 'pca':
+                if self.debug:
+                    self.get_logger().warn(
+                        f'忽略非PCA舵机命令: servo_type={msg.servo_type}')
                 return
 
-            channel = cmd.get('servo_id')  # 对于PCA,servo_id即通道号
-            if channel is None:
-                self.get_logger().error(f'命令缺少servo_id: {cmd}')
-                return
+            # 提取命令参数
+            channel = msg.servo_id  # 对于PCA,servo_id即通道号
+            position = msg.position
 
+            # 验证通道范围
             if not (0 <= channel <= 15):
                 self.get_logger().error(f'PCA通道必须在0-15之间(当前: {channel})')
+                # 发布错误状态
+                error_msg = ServoState()
+                error_msg.servo_type = "pca"
+                error_msg.servo_id = channel
+                error_msg.position = position
+                error_msg.load = -1
+                error_msg.temperature = -1
+                error_msg.error_code = 1  # 参数错误
+                error_msg.stamp = self.get_clock().now().to_msg()
+                self.state_pub.publish(error_msg)
                 return
 
-            # 优先解析position(可能是角度或PWM值)
-            position = cmd.get('position')
-            if position is not None:
+            # 执行舵机控制
+            success = True
+            try:
                 # 判断是角度还是PWM tick值
                 if 0 <= position <= 180:
                     # 角度
@@ -266,21 +276,24 @@ class PCA9685ServoDriver(Node):
                 else:
                     # 直接作为tick值
                     self.set_pwm(channel, off=position)
+            except Exception as e:
+                self.get_logger().error(f'PCA舵机控制失败: {e}')
+                success = False
 
-                # 发布状态反馈
-                now = self.get_clock().now()
-                state = {
-                    "servo_type": "pca",
-                    "servo_id": channel,
-                    "position": position,
-                    "timestamp": now.nanoseconds / 1e9  # 转换为秒（浮点数）
-                }
-                state_msg = String()
-                state_msg.data = json.dumps(state, ensure_ascii=False)
-                self.state_pub.publish(state_msg)
+            # 发布状态反馈
+            state_msg = ServoState()
+            state_msg.servo_type = "pca"
+            state_msg.servo_id = channel
+            state_msg.position = position
+            state_msg.load = -1  # PCA舵机不支持负载反馈
+            state_msg.temperature = -1  # PCA舵机不支持温度反馈
+            state_msg.error_code = 0 if success else 1  # 0表示正常
+            state_msg.stamp = self.get_clock().now().to_msg()
 
-        except (json.JSONDecodeError, KeyError) as e:
-            self.get_logger().error(f'命令解析失败: {e}')
+            self.state_pub.publish(state_msg)
+
+        except Exception as e:
+            self.get_logger().error(f'命令处理失败: {e}')
 
     def reset_servos(self):
         """复位所有已控制的舵机到中间位置(90°)"""
