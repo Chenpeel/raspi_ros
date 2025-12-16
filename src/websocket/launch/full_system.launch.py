@@ -28,7 +28,7 @@ def generate_launch_description():
 
     ws_port_arg = DeclareLaunchArgument(
         'ws_port',
-        default_value='9102',
+        default_value='9105',
         description='WebSocket服务器监听端口'
     )
 

@@ -14,7 +14,7 @@ from typing import Optional
 import rclpy
 from rclpy.node import Node
 from rclpy.executors import MultiThreadedExecutor
-from std_msgs.msg import String
+from servo_msgs.msg import ServoCommand, ServoState
 
 from .ws_server import WebSocketBridgeServer
 
@@ -50,14 +50,14 @@ class WebSocketROS2Bridge(Node):
         # ROS 2话题
         # 发布舵机命令到驱动节点
         self.servo_command_pub = self.create_publisher(
-            String,
+            ServoCommand,
             '/servo/command',
             10
         )
 
         # 订阅舵机状态反馈
         self.servo_state_sub = self.create_subscription(
-            String,
+            ServoState,
             '/servo/state',
             self.servo_state_callback,
             10
@@ -126,17 +126,21 @@ class WebSocketROS2Bridge(Node):
                 }
         """
         try:
-            # 转换为JSON字符串
-            msg = String()
-            msg.data = json.dumps(servo_cmd, ensure_ascii=False)
+            # 转换为ServoCommand消息
+            msg = ServoCommand()
+            msg.servo_type = servo_cmd.get("servo_type", "bus")
+            msg.servo_id = servo_cmd["servo_id"]
+            msg.position = servo_cmd["position"]
+            msg.speed = servo_cmd.get("speed", 100)  # 默认速度100ms
+            msg.stamp = self.get_clock().now().to_msg()
 
             # 发布到ROS 2话题
             self.servo_command_pub.publish(msg)
 
             if self.debug:
                 self.get_logger().info(
-                    f'发布舵机命令: {servo_cmd["servo_type"]} '
-                    f'ID={servo_cmd["servo_id"]} POS={servo_cmd["position"]}'
+                    f'发布舵机命令: {msg.servo_type} '
+                    f'ID={msg.servo_id} POS={msg.position} SPEED={msg.speed}'
                 )
 
         except Exception as e:
@@ -165,36 +169,38 @@ class WebSocketROS2Bridge(Node):
             "timestamp": now.nanoseconds / 1e9  # 转换为秒（浮点数）
         }
 
-    def servo_state_callback(self, msg: String):
+    def servo_state_callback(self, msg: ServoState):
         """
         处理舵机状态反馈（来自驱动节点）
 
         Args:
-            msg: 舵机状态消息
-                {
-                    "servo_type": "bus" | "pca",
-                    "servo_id": int,
-                    "position": int,
-                    "timestamp": {...}
-                }
+            msg: ServoState消息
         """
         try:
-            state = json.loads(msg.data)
+            # 转换为JSON字典
+            state = {
+                "servo_type": msg.servo_type,
+                "servo_id": msg.servo_id,
+                "position": msg.position,
+                "load": msg.load,
+                "temperature": msg.temperature,
+                "error_code": msg.error_code,
+                "timestamp": msg.stamp.sec + msg.stamp.nanosec / 1e9
+            }
 
             if self.debug:
                 self.get_logger().info(
-                    f'收到舵机状态: {state["servo_type"]} '
-                    f'ID={state["servo_id"]} POS={state["position"]}'
+                    f'收到舵机状态: {msg.servo_type} '
+                    f'ID={msg.servo_id} POS={msg.position} ERR={msg.error_code}'
                 )
 
             # 更新WebSocket服务器的状态
             if self.ws_server:
-                servo_type = state.get("servo_type")
-                servo_id = state.get("servo_id")
-                position = state.get("position")
-
-                if servo_type and servo_id is not None and position is not None:
-                    self.ws_server.update_servo_state(servo_id, servo_type, position)
+                self.ws_server.update_servo_state(
+                    msg.servo_id,
+                    msg.servo_type,
+                    msg.position
+                )
 
                 # 广播状态到所有WebSocket客户端
                 if self.ws_loop and not self.ws_loop.is_closed() and self.ws_loop.is_running():
@@ -209,8 +215,6 @@ class WebSocketROS2Bridge(Node):
                 elif self.debug:
                     self.get_logger().debug('跳过广播：WebSocket事件循环未运行')
 
-        except json.JSONDecodeError as e:
-            self.get_logger().error(f'解析舵机状态失败: {e}')
         except Exception as e:
             self.get_logger().error(f'处理舵机状态回调异常: {e}')
 
