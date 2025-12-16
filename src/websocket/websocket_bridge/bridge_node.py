@@ -197,11 +197,17 @@ class WebSocketROS2Bridge(Node):
                     self.ws_server.update_servo_state(servo_id, servo_type, position)
 
                 # 广播状态到所有WebSocket客户端
-                if self.ws_loop:
-                    asyncio.run_coroutine_threadsafe(
-                        self.ws_server.broadcast_status(state),
-                        self.ws_loop
-                    )
+                if self.ws_loop and not self.ws_loop.is_closed() and self.ws_loop.is_running():
+                    try:
+                        asyncio.run_coroutine_threadsafe(
+                            self.ws_server.broadcast_status(state),
+                            self.ws_loop
+                        )
+                    except RuntimeError as e:
+                        if self.debug:
+                            self.get_logger().warning(f'无法广播状态（事件循环不可用）: {e}')
+                elif self.debug:
+                    self.get_logger().debug('跳过广播：WebSocket事件循环未运行')
 
         except json.JSONDecodeError as e:
             self.get_logger().error(f'解析舵机状态失败: {e}')
