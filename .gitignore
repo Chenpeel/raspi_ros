@@ -37,4 +37,5 @@ mjcf/
 xmls/
 
 # instr files
-.TODOs/.claude/
+.TODOs/
+.claude/
