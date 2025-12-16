@@ -1,13 +1,25 @@
-# 树莓派ROS 2舵机控制系统Docker配置
+# ROS 2舵机控制系统Docker配置 - 支持多架构
 
-# 指定ARM64架构（树莓派）
-FROM --platform=linux/arm64 ros:jazzy-ros-base
+# 使用TARGETPLATFORM构建参数自动检测平台架构
+FROM --platform=${TARGETPLATFORM:-linux/amd64} ros:jazzy-ros-base
 
 # 设置环境变量
 ENV DEBIAN_FRONTEND=noninteractive
 ENV ROS_DISTRO=jazzy
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
+
+# 架构检测脚本 - 根据架构设置不同配置
+RUN case $(uname -m) in \
+        aarch64|armv8l) echo "ARCH=arm64" > /arch_env;; \
+        armv7l) echo "ARCH=arm32" > /arch_env;; \
+        x86_64) echo "ARCH=amd64" > /arch_env;; \
+        *) echo "ARCH=unknown" > /arch_env;; \
+    esac
+
+# 源文件架构检测
+SHELL ["/bin/bash", "-c"]
+RUN cat /arch_env && source /arch_env
 
 # 更新apt源并安装基础工具
 RUN apt-get update && apt-get install -y \
@@ -26,8 +38,6 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # 安装Python依赖
-# 注意：在容器环境中使用 --break-system-packages 是安全的
-# asyncio 是标准库，无需安装
 RUN pip3 install --break-system-packages --no-cache-dir \
     websockets \
     pyserial \
