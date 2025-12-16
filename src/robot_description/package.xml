@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='utf-8'?>
 <package format="2">
-  <name>assets</name>
+  <name>robot_description</name>
   <version>1.0.0</version>
   <description>
-    <p>URDF Description package for assets</p>
+    <p>URDF Description package for robot</p>
     <p>This package contains configuration data, 3D models and launch files
-      for assets robot</p>
+      for the robot</p>
   </description>
   <author>chenpeel</author>
   <maintainer email="chenpeel@email.com" />
