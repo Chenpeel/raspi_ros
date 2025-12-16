@@ -35,7 +35,7 @@ class BusServoDriver(Node):
         super().__init__('bus_servo_driver')
 
         # 声明参数
-        self.declare_parameter('port', '/dev/ttyUSB0')
+        self.declare_parameter('port', '/dev/ttyAMA0')
         self.declare_parameter('baudrate', 115200)
         self.declare_parameter('timeout', 0.1)
         self.declare_parameter('default_speed', 100)

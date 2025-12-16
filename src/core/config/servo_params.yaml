@@ -1,0 +1,22 @@
+# Servo Control ROS 2 Node Configuration
+
+servo_control:
+  ros__parameters:
+    # WebSocket 配置
+    ws_host: "0.0.0.0"
+    ws_port: 9102
+    device_id: "default"
+    debug: false
+
+    # 舵机配置
+    servo:
+      bus_servo_speed: 100
+      pca_min_us: 500
+      pca_max_us: 2500
+      bus_min_us: 500
+      bus_max_us: 2500
+
+    # 系统配置
+    system:
+      heartbeat_interval: 15.0
+      heartbeat_timeout: 5.0
