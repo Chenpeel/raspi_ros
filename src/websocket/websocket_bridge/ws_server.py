@@ -28,7 +28,7 @@ class WebSocketBridgeServer:
                  device_id: str = "default", debug: bool = False):
         """
         初始化 WebSocket 服务器
-        
+
         Args:
             host: 监听地址
             port: 监听端口
@@ -39,7 +39,7 @@ class WebSocketBridgeServer:
         self.port = port
         self.device_id = device_id
         self.debug = debug
-        
+
         self.handler = WebSocketHandler(device_id=device_id, debug=debug)
         self.clients: Set[WebSocketServerProtocol] = set()
         self.client_info = {}  # 客户端信息 {websocket: {"id": str, "name": str}}
@@ -56,19 +56,19 @@ class WebSocketBridgeServer:
         # 心跳配置
         self.heartbeat_interval = 15.0  # 秒
         self.heartbeat_timeout = 5.0  # 秒
-    
+
     def set_servo_command_callback(self, callback):
         """设置舵机命令回调"""
         self.handler.register_servo_command_handler(callback)
-    
+
     def set_heartbeat_callback(self, callback):
         """设置心跳回调"""
         self.handler.register_heartbeat_handler(callback)
-    
+
     def set_status_query_callback(self, callback):
         """设置状态查询回调"""
         self.handler.register_status_query_handler(callback)
-    
+
     async def start(self):
         """启动 WebSocket 服务器"""
         try:
@@ -80,18 +80,18 @@ class WebSocketBridgeServer:
                 ping_timeout=5
             )
             print(f"[WebSocketServer] 启动成功: ws://{self.host}:{self.port}")
-            
+
             # 启动心跳任务
             asyncio.create_task(self.heartbeat_loop())
-            
+
         except Exception as e:
             print(f"[WebSocketServer] 启动失败: {e}")
             raise
-    
+
     async def stop(self):
         """停止 WebSocket 服务器"""
         self.running = False
-        
+
         # 关闭所有连接
         for client in list(self.clients):
             try:
@@ -99,30 +99,30 @@ class WebSocketBridgeServer:
             except Exception as e:
                 if self.debug:
                     print(f"[WebSocketServer] 关闭连接失败: {e}")
-        
+
         if self.server:
             self.server.close()
             await self.server.wait_closed()
-        
+
         print("[WebSocketServer] 已停止")
-    
+
     async def handle_client(self, websocket: WebSocketServerProtocol, path: str):
         """
         处理客户端连接
-        
+
         Args:
             websocket: WebSocket 连接
             path: 连接路径
         """
         client_addr = websocket.remote_address
         self.clients.add(websocket)
-        
+
         print(f"[WebSocketServer] 客户端连接: {client_addr}")
-        
+
         try:
             async for message in websocket:
                 await self._process_client_message(websocket, message)
-        
+
         except ConnectionClosed:
             print(f"[WebSocketServer] 客户端断开: {client_addr}")
         except Exception as e:
@@ -134,9 +134,9 @@ class WebSocketBridgeServer:
                 del self.client_info[websocket]
             # 广播更新后的用户列表
             await self.broadcast_user_list()
-    
+
     async def _process_client_message(self, websocket: WebSocketServerProtocol,
-                                     message: str):
+                                      message: str):
         """
         处理来自客户端的消息
 
@@ -201,7 +201,7 @@ class WebSocketBridgeServer:
             except Exception as e2:
                 if self.debug:
                     print(f"[WebSocketServer] 发送错误响应失败: {e2}")
-    
+
     async def heartbeat_loop(self):
         """
         心跳循环 - 定期向所有客户端发送心跳
@@ -209,42 +209,43 @@ class WebSocketBridgeServer:
         while self.running:
             try:
                 await asyncio.sleep(self.heartbeat_interval)
-                
+
                 if not self.clients:
                     continue
-                
+
                 heartbeat_msg = json.dumps({
                     "type": "heartbeat",
                     "status": "online",
                     "device_id": self.device_id,
                     "timestamp": int(time.time())
                 }, ensure_ascii=False)
-                
+
                 # 并发发送心跳到所有客户端
                 tasks = [
                     client.send(heartbeat_msg)
                     for client in self.clients
                 ]
-                
+
                 if tasks:
                     await asyncio.gather(*tasks, return_exceptions=True)
-                
-                if self.debug:
-                    print(f"[WebSocketServer] 发送心跳到 {len(self.clients)} 个客户端")
-            
+
+                # 移除心跳日志,避免刷屏
+                # if self.debug:
+                #     print(f"[WebSocketServer] 发送心跳到 {len(self.clients)} 个客户端")
+
             except Exception as e:
                 print(f"[WebSocketServer] 心跳循环异常: {e}")
-    
+
     async def broadcast_status(self, status_dict: dict):
         """
         广播状态更新到所有连接的客户端
-        
+
         Args:
             status_dict: 状态字典
         """
         if not self.clients:
             return
-        
+
         try:
             message = json.dumps({
                 "type": "status_update",
@@ -252,25 +253,25 @@ class WebSocketBridgeServer:
                 "data": status_dict,
                 "timestamp": int(time.time())
             }, ensure_ascii=False)
-            
+
             tasks = [
                 client.send(message)
                 for client in self.clients
             ]
-            
+
             await asyncio.gather(*tasks, return_exceptions=True)
-            
+
             if self.debug:
                 print(f"[WebSocketServer] 广播状态到 {len(self.clients)} 个客户端")
-        
+
         except Exception as e:
             print(f"[WebSocketServer] 广播状态异常: {e}")
-    
-    async def send_to_client(self, websocket: WebSocketServerProtocol, 
-                            message: dict):
+
+    async def send_to_client(self, websocket: WebSocketServerProtocol,
+                             message: dict):
         """
         向特定客户端发送消息
-        
+
         Args:
             websocket: 目标连接
             message: 消息字典
@@ -280,22 +281,22 @@ class WebSocketBridgeServer:
             await websocket.send(msg_str)
         except Exception as e:
             print(f"[WebSocketServer] 发送消息失败: {e}")
-    
+
     def get_client_count(self) -> int:
         """获取连接的客户端数"""
         return len(self.clients)
-    
+
     def update_servo_state(self, servo_id: int, servo_type: str, position: int):
         """
         更新舵机状态
-        
+
         Args:
             servo_id: 舵机 ID
             servo_type: 舵机类型 ("bus" 或 "pca")
             position: 当前位置
         """
         self.handler.update_servo_state(servo_id, servo_type, position)
-    
+
     def update_system_state(self, **kwargs):
         """更新系统状态"""
         self.handler.update_system_state(**kwargs)
@@ -394,7 +395,8 @@ class WebSocketBridgeServer:
 
         # 尝试解析为 JSON（舵机控制命令）
         try:
-            servo_cmd = json.loads(content) if isinstance(content, str) else content
+            servo_cmd = json.loads(content) if isinstance(
+                content, str) else content
             await self._handle_servo_control_direct(servo_cmd)
 
             # 发送确认响应
@@ -435,10 +437,8 @@ class WebSocketBridgeServer:
             print(f"[WebSocketServer] 警告：没有注册舵机命令处理器")
 
 
-
-
 async def run_server(host: str = "0.0.0.0", port: int = 9102,
-                    device_id: str = "default", debug: bool = False):
+                     device_id: str = "default", debug: bool = False):
     """
     运行 WebSocket 服务器
 
@@ -454,9 +454,9 @@ async def run_server(host: str = "0.0.0.0", port: int = 9102,
         device_id=device_id,
         debug=debug
     )
-    
+
     await server.start()
-    
+
     try:
         # 保持运行
         while True:
@@ -470,15 +470,16 @@ async def run_server(host: str = "0.0.0.0", port: int = 9102,
 if __name__ == "__main__":
     # 简单的命令行运行
     import argparse
-    
+
     parser = argparse.ArgumentParser(description="WebSocket Bridge Server")
     parser.add_argument("--host", default="0.0.0.0", help="Server host")
     parser.add_argument("--port", type=int, default=9102, help="Server port")
     parser.add_argument("--device-id", default="default", help="Device ID")
-    parser.add_argument("--debug", action="store_true", help="Enable debug mode")
-    
+    parser.add_argument("--debug", action="store_true",
+                        help="Enable debug mode")
+
     args = parser.parse_args()
-    
+
     asyncio.run(run_server(
         host=args.host,
         port=args.port,

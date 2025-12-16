@@ -40,7 +40,7 @@ def generate_launch_description():
 
     debug_arg = DeclareLaunchArgument(
         'debug',
-        default_value='true',
+        default_value='false',
         description='是否启用调试模式'
     )
 
