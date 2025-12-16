@@ -109,6 +109,10 @@ def generate_launch_description():
             {'default_speed': 100},
             {'debug': debug},
             {'log_id': True}
+        ],
+        remappings=[
+            ('~/command', '/servo/command'),
+            ('~/state', '/servo/state'),
         ]
     )
 
@@ -127,6 +131,10 @@ def generate_launch_description():
             {'min_us': 500},
             {'max_us': 2500},
             {'debug': debug}
+        ],
+        remappings=[
+            ('~/command', '/servo/command'),
+            ('~/state', '/servo/state'),
         ]
     )
 
