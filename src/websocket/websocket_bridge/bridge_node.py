@@ -28,7 +28,7 @@ class WebSocketROS2Bridge(Node):
     3. 订阅ROS 2话题并转发到WebSocket客户端
     """
 
-    def __init__(self, ws_host: str = "0.0.0.0", ws_port: int = 9102,
+    def __init__(self, ws_host: str = "0.0.0.0", ws_port: int = 9105,
                  device_id: str = "robot", debug: bool = False):
         """
         初始化桥接节点
@@ -41,11 +41,17 @@ class WebSocketROS2Bridge(Node):
         """
         super().__init__('websocket_ros2_bridge')
 
-        # 参数
-        self.ws_host = ws_host
-        self.ws_port = ws_port
-        self.device_id = device_id
-        self.debug = debug
+        # 声明ROS参数
+        self.declare_parameter('ws_host', ws_host)
+        self.declare_parameter('ws_port', ws_port)
+        self.declare_parameter('device_id', device_id)
+        self.declare_parameter('debug', debug)
+
+        # 从ROS参数读取配置
+        self.ws_host = self.get_parameter('ws_host').value
+        self.ws_port = self.get_parameter('ws_port').value
+        self.device_id = self.get_parameter('device_id').value
+        self.debug = self.get_parameter('debug').value
 
         # ROS 2话题
         # 发布舵机命令到驱动节点
@@ -249,13 +255,8 @@ def main(args=None):
     """主函数"""
     rclpy.init(args=args)
 
-    # 创建桥接节点
-    bridge = WebSocketROS2Bridge(
-        ws_host="0.0.0.0",
-        ws_port=9102,
-        device_id="robot",
-        debug=True  # 启用调试日志
-    )
+    # 创建桥接节点(使用默认值,实际值从launch文件参数传入)
+    bridge = WebSocketROS2Bridge()
 
     # 启动WebSocket服务器（在独立线程）
     bridge.start_websocket_server()
