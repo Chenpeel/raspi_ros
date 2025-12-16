@@ -42,9 +42,10 @@ class WebSocketBridgeServer:
         
         self.handler = WebSocketHandler(device_id=device_id, debug=debug)
         self.clients: Set[WebSocketServerProtocol] = set()
+        self.client_info = {}  # 客户端信息 {websocket: {"id": str, "name": str}}
         self.server = None
         self.running = True
-        
+
         # 心跳配置
         self.heartbeat_interval = 15.0  # 秒
         self.heartbeat_timeout = 5.0  # 秒
@@ -121,12 +122,17 @@ class WebSocketBridgeServer:
             print(f"[WebSocketServer] 客户端异常: {e}")
         finally:
             self.clients.discard(websocket)
+            # 清理客户端信息
+            if websocket in self.client_info:
+                del self.client_info[websocket]
+            # 广播更新后的用户列表
+            await self.broadcast_user_list()
     
-    async def _process_client_message(self, websocket: WebSocketServerProtocol, 
+    async def _process_client_message(self, websocket: WebSocketServerProtocol,
                                      message: str):
         """
         处理来自客户端的消息
-        
+
         Args:
             websocket: WebSocket 连接
             message: 消息内容
@@ -134,14 +140,26 @@ class WebSocketBridgeServer:
         try:
             if self.debug:
                 print(f"[WebSocketServer] 收到消息: {message[:100]}...")
-            
+
+            # 解析消息检查是否为 register
+            try:
+                data = json.loads(message)
+                msg_type = data.get("type", "").lower()
+
+                # 拦截 register 消息，返回兼容前端的响应
+                if msg_type == "register":
+                    await self._handle_register(websocket, data)
+                    return
+            except json.JSONDecodeError:
+                pass
+
             response = await self.handler.handle_message(message)
-            
+
             if response:
                 await websocket.send(response)
                 if self.debug:
                     print(f"[WebSocketServer] 发送响应: {response[:100]}...")
-        
+
         except Exception as e:
             print(f"[WebSocketServer] 处理消息异常: {e}")
             try:
@@ -254,6 +272,80 @@ class WebSocketBridgeServer:
     def update_system_state(self, **kwargs):
         """更新系统状态"""
         self.handler.update_system_state(**kwargs)
+
+    async def _handle_register(self, websocket: WebSocketServerProtocol, data: dict):
+        """
+        处理客户端注册（兼容前端协议）
+
+        Args:
+            websocket: 客户端连接
+            data: 注册消息 {"type": "register", "name": "客户端名称"}
+        """
+        import uuid
+
+        client_name = data.get("name", f"client_{len(self.client_info) + 1}")
+        client_id = str(uuid.uuid4())
+
+        # 保存客户端信息
+        self.client_info[websocket] = {
+            "id": client_id,
+            "name": client_name
+        }
+
+        # 获取在线用户列表
+        online_users = self.get_online_users()
+
+        # 返回兼容前端的响应（type: "connected"）
+        response = {
+            "type": "connected",            # 前端期待的类型！
+            "clientName": client_name,
+            "onlineClients": online_users,  # 在线用户列表
+            "device_id": self.device_id,
+            "timestamp": int(time.time())
+        }
+
+        await websocket.send(json.dumps(response, ensure_ascii=False))
+        print(f"[WebSocketServer] 客户端已注册: {client_name} (ID: {client_id})")
+
+        # 广播更新后的用户列表给所有其他客户端
+        await self.broadcast_user_list()
+
+    def get_online_users(self) -> list:
+        """
+        获取在线用户列表
+
+        Returns:
+            list: [{"id": str, "name": str}, ...]
+        """
+        return [
+            {"id": info["id"], "name": info["name"]}
+            for info in self.client_info.values()
+        ]
+
+    async def broadcast_user_list(self):
+        """广播在线用户列表给所有客户端"""
+        if not self.clients:
+            return
+
+        online_users = self.get_online_users()
+
+        message = json.dumps({
+            "type": "broadcast",
+            "content": "用户列表更新",
+            "onlineUsers": online_users,
+            "timestamp": int(time.time())
+        }, ensure_ascii=False)
+
+        tasks = [
+            client.send(message)
+            for client in self.clients
+        ]
+
+        await asyncio.gather(*tasks, return_exceptions=True)
+
+        if self.debug:
+            print(f"[WebSocketServer] 广播用户列表: {len(online_users)} 个在线用户")
+
 
 
 async def run_server(host: str = "0.0.0.0", port: int = 9102,
