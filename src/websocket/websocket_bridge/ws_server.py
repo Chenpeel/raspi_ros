@@ -43,6 +43,13 @@ class WebSocketBridgeServer:
         self.handler = WebSocketHandler(device_id=device_id, debug=debug)
         self.clients: Set[WebSocketServerProtocol] = set()
         self.client_info = {}  # 客户端信息 {websocket: {"id": str, "name": str}}
+
+        # 将 ROS2 服务器本身注册为一个虚拟设备
+        self.robot_device = {
+            "id": "ros2-robot-device",
+            "name": device_id  # 使用 device_id 作为设备名（默认 "robot"）
+        }
+
         self.server = None
         self.running = True
 
@@ -141,7 +148,7 @@ class WebSocketBridgeServer:
             if self.debug:
                 print(f"[WebSocketServer] 收到消息: {message[:100]}...")
 
-            # 解析消息检查是否为 register
+            # 解析消息
             try:
                 data = json.loads(message)
                 msg_type = data.get("type", "").lower()
@@ -150,6 +157,26 @@ class WebSocketBridgeServer:
                 if msg_type == "register":
                     await self._handle_register(websocket, data)
                     return
+
+                # 拦截发给 ROS2 机器人的私有消息（舵机控制）
+                if msg_type == "private" and data.get("to") == "ros2-robot-device":
+                    await self._handle_private_to_robot(websocket, data)
+                    return
+
+                # 拦截 servo_control 类型的消息
+                if msg_type == "servo_control":
+                    # 直接处理为舵机控制命令
+                    await self._handle_servo_control_direct(data)
+                    # 发送确认响应给客户端
+                    ack = {
+                        "type": "private_ack",
+                        "status": "processed",
+                        "device_id": self.device_id,
+                        "timestamp": int(time.time())
+                    }
+                    await websocket.send(json.dumps(ack, ensure_ascii=False))
+                    return
+
             except json.JSONDecodeError:
                 pass
 
@@ -312,15 +339,21 @@ class WebSocketBridgeServer:
 
     def get_online_users(self) -> list:
         """
-        获取在线用户列表
+        获取在线用户列表（包括 ROS2 设备本身）
 
         Returns:
             list: [{"id": str, "name": str}, ...]
         """
-        return [
+        # 始终包含 ROS2 机器人设备
+        users = [self.robot_device]
+
+        # 添加所有连接的客户端
+        users.extend([
             {"id": info["id"], "name": info["name"]}
             for info in self.client_info.values()
-        ]
+        ])
+
+        return users
 
     async def broadcast_user_list(self):
         """广播在线用户列表给所有客户端"""
@@ -345,6 +378,62 @@ class WebSocketBridgeServer:
 
         if self.debug:
             print(f"[WebSocketServer] 广播用户列表: {len(online_users)} 个在线用户")
+
+    async def _handle_private_to_robot(self, websocket: WebSocketServerProtocol, data: dict):
+        """
+        处理发给 ROS2 机器人的私有消息（舵机控制）
+
+        Args:
+            websocket: 客户端连接
+            data: 消息数据 {"type": "private", "to": "ros2-robot-device", "content": "..."}
+        """
+        content = data.get("content", "")
+
+        if self.debug:
+            print(f"[WebSocketServer] 收到发给机器人的消息: {content[:100]}")
+
+        # 尝试解析为 JSON（舵机控制命令）
+        try:
+            servo_cmd = json.loads(content) if isinstance(content, str) else content
+            await self._handle_servo_control_direct(servo_cmd)
+
+            # 发送确认响应
+            ack = {
+                "type": "private_ack",
+                "status": "processed",
+                "device_id": self.device_id,
+                "message": "舵机命令已发送",
+                "timestamp": int(time.time())
+            }
+            await websocket.send(json.dumps(ack, ensure_ascii=False))
+
+            if self.debug:
+                print(f"[WebSocketServer] 舵机命令已处理: {servo_cmd}")
+
+        except json.JSONDecodeError:
+            # 如果不是 JSON，作为普通消息处理
+            print(f"[WebSocketServer] 收到非 JSON 消息: {content}")
+        except Exception as e:
+            print(f"[WebSocketServer] 处理舵机命令失败: {e}")
+
+    async def _handle_servo_control_direct(self, servo_cmd: dict):
+        """
+        直接处理舵机控制命令并转发到 ROS 2
+
+        Args:
+            servo_cmd: 舵机命令字典
+        """
+        # 使用 handler 的舵机命令回调
+        if hasattr(self.handler, 'on_servo_command') and self.handler.on_servo_command:
+            try:
+                await self.handler.on_servo_command(servo_cmd)
+                if self.debug:
+                    print(f"[WebSocketServer] 舵机命令已转发到 ROS2: {servo_cmd}")
+            except Exception as e:
+                print(f"[WebSocketServer] ROS2 命令处理失败: {e}")
+        else:
+            print(f"[WebSocketServer] 警告：没有注册舵机命令处理器")
+
 
 
 
