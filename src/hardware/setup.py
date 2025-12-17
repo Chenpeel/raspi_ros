@@ -19,7 +19,7 @@ setup(
     ],
     zip_safe=True,
     maintainer='chenpeel',
-    maintainer_email='chgenpeel@foxmail.com',
+    maintainer_email='chenpeel@foxmail.com',
     description='舵机硬件接口，用于舵机控制',
     license='MIT',
     extras_require={

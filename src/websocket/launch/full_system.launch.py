@@ -3,21 +3,55 @@
 
 启动组件:
 1. WebSocket桥接节点 (bridge_node)
-2. 总线舵机驱动 (bus_servo_driver)
+2. 总线舵机驱动 (bus_servo_driver) - 从 bus_servo_map.json 动态加载
 3. PCA9685舵机驱动 (pca_servo_driver)
 
 数据流:
 WebSocket客户端 <--> bridge_node <--> /servo/command & /servo/state <--> 舵机驱动
 """
 
+import json
+import os
+from pathlib import Path
+
 from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument, LogInfo
 from launch.substitutions import LaunchConfiguration
+from ament_index_python.packages import get_package_share_directory
 
 
 def generate_launch_description():
     """生成Launch描述"""
+
+    # 读取舵机映射配置
+    pkg_share = get_package_share_directory('websocket_bridge')
+    config_file = os.path.join(pkg_share, 'config', 'bus_servo_map.json')
+
+    # 如果配置文件不存在，尝试从源码路径读取
+    if not os.path.exists(config_file):
+        # 开发环境下的路径
+        config_file = os.path.join(
+            Path(__file__).parent.parent, 'config', 'bus_servo_map.json'
+        )
+
+    # 读取配置
+    servo_map = {}
+    if os.path.exists(config_file):
+        with open(config_file, 'r', encoding='utf-8') as f:
+            servo_map = json.load(f)
+        print(f"✓ 已加载舵机映射配置: {config_file}")
+        print(f"  配置内容: {servo_map}")
+    else:
+        print(f"⚠ 警告: 舵机映射配置文件不存在: {config_file}")
+        print(f"  将使用默认配置")
+        # 默认配置（向后兼容）
+        servo_map = {
+            "/dev/ttyAMA0": [1, 2],
+            "/dev/ttyAMA1": [7, 3, 9, 10, 11],
+            "/dev/ttyAMA2": [4, 5],
+            "/dev/ttyAMA3": [8, 6, 12, 13, 14]
+        }
 
     # 声明Launch参数
     ws_host_arg = DeclareLaunchArgument(
@@ -97,85 +131,38 @@ def generate_launch_description():
         ]
     )
 
-    # 2. 总线舵机驱动 - 串口0 (ttyAMA0, 舵机ID: 1, 2)
-    bus_servo_node_0 = Node(
-        package='servo_hardware',
-        executable='bus_servo_driver',
-        name='bus_servo_driver_0',
-        output='screen',
-        parameters=[
-            {'port': '/dev/ttyAMA0'},
-            {'baudrate': baudrate},
-            {'default_speed': 100},
-            {'servo_ids': [1, 2]},
-            {'debug': debug},
-            {'log_id': True}
-        ],
-        remappings=[
-            ('~/command', '/servo/command'),
-            ('~/state', '/servo/state'),
-        ]
-    )
+    # 2. 动态创建总线舵机驱动节点（从 bus_servo_map.json 读取）
+    bus_servo_nodes = []
+    servo_info_lines = []
 
-    # 3. 总线舵机驱动 - 串口1 (ttyAMA1, 舵机ID: 7, 3, 9, 10, 11)
-    bus_servo_node_1 = Node(
-        package='servo_hardware',
-        executable='bus_servo_driver',
-        name='bus_servo_driver_1',
-        output='screen',
-        parameters=[
-            {'port': '/dev/ttyAMA1'},
-            {'baudrate': baudrate},
-            {'default_speed': 100},
-            {'servo_ids': [7, 3, 9, 10, 11]},
-            {'debug': debug},
-            {'log_id': True}
-        ],
-        remappings=[
-            ('~/command', '/servo/command'),
-            ('~/state', '/servo/state'),
-        ]
-    )
+    for idx, (port, servo_ids) in enumerate(servo_map.items()):
+        # 创建节点
+        node = Node(
+            package='servo_hardware',
+            executable='bus_servo_driver',
+            name=f'bus_servo_driver_{idx}',
+            output='screen',
+            parameters=[
+                {'port': port},
+                {'baudrate': baudrate},
+                {'default_speed': 100},
+                {'servo_ids': servo_ids},
+                {'debug': debug},
+                {'log_id': True}
+            ],
+            remappings=[
+                ('~/command', '/servo/command'),
+                ('~/state', '/servo/state'),
+            ]
+        )
+        bus_servo_nodes.append(node)
 
-    # 4. 总线舵机驱动 - 串口2 (ttyAMA2, 舵机ID: 4, 5)
-    bus_servo_node_2 = Node(
-        package='servo_hardware',
-        executable='bus_servo_driver',
-        name='bus_servo_driver_2',
-        output='screen',
-        parameters=[
-            {'port': '/dev/ttyAMA2'},
-            {'baudrate': baudrate},
-            {'default_speed': 100},
-            {'servo_ids': [4, 5]},
-            {'debug': debug},
-            {'log_id': True}
-        ],
-        remappings=[
-            ('~/command', '/servo/command'),
-            ('~/state', '/servo/state'),
-        ]
-    )
+        # 生成启动信息行
+        servo_ids_str = ', '.join(map(str, servo_ids))
+        servo_info_lines.append(f'    - {port} @ ')
+        servo_info_lines.append(baudrate)
+        servo_info_lines.append(f' bps (舵机ID: {servo_ids_str})\n')
 
-    # 5. 总线舵机驱动 - 串口3 (ttyAMA3, 舵机ID: 8, 6, 12, 13, 14)
-    bus_servo_node_3 = Node(
-        package='servo_hardware',
-        executable='bus_servo_driver',
-        name='bus_servo_driver_3',
-        output='screen',
-        parameters=[
-            {'port': '/dev/ttyAMA3'},
-            {'baudrate': baudrate},
-            {'default_speed': 100},
-            {'servo_ids': [8, 6, 12, 13, 14]},
-            {'debug': debug},
-            {'log_id': True}
-        ],
-        remappings=[
-            ('~/command', '/servo/command'),
-            ('~/state', '/servo/state'),
-        ]
-    )
 
     # 6. PCA9685舵机驱动节点 (已临时禁用 - I2C设备未连接导致树莓派关机)
     # pca_servo_node = Node(
@@ -208,10 +195,7 @@ def generate_launch_description():
             '  WebSocket: ws://', ws_host, ':', ws_port, '\n',
             '  设备ID: ', device_id, '\n',
             '  总线舵机驱动板:\n',
-            '    - /dev/ttyAMA0 @ ', baudrate, ' bps (舵机ID: 1, 2)\n',
-            '    - /dev/ttyAMA1 @ ', baudrate, ' bps (舵机ID: 3, 7, 9, 10, 11)\n',
-            '    - /dev/ttyAMA2 @ ', baudrate, ' bps (舵机ID: 4, 5)\n',
-            '    - /dev/ttyAMA3 @ ', baudrate, ' bps (舵机ID: 6, 8, 12, 13, 14)\n',
+            *servo_info_lines,  # 动态生成的舵机信息
             '  PCA9685: 已禁用 (I2C设备未连接)\n',
             '  调试模式: ', debug, '\n',
             '========================================\n',
@@ -238,9 +222,7 @@ def generate_launch_description():
 
         # 节点
         bridge_node,
-        bus_servo_node_0,
-        bus_servo_node_1,
-        bus_servo_node_2,
-        bus_servo_node_3,
+        *bus_servo_nodes,  # 动态生成的所有总线舵机驱动节点
         # pca_servo_node,  # 已临时禁用 - I2C设备未连接
     ])
+

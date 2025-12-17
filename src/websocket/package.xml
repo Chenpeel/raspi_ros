@@ -4,7 +4,7 @@
   <name>websocket_bridge</name>
   <version>0.0.0</version>
   <description>WebSocket通信桥接包，用于ROS 2与WebSocket客户端通信</description>
-  <maintainer email="chgenpeel@foxmail.com">chenpeel</maintainer>
+  <maintainer email="chenpeel@foxmail.com">chenpeel</maintainer>
   <license>MIT</license>
 
   <depend>rclpy</depend>

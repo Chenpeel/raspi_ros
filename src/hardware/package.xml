@@ -4,7 +4,7 @@
   <name>servo_hardware</name>
   <version>0.0.0</version>
   <description>舵机硬件接口包，提供底层硬件驱动</description>
-  <maintainer email="chgenpeel@foxmail.com">chenpeel</maintainer>
+  <maintainer email="chenpeel@foxmail.com">chenpeel</maintainer>
   <license>MIT</license>
 
   <depend>rclpy</depend>

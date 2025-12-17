@@ -15,11 +15,14 @@ setup(
         # 安装launch文件
         (os.path.join('share', package_name, 'launch'),
             glob('launch/*.launch.py')),
+        # 安装配置文件
+        (os.path.join('share', package_name, 'config'),
+            glob('config/*.json') + glob('config/*.md')),
     ],
     install_requires=['setuptools', 'websockets', 'rclpy'],
     zip_safe=True,
     maintainer='chenpeel',
-    maintainer_email='chgenpeel@foxmail.com',
+    maintainer_email='chenpeel@foxmail.com',
     description='WebSocket通信桥接服务器，用于远程舵机控制',
     license='BSD-2.0',
     extras_require={
