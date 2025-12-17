@@ -12,6 +12,7 @@ from typing import Optional, Set
 
 import rclpy
 from rclpy.node import Node
+from rclpy.parameter import ParameterDescriptor, ParameterType
 from servo_msgs.msg import ServoCommand, ServoState
 
 
@@ -40,7 +41,16 @@ class BusServoDriver(Node):
         self.declare_parameter('default_speed', 100)
         self.declare_parameter('debug', False)
         self.declare_parameter('log_id', True)  # 是否打印舵机ID日志
-        self.declare_parameter('servo_ids', [])  # 本驱动板负责的舵机ID列表
+
+        # 显式声明 servo_ids 为整数数组类型（修复 ROS2 Jazzy 类型检查）
+        self.declare_parameter(
+            'servo_ids',
+            [],
+            ParameterDescriptor(
+                type=ParameterType.PARAMETER_INTEGER_ARRAY,
+                description='本驱动板负责的舵机ID列表'
+            )
+        )
 
         # 获取参数
         self.port = self.get_parameter('port').value
@@ -182,6 +192,373 @@ class BusServoDriver(Node):
                 f'[Send] ID={servo_id} PULSE={pulse} T={speed}ms Frame={frame_str}')
 
         return frame
+
+    def _send_command(self, command: str) -> bool:
+        """内部方法：发送命令帧到串口
+
+        Args:
+            command: 命令字符串
+
+        Returns:
+            bool: 发送是否成功
+        """
+        if not self._init_serial():
+            self.get_logger().error('无法打开串口')
+            return False
+
+        frame = command.encode('utf-8')
+
+        with self.lock:
+            try:
+                self.ser.write(frame)
+                if self.debug or self.log_id:
+                    self.get_logger().info(f'[发送] {command}')
+                time.sleep(0.01)
+                return True
+            except Exception as e:
+                self.get_logger().error(f'串口写入失败: {e}')
+                return False
+
+    # ========== 协议命令实现（共21个） ==========
+
+    def get_version(self, servo_id: int) -> bool:
+        """读取舵机版本号
+
+        协议: #XXXPVER!
+        返回: #XXXPV0.8!
+
+        Args:
+            servo_id: 舵机ID (0-254)
+
+        Returns:
+            bool: 发送是否成功
+        """
+        command = f"#{servo_id:03d}PVER!"
+        return self._send_command(command)
+
+    def read_id(self, servo_id: int) -> bool:
+        """读取舵机ID
+
+        协议: #XXXPID!
+        返回: #XXXP!
+
+        Args:
+            servo_id: 要查询的舵机ID (0-254)
+
+        Returns:
+            bool: 发送是否成功
+        """
+        command = f"#{servo_id:03d}PID!"
+        return self._send_command(command)
+
+    def set_id(self, old_id: int, new_id: int) -> bool:
+        """设置舵机ID
+
+        协议: #XXXPIDYYY!
+        返回: #YYYP!
+
+        Args:
+            old_id: 当前ID (0-254)
+            new_id: 新ID (0-254)
+
+        Returns:
+            bool: 发送是否成功
+        """
+        command = f"#{old_id:03d}PID{new_id:03d}!"
+        return self._send_command(command)
+
+    def release_torque(self, servo_id: int) -> bool:
+        """释放扭力（可手动调整舵机）
+
+        协议: #XXXPULK!
+        返回: #OK!
+
+        Args:
+            servo_id: 舵机ID (0-254)
+
+        Returns:
+            bool: 发送是否成功
+        """
+        command = f"#{servo_id:03d}PULK!"
+        return self._send_command(command)
+
+    def restore_torque(self, servo_id: int) -> bool:
+        """恢复扭力（锁定当前位置）
+
+        协议: #XXXPULR!
+        返回: #OK!
+
+        Args:
+            servo_id: 舵机ID (0-254)
+
+        Returns:
+            bool: 发送是否成功
+        """
+        command = f"#{servo_id:03d}PULR!"
+        return self._send_command(command)
+
+    def read_mode(self, servo_id: int) -> bool:
+        """读取工作模式
+
+        协议: #XXXPMOD!
+        返回: #XXXPMODX! (X=1-8)
+
+        Args:
+            servo_id: 舵机ID (0-254)
+
+        Returns:
+            bool: 发送是否成功
+        """
+        command = f"#{servo_id:03d}PMOD!"
+        return self._send_command(command)
+
+    def set_mode(self, servo_id: int, mode: int) -> bool:
+        """设置工作模式
+
+        协议: #XXXPMODX!
+        返回: #XXXPMODX!
+
+        模式说明:
+        1: 舵机模式 270度顺时针
+        2: 舵机模式 270度逆时针
+        3: 舵机模式 180度顺时针
+        4: 舵机模式 180度逆时针
+        5: 马达模式 360度定圈顺时针
+        6: 马达模式 360度定圈逆时针
+        7: 马达模式 360度定时顺时针
+        8: 马达模式 360度定时逆时针
+
+        Args:
+            servo_id: 舵机ID (0-254)
+            mode: 工作模式 (1-8)
+
+        Returns:
+            bool: 发送是否成功
+        """
+        if not 1 <= mode <= 8:
+            self.get_logger().error(f'模式参数无效: {mode} (应为1-8)')
+            return False
+
+        command = f"#{servo_id:03d}PMOD{mode}!"
+        return self._send_command(command)
+
+    def read_position(self, servo_id: int) -> bool:
+        """读取舵机当前位置
+
+        协议: #XXXPRAD!
+        返回: #XXXP1500!
+
+        Args:
+            servo_id: 舵机ID (0-254)
+
+        Returns:
+            bool: 发送是否成功
+        """
+        command = f"#{servo_id:03d}PRAD!"
+        return self._send_command(command)
+
+    def pause_motion(self, servo_id: int) -> bool:
+        """暂停运动（可继续）
+
+        协议: #XXXPDPT!
+        返回: #OK!
+
+        Args:
+            servo_id: 舵机ID (0-254)
+
+        Returns:
+            bool: 发送是否成功
+        """
+        command = f"#{servo_id:03d}PDPT!"
+        return self._send_command(command)
+
+    def continue_motion(self, servo_id: int) -> bool:
+        """继续运动（从暂停点）
+
+        协议: #XXXPDCT!
+        返回: #OK!
+
+        Args:
+            servo_id: 舵机ID (0-254)
+
+        Returns:
+            bool: 发送是否成功
+        """
+        command = f"#{servo_id:03d}PDCT!"
+        return self._send_command(command)
+
+    def stop_motion(self, servo_id: int) -> bool:
+        """停止运动（不可继续）
+
+        协议: #XXXPDST!
+        返回: #OK!
+
+        Args:
+            servo_id: 舵机ID (0-254)
+
+        Returns:
+            bool: 发送是否成功
+        """
+        command = f"#{servo_id:03d}PDST!"
+        return self._send_command(command)
+
+    def set_baudrate(self, servo_id: int, baudrate_code: int) -> bool:
+        """设置通信波特率
+
+        协议: #XXXPBDX!
+        返回: #XXXPBD9600!
+
+        波特率代码:
+        1: 9600
+        2: 19200
+        3: 38400
+        4: 57600
+        5: 115200 (默认)
+        6: 128000
+        7: 256000
+        8: 1000000
+
+        Args:
+            servo_id: 舵机ID (0-254)
+            baudrate_code: 波特率代码 (1-8)
+
+        Returns:
+            bool: 发送是否成功
+        """
+        if not 1 <= baudrate_code <= 8:
+            self.get_logger().error(f'波特率代码无效: {baudrate_code} (应为1-8)')
+            return False
+
+        command = f"#{servo_id:03d}PBD{baudrate_code}!"
+        return self._send_command(command)
+
+    def calibrate_middle(self, servo_id: int) -> bool:
+        """校正1500中值（当前位置设为1500）
+
+        协议: #XXXPSCK!
+        返回: #OK!
+
+        Args:
+            servo_id: 舵机ID (0-254)
+
+        Returns:
+            bool: 发送是否成功
+        """
+        command = f"#{servo_id:03d}PSCK!"
+        return self._send_command(command)
+
+    def set_startup_position(self, servo_id: int) -> bool:
+        """设置开机启动位置为当前位置
+
+        协议: #XXXPCSD!
+        返回: #OK!
+
+        Args:
+            servo_id: 舵机ID (0-254)
+
+        Returns:
+            bool: 发送是否成功
+        """
+        command = f"#{servo_id:03d}PCSD!"
+        return self._send_command(command)
+
+    def disable_startup_position(self, servo_id: int) -> bool:
+        """取消启动位置（开机释力）
+
+        协议: #XXXPCSM!
+        返回: #OK!
+
+        Args:
+            servo_id: 舵机ID (0-254)
+
+        Returns:
+            bool: 发送是否成功
+        """
+        command = f"#{servo_id:03d}PCSM!"
+        return self._send_command(command)
+
+    def restore_startup_position(self, servo_id: int) -> bool:
+        """恢复启动位置功能
+
+        协议: #XXXPCSR!
+        返回: #OK!
+
+        Args:
+            servo_id: 舵机ID (0-254)
+
+        Returns:
+            bool: 发送是否成功
+        """
+        command = f"#{servo_id:03d}PCSR!"
+        return self._send_command(command)
+
+    def set_min_position(self, servo_id: int) -> bool:
+        """设置最小位置为当前位置
+
+        协议: #XXXPSMI!
+        返回: #OK!
+
+        Args:
+            servo_id: 舵机ID (0-254)
+
+        Returns:
+            bool: 发送是否成功
+        """
+        command = f"#{servo_id:03d}PSMI!"
+        return self._send_command(command)
+
+    def set_max_position(self, servo_id: int) -> bool:
+        """设置最大位置为当前位置
+
+        协议: #XXXPSMX!
+        返回: #OK!
+
+        Args:
+            servo_id: 舵机ID (0-254)
+
+        Returns:
+            bool: 发送是否成功
+        """
+        command = f"#{servo_id:03d}PSMX!"
+        return self._send_command(command)
+
+    def factory_reset(self, servo_id: int) -> bool:
+        """恢复出厂设置（除ID外全部重置）
+
+        协议: #XXXPCLE!
+        返回: #OK!
+
+        重置内容:
+        - 工作模式: 1 (270度顺时针)
+        - 波特率: 115200
+        - 初始值: 1500
+        - 校正值: 1500
+        - 最小值: 500
+        - 最大值: 2500
+
+        Args:
+            servo_id: 舵机ID (0-254)
+
+        Returns:
+            bool: 发送是否成功
+        """
+        command = f"#{servo_id:03d}PCLE!"
+        return self._send_command(command)
+
+    def read_temp_voltage(self, servo_id: int) -> bool:
+        """读取温度和电压
+
+        协议: #XXXPRTV!
+        返回: #000T28.1V7.4!
+
+        Args:
+            servo_id: 舵机ID (0-254)
+
+        Returns:
+            bool: 发送是否成功
+        """
+        command = f"#{servo_id:03d}PRTV!"
+        return self._send_command(command)
 
     def send_position(self, servo_id: int, position: int, speed: Optional[int] = None) -> bool:
         """发送舵机位置指令
