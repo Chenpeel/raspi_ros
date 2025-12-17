@@ -104,6 +104,25 @@ def generate_launch_description():
         description='I2C总线号'
     )
 
+    # IMU 传感器参数
+    imu_publish_rate_arg = DeclareLaunchArgument(
+        'imu_publish_rate',
+        default_value='50.0',
+        description='IMU 数据发布频率(Hz)'
+    )
+
+    imu_algo_type_arg = DeclareLaunchArgument(
+        'imu_algo_type',
+        default_value='9',
+        description='IMU 融合算法类型(6=六轴, 9=九轴)'
+    )
+
+    imu_sensor_id_arg = DeclareLaunchArgument(
+        'imu_sensor_id',
+        default_value='0',
+        description='IMU 传感器ID'
+    )
+
     # 获取参数值
     ws_host = LaunchConfiguration('ws_host')
     ws_port = LaunchConfiguration('ws_port')
@@ -113,6 +132,9 @@ def generate_launch_description():
     baudrate = LaunchConfiguration('baudrate')
     i2c_address = LaunchConfiguration('i2c_address')
     i2c_bus = LaunchConfiguration('i2c_bus')
+    imu_publish_rate = LaunchConfiguration('imu_publish_rate')
+    imu_algo_type = LaunchConfiguration('imu_algo_type')
+    imu_sensor_id = LaunchConfiguration('imu_sensor_id')
 
     # 1. WebSocket桥接节点
     bridge_node = Node(
@@ -163,6 +185,25 @@ def generate_launch_description():
         servo_info_lines.append(baudrate)
         servo_info_lines.append(f' bps (舵机ID: {servo_ids_str})\n')
 
+    # 3. IMU 传感器驱动节点
+    imu_driver_node = Node(
+        package='servo_hardware',
+        executable='imu_driver',
+        name='imu_driver',
+        output='screen',
+        parameters=[
+            {'i2c_bus': i2c_bus},
+            {'i2c_address': 0x23},
+            {'publish_rate': imu_publish_rate},
+            {'debug': debug},
+            {'algo_type': imu_algo_type},
+            {'calibrate_on_start': False},
+            {'sensor_id': imu_sensor_id}
+        ],
+        remappings=[
+            ('~/data', '/sensor/imu'),
+        ]
+    )
 
     # 6. PCA9685舵机驱动节点 (已临时禁用 - I2C设备未连接导致树莓派关机)
     # pca_servo_node = Node(
@@ -196,12 +237,14 @@ def generate_launch_description():
             '  设备ID: ', device_id, '\n',
             '  总线舵机驱动板:\n',
             *servo_info_lines,  # 动态生成的舵机信息
+            '  IMU传感器: I2C总线=', i2c_bus, ', 频率=', imu_publish_rate, 'Hz\n',
             '  PCA9685: 已禁用 (I2C设备未连接)\n',
             '  调试模式: ', debug, '\n',
             '========================================\n',
             '  ROS 2话题:\n',
             '    发布: /servo/command (舵机控制命令)\n',
             '    订阅: /servo/state (舵机状态反馈)\n',
+            '    订阅: /sensor/imu (IMU传感器数据)\n',
             '========================================\n'
         ]
     )
@@ -216,6 +259,9 @@ def generate_launch_description():
         baudrate_arg,
         i2c_address_arg,
         i2c_bus_arg,
+        imu_publish_rate_arg,
+        imu_algo_type_arg,
+        imu_sensor_id_arg,
 
         # 启动信息
         log_info,
@@ -223,6 +269,7 @@ def generate_launch_description():
         # 节点
         bridge_node,
         *bus_servo_nodes,  # 动态生成的所有总线舵机驱动节点
+        imu_driver_node,   # IMU 传感器驱动节点
         # pca_servo_node,  # 已临时禁用 - I2C设备未连接
     ])
 

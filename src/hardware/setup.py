@@ -31,6 +31,7 @@ setup(
         'console_scripts': [
             'bus_servo_driver = servo_hardware.bus_servo:main',
             'pca_servo_driver = servo_hardware.pca_servo:main',
+            'imu_driver = sensor_hardware.imu_driver:main',
         ],
     },
 )

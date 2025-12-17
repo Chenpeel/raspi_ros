@@ -15,6 +15,7 @@ import rclpy
 from rclpy.node import Node
 from rclpy.executors import MultiThreadedExecutor
 from servo_msgs.msg import ServoCommand, ServoState
+from sensor_msgs.msg import ImuData
 
 from .ws_server import WebSocketBridgeServer
 
@@ -66,6 +67,14 @@ class WebSocketROS2Bridge(Node):
             ServoState,
             '/servo/state',
             self.servo_state_callback,
+            10
+        )
+
+        # 订阅 IMU 传感器数据
+        self.imu_data_sub = self.create_subscription(
+            ImuData,
+            '/sensor/imu',
+            self.imu_data_callback,
             10
         )
 
@@ -223,6 +232,81 @@ class WebSocketROS2Bridge(Node):
 
         except Exception as e:
             self.get_logger().error(f'处理舵机状态回调异常: {e}')
+
+    def imu_data_callback(self, msg: ImuData):
+        """
+        处理 IMU 传感器数据（来自 IMU 驱动节点）
+
+        Args:
+            msg: ImuData消息
+        """
+        try:
+            # 转换为 JSON 字典
+            imu_data = {
+                "type": "sensor_data",
+                "sensor_type": msg.sensor_type,
+                "sensor_id": msg.sensor_id,
+                "data": {
+                    "accel": {
+                        "x": msg.accel_x,
+                        "y": msg.accel_y,
+                        "z": msg.accel_z,
+                        "unit": "g"
+                    },
+                    "gyro": {
+                        "x": msg.gyro_x,
+                        "y": msg.gyro_y,
+                        "z": msg.gyro_z,
+                        "unit": "rad/s"
+                    },
+                    "mag": {
+                        "x": msg.mag_x,
+                        "y": msg.mag_y,
+                        "z": msg.mag_z,
+                        "unit": "uT"
+                    },
+                    "quaternion": {
+                        "w": msg.quat_w,
+                        "x": msg.quat_x,
+                        "y": msg.quat_y,
+                        "z": msg.quat_z
+                    },
+                    "euler": {
+                        "roll": msg.roll,
+                        "pitch": msg.pitch,
+                        "yaw": msg.yaw,
+                        "unit": "deg"
+                    },
+                    "baro": {
+                        "height": msg.baro_height,
+                        "temperature": msg.baro_temp,
+                        "pressure": msg.baro_pressure
+                    }
+                },
+                "error_code": msg.error_code,
+                "timestamp": msg.stamp.sec + msg.stamp.nanosec / 1e9
+            }
+
+            if self.debug:
+                self.get_logger().info(
+                    f'收到 IMU 数据: euler=({msg.roll:.1f}, {msg.pitch:.1f}, {msg.yaw:.1f}) '
+                    f'accel=({msg.accel_x:.2f}, {msg.accel_y:.2f}, {msg.accel_z:.2f})'
+                )
+
+            # 广播到所有 WebSocket 客户端
+            if self.ws_server and self.ws_loop and not self.ws_loop.is_closed():
+                if self.ws_loop.is_running():
+                    try:
+                        asyncio.run_coroutine_threadsafe(
+                            self.ws_server.broadcast_status(imu_data),
+                            self.ws_loop
+                        )
+                    except RuntimeError as e:
+                        if self.debug:
+                            self.get_logger().warning(f'无法广播 IMU 数据（事件循环不可用）: {e}')
+
+        except Exception as e:
+            self.get_logger().error(f'处理 IMU 数据回调异常: {e}')
 
     def shutdown(self):
         """关闭节点和WebSocket服务器"""
