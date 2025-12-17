@@ -12,7 +12,6 @@ from typing import Optional, Set
 
 import rclpy
 from rclpy.node import Node
-from rclpy.parameter import ParameterDescriptor, ParameterType
 from servo_msgs.msg import ServoCommand, ServoState
 
 
@@ -41,16 +40,8 @@ class BusServoDriver(Node):
         self.declare_parameter('default_speed', 100)
         self.declare_parameter('debug', False)
         self.declare_parameter('log_id', True)  # 是否打印舵机ID日志
-
-        # 显式声明 servo_ids 为整数数组类型（修复 ROS2 Jazzy 类型检查）
-        self.declare_parameter(
-            'servo_ids',
-            [],
-            ParameterDescriptor(
-                type=ParameterType.PARAMETER_INTEGER_ARRAY,
-                description='本驱动板负责的舵机ID列表'
-            )
-        )
+        # 使用 [0] 作为默认值让ROS 2推断为INTEGER_ARRAY类型
+        self.declare_parameter('servo_ids', [0])  # 本驱动板负责的舵机ID列表
 
         # 获取参数
         self.port = self.get_parameter('port').value
@@ -61,10 +52,10 @@ class BusServoDriver(Node):
         self.log_id = self.get_parameter('log_id').value
         servo_ids_param = self.get_parameter('servo_ids').value
 
-        # 转换为set以提高查找效率
-        self.servo_ids = set(servo_ids_param) if servo_ids_param else set()
+        # 转换为set以提高查找效率（过滤掉默认值0）
+        self.servo_ids = set(id for id in servo_ids_param if id > 0)
 
-        # 如果未配置servo_ids，则处理所有ID（向后兼容）
+        # 如果未配置servo_ids（只有默认值0），则处理所有ID（向后兼容）
         self.filter_enabled = len(self.servo_ids) > 0
 
         # 串口对象
