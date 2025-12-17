@@ -177,27 +177,27 @@ def generate_launch_description():
         ]
     )
 
-    # 6. PCA9685舵机驱动节点
-    pca_servo_node = Node(
-        package='servo_hardware',
-        executable='pca_servo_driver',
-        name='pca_servo_driver',
-        output='screen',
-        parameters=[
-            {'i2c_address': i2c_address},
-            {'bus_number': i2c_bus},
-            {'frequency': 50},
-            {'min_pwm': 110},
-            {'max_pwm': 520},
-            {'min_us': 500},
-            {'max_us': 2500},
-            {'debug': debug}
-        ],
-        remappings=[
-            ('~/command', '/servo/command'),
-            ('~/state', '/servo/state'),
-        ]
-    )
+    # 6. PCA9685舵机驱动节点 (已临时禁用 - I2C设备未连接导致树莓派关机)
+    # pca_servo_node = Node(
+    #     package='servo_hardware',
+    #     executable='pca_servo_driver',
+    #     name='pca_servo_driver',
+    #     output='screen',
+    #     parameters=[
+    #         {'i2c_address': i2c_address},
+    #         {'bus_number': i2c_bus},
+    #         {'frequency': 50},
+    #         {'min_pwm': 110},
+    #         {'max_pwm': 520},
+    #         {'min_us': 500},
+    #         {'max_us': 2500},
+    #         {'debug': debug}
+    #     ],
+    #     remappings=[
+    #         ('~/command', '/servo/command'),
+    #         ('~/state', '/servo/state'),
+    #     ]
+    # )
 
     # 启动信息
     log_info = LogInfo(
@@ -212,7 +212,7 @@ def generate_launch_description():
             '    - /dev/ttyAMA1 @ ', baudrate, ' bps (舵机ID: 3, 7, 9, 10, 11)\n',
             '    - /dev/ttyAMA2 @ ', baudrate, ' bps (舵机ID: 4, 5)\n',
             '    - /dev/ttyAMA3 @ ', baudrate, ' bps (舵机ID: 6, 8, 12, 13, 14)\n',
-            '  PCA9685: I2C地址=0x', i2c_address, ' 总线=', i2c_bus, '\n',
+            '  PCA9685: 已禁用 (I2C设备未连接)\n',
             '  调试模式: ', debug, '\n',
             '========================================\n',
             '  ROS 2话题:\n',
@@ -242,5 +242,5 @@ def generate_launch_description():
         bus_servo_node_1,
         bus_servo_node_2,
         bus_servo_node_3,
-        pca_servo_node,
+        # pca_servo_node,  # 已临时禁用 - I2C设备未连接
     ])
