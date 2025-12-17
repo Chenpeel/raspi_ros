@@ -105,6 +105,18 @@ def generate_launch_description():
     )
 
     # IMU 传感器参数
+    imu_port_arg = DeclareLaunchArgument(
+        'imu_port',
+        default_value='/dev/ttyAMA4',
+        description='IMU 串口设备路径'
+    )
+
+    imu_baudrate_arg = DeclareLaunchArgument(
+        'imu_baudrate',
+        default_value='115200',
+        description='IMU 串口波特率'
+    )
+
     imu_publish_rate_arg = DeclareLaunchArgument(
         'imu_publish_rate',
         default_value='50.0',
@@ -132,6 +144,8 @@ def generate_launch_description():
     baudrate = LaunchConfiguration('baudrate')
     i2c_address = LaunchConfiguration('i2c_address')
     i2c_bus = LaunchConfiguration('i2c_bus')
+    imu_port = LaunchConfiguration('imu_port')
+    imu_baudrate = LaunchConfiguration('imu_baudrate')
     imu_publish_rate = LaunchConfiguration('imu_publish_rate')
     imu_algo_type = LaunchConfiguration('imu_algo_type')
     imu_sensor_id = LaunchConfiguration('imu_sensor_id')
@@ -185,15 +199,15 @@ def generate_launch_description():
         servo_info_lines.append(baudrate)
         servo_info_lines.append(f' bps (舵机ID: {servo_ids_str})\n')
 
-    # 3. IMU 传感器驱动节点
+    # 3. IMU 传感器串口驱动节点（使用串口而非I2C）
     imu_driver_node = Node(
         package='servo_hardware',
-        executable='imu_driver',
-        name='imu_driver',
+        executable='imu_serial_driver',  # 使用串口版本
+        name='imu_serial_driver',
         output='screen',
         parameters=[
-            {'i2c_bus': i2c_bus},
-            {'i2c_address': 0x23},
+            {'port': imu_port},  # 串口设备
+            {'baudrate': imu_baudrate},  # 串口波特率
             {'publish_rate': imu_publish_rate},
             {'debug': debug},
             {'algo_type': imu_algo_type},
@@ -237,7 +251,7 @@ def generate_launch_description():
             '  设备ID: ', device_id, '\n',
             '  总线舵机驱动板:\n',
             *servo_info_lines,  # 动态生成的舵机信息
-            '  IMU传感器: I2C总线=', i2c_bus, ', 频率=', imu_publish_rate, 'Hz\n',
+            '  IMU传感器: ', imu_port, ' @ ', imu_baudrate, ' bps, 频率=', imu_publish_rate, 'Hz\n',
             '  PCA9685: 已禁用 (I2C设备未连接)\n',
             '  调试模式: ', debug, '\n',
             '========================================\n',
@@ -259,6 +273,8 @@ def generate_launch_description():
         baudrate_arg,
         i2c_address_arg,
         i2c_bus_arg,
+        imu_port_arg,  # IMU 串口设备
+        imu_baudrate_arg,  # IMU 串口波特率
         imu_publish_rate_arg,
         imu_algo_type_arg,
         imu_sensor_id_arg,
@@ -269,7 +285,7 @@ def generate_launch_description():
         # 节点
         bridge_node,
         *bus_servo_nodes,  # 动态生成的所有总线舵机驱动节点
-        imu_driver_node,   # IMU 传感器驱动节点
+        imu_driver_node,   # IMU 传感器串口驱动节点
         # pca_servo_node,  # 已临时禁用 - I2C设备未连接
     ])
 

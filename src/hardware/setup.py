@@ -31,7 +31,8 @@ setup(
         'console_scripts': [
             'bus_servo_driver = servo_hardware.bus_servo:main',
             'pca_servo_driver = servo_hardware.pca_servo:main',
-            'imu_driver = sensor_hardware.imu_driver:main',
+            'imu_driver = sensor_hardware.imu_driver:main',  # I2C 版本
+            'imu_serial_driver = sensor_hardware.imu_serial_driver:main',  # 串口版本
         ],
     },
 )
