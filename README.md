@@ -737,4 +737,4 @@ BSD-2.0
 
 ## 维护者
 
-chenpeel <chgenpeel@foxmail.com>
+chenpeel <chenpeel@foxmail.com>
