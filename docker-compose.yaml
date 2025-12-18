@@ -59,12 +59,9 @@ services:
     # 可选：本地开发模式服务
     ros2_servo_dev:
         extends: ros2_servo
-        container_name: ros2_servo_development
-
-        # 仅映射USB串口设备（本地开发通常不需要树莓派特定设备）
+        container_name: ros2_dev
         devices:
-            - /dev/ttyUSB0:/dev/ttyUSB0 # USB串口
-            - /dev/i2c-1:/dev/i2c-1 # I2C总线（如果存在）
+            - /dev/ttyUSB0:/dev/ttyUSB0
 
         # 开发模式环境变量
         environment:
@@ -74,21 +71,24 @@ services:
             - TZ=Asia/Shanghai
             - DEVELOPMENT_MODE=1
 
-    # 可选：生产模式服务
+    # 生产模式服务
     ros2_servo_prod:
         extends: ros2_servo
-        container_name: ros2_servo_production
+        container_name: ros2
 
-        # 生产模式：自动启动系统
-        command: >
-            bash -c "
-              source /opt/ros/jazzy/setup.bash &&
-              source /root/ros_ws/install/setup.bash &&
-              ros2 launch websocket_bridge full_system.launch.py
-            "
+        # 生产模式：使用 init.sh（每次启动都构建，确保代码最新）
+        command: bash /root/ros_ws/scripts/init.sh
 
         # 生产模式：总是重启
         restart: always
+
+        # 健康检查（启动时间较长，因为需要构建）
+        healthcheck:
+            test: ["CMD", "ros2", "node", "list"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 120s  # 增加到120秒，等待构建完成
 
         profiles:
             - production
