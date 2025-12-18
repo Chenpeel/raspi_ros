@@ -71,6 +71,10 @@ services:
             - TZ=Asia/Shanghai
             - DEVELOPMENT_MODE=1
 
+        # 开发模式 profile（只有指定时才启动）
+        profiles:
+            - dev
+
     # 生产模式服务
     ros2_servo_prod:
         extends: ros2_servo
