@@ -126,14 +126,21 @@ class BusServoDriver(Node):
                 if self.ser and self.ser.is_open and self.ser.in_waiting > 0:
                     data = self.ser.read(self.ser.in_waiting)
                     if data:
+                        # 【诊断增强】输出原始十六进制数据
+                        hex_data = ' '.join(f'{b:02x}' for b in data)
+                        if self.debug or self.log_id:
+                            self.get_logger().info(f'[接收原始数据 HEX] {hex_data} (长度={len(data)}字节)')
+
                         with self.lock:
                             self.recv_buffer.extend(data)
 
                         # 尝试解析返回数据
                         try:
-                            text = data.decode(
-                                'utf-8', errors='ignore').strip()
-                            if text and (self.debug or self.log_id):
+                            # 尝试UTF-8文本解码（众灵协议）
+                            text = data.decode('utf-8', errors='strict').strip()
+                            if text:
+                                if self.debug or self.log_id:
+                                    self.get_logger().info(f'[接收文本解码成功] {text}')
                                 # 尝试提取舵机ID
                                 sid = None
                                 try:
@@ -148,8 +155,15 @@ class BusServoDriver(Node):
                                 else:
                                     self.get_logger().info(
                                         f'[Recv] Raw={text}')
-                        except Exception:
-                            pass
+                        except UnicodeDecodeError:
+                            # UTF-8解码失败 → 说明是二进制协议（Feetech STS/SMS）
+                            if self.debug or self.log_id:
+                                self.get_logger().warn(
+                                    f'[接收二进制协议] 无法UTF-8解码，疑似Feetech STS/SMS协议 - HEX: {hex_data}'
+                                )
+                        except Exception as e:
+                            if self.debug:
+                                self.get_logger().error(f'接收解析异常: {e}')
                 else:
                     time.sleep(0.05)
             except Exception as e:

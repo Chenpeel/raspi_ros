@@ -172,6 +172,13 @@ def generate_launch_description():
     servo_info_lines = []
 
     for idx, (port, servo_ids) in enumerate(servo_map.items()):
+        # 跳过空列表端口（避免 ROS 2 参数类型推断错误）
+        if not servo_ids:
+            # 记录跳过信息到启动日志
+            servo_info_lines.append(f'    - {port} @ 115200 bps (舵机ID: 无 - 已跳过)\n')
+            print(f'  ⊘ 跳过端口 {port}（未配置舵机ID）')
+            continue
+
         # 创建节点
         node = Node(
             package='servo_hardware',
