@@ -126,10 +126,10 @@ class BusServoDriver(Node):
                 if self.ser and self.ser.is_open and self.ser.in_waiting > 0:
                     data = self.ser.read(self.ser.in_waiting)
                     if data:
-                        # 【诊断增强】输出原始十六进制数据
-                        hex_data = ' '.join(f'{b:02x}' for b in data)
-                        if self.debug or self.log_id:
-                            self.get_logger().info(f'[接收原始数据 HEX] {hex_data} (长度={len(data)}字节)')
+                        # 仅在debug模式下输出原始十六进制数据
+                        if self.debug:
+                            hex_data = ' '.join(f'{b:02x}' for b in data)
+                            self.get_logger().debug(f'[接收原始数据 HEX] {hex_data} (长度={len(data)}字节)')
 
                         with self.lock:
                             self.recv_buffer.extend(data)
@@ -138,13 +138,14 @@ class BusServoDriver(Node):
                         try:
                             # 尝试UTF-8文本解码（众灵协议）
                             text = data.decode('utf-8', errors='strict').strip()
-                            if text:
+                            if text and text.startswith('#'):
+                                # 只处理有效的众灵协议响应（以#开头）
                                 if self.debug or self.log_id:
                                     self.get_logger().info(f'[接收文本解码成功] {text}')
                                 # 尝试提取舵机ID
                                 sid = None
                                 try:
-                                    if text.startswith('#') and 'P' in text:
+                                    if 'P' in text:
                                         sid = int(text[1:4])
                                 except Exception:
                                     sid = None
@@ -156,10 +157,11 @@ class BusServoDriver(Node):
                                     self.get_logger().info(
                                         f'[Recv] Raw={text}')
                         except UnicodeDecodeError:
-                            # UTF-8解码失败 → 说明是二进制协议（Feetech STS/SMS）
-                            if self.debug or self.log_id:
-                                self.get_logger().warn(
-                                    f'[接收二进制协议] 无法UTF-8解码，疑似Feetech STS/SMS协议 - HEX: {hex_data}'
+                            # UTF-8解码失败 → 忽略噪声数据，仅在debug模式下记录
+                            if self.debug:
+                                hex_data = ' '.join(f'{b:02x}' for b in data)
+                                self.get_logger().debug(
+                                    f'[忽略噪声数据] 无法UTF-8解码 - HEX: {hex_data}'
                                 )
                         except Exception as e:
                             if self.debug:
