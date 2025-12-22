@@ -14,11 +14,11 @@ import json
 import os
 from pathlib import Path
 
+from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument, LogInfo
 from launch.substitutions import LaunchConfiguration
-from ament_index_python.packages import get_package_share_directory
+from launch_ros.actions import Node
 
 
 def generate_launch_description():
@@ -195,9 +195,7 @@ def generate_launch_description():
 
         # 生成启动信息行
         servo_ids_str = ', '.join(map(str, servo_ids))
-        servo_info_lines.append(f'    - {port} @ ')
-        servo_info_lines.append(baudrate)
-        servo_info_lines.append(f' bps (舵机ID: {servo_ids_str})\n')
+        servo_info_lines.append(f'    - {port} @ 115200 bps (舵机ID: {servo_ids_str})\n')
 
     # 3. IMU 传感器串口驱动节点（使用串口而非I2C）
     imu_driver_node = Node(
@@ -288,4 +286,3 @@ def generate_launch_description():
         imu_driver_node,   # IMU 传感器串口驱动节点
         # pca_servo_node,  # 已临时禁用 - I2C设备未连接
     ])
-
