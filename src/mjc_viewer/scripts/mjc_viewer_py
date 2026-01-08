@@ -1,0 +1,256 @@
+#!/usr/bin/env python3
+
+import os
+import time
+from dataclasses import dataclass
+from typing import List, Optional
+
+import mujoco
+import mujoco.viewer
+
+AMENT_INDEX_AVAILABLE = False
+try:
+    from ament_index_python.packages import get_package_share_directory
+
+    AMENT_INDEX_AVAILABLE = True
+except BaseException:  # pragma: no cover
+    AMENT_INDEX_AVAILABLE = False
+
+ROS_AVAILABLE = False
+ROS_IMPORT_ERROR: Optional[BaseException] = None
+try:
+    import rclpy
+    from rclpy.node import Node
+    from sensor_msgs.msg import JointState
+
+    ROS_AVAILABLE = True
+except BaseException as exc:  # pragma: no cover
+    ROS_IMPORT_ERROR = exc
+
+
+@dataclass(frozen=True)
+class _JointIndex:
+    name: str
+    qpos_adr: int
+    is_angle: bool
+
+
+def _resolve_xml_path(xml_path: str) -> str:
+    if os.path.isabs(xml_path) and os.path.exists(xml_path):
+        return xml_path
+
+    if os.path.exists(xml_path):
+        return os.path.abspath(xml_path)
+
+    if AMENT_INDEX_AVAILABLE:
+        share_dir = get_package_share_directory("mjc_viewer")
+        candidate = os.path.join(share_dir, xml_path)
+        if os.path.exists(candidate):
+            return candidate
+
+        candidate = os.path.join(share_dir, "gaoda_jiyuan", xml_path)
+        if os.path.exists(candidate):
+            return candidate
+
+    raise FileNotFoundError(
+        f"Cannot find xml_path='{xml_path}'. Tried working dir"
+        + (" and package share dir" if AMENT_INDEX_AVAILABLE else "")
+        + "."
+    )
+
+
+def _collect_joints(model: mujoco.MjModel) -> List[_JointIndex]:
+    joints: List[_JointIndex] = []
+    for j in range(model.njnt):
+        joint_type = int(model.jnt_type[j])
+        if joint_type not in (
+            int(mujoco.mjtJoint.mjJNT_HINGE),
+            int(mujoco.mjtJoint.mjJNT_SLIDE),
+        ):
+            continue
+
+        name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_JOINT, j)
+        if not name:
+            continue
+
+        qpos_adr = int(model.jnt_qposadr[j])
+        is_angle = joint_type == int(mujoco.mjtJoint.mjJNT_HINGE)
+        joints.append(_JointIndex(name=name, qpos_adr=qpos_adr, is_angle=is_angle))
+    return joints
+
+
+def _try_reset_to_keyframe(model: mujoco.MjModel, data: mujoco.MjData, keyframe_name: str) -> bool:
+    if not keyframe_name:
+        return False
+    key_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_KEY, keyframe_name)
+    if key_id < 0:
+        return False
+    mujoco.mj_resetDataKeyframe(model, data, key_id)
+    mujoco.mj_forward(model, data)
+    return True
+
+
+def _format_joint_table(joints: List[_JointIndex], data: mujoco.MjData, *, name_width: int) -> str:
+    if not joints:
+        return f"t={data.time:.3f}s\n(no hinge/slide joints)"
+
+    lines = [f"t={data.time:.3f}s", f"{'joint':<{name_width}}  {'pos':>10}  unit"]
+    lines.append("-" * (name_width + 2 + 10 + 2 + 3))
+    for j in joints:
+        value = float(data.qpos[j.qpos_adr])
+        unit = "rad" if j.is_angle else "m"
+        lines.append(f"{j.name:<{name_width}}  {value:>10.4f}  {unit}")
+    return "\n".join(lines)
+
+
+def _run_viewer_common(
+    *,
+    xml_path: str,
+    keyframe: str,
+    print_rate_hz: float,
+    publish_rate_hz: float,
+    real_time_factor: float,
+    headless: bool,
+    ros_node: Optional["Node"] = None,
+    ros_joint_state_publisher: Optional["rclpy.publisher.Publisher"] = None,
+) -> None:
+    xml_path = _resolve_xml_path(xml_path)
+
+    if ros_node is not None:
+        ros_node.get_logger().info(f"Loading MJCF: {xml_path}")
+    else:
+        print(f"[mjc_viewer_py] Loading MJCF: {xml_path}")
+
+    model = mujoco.MjModel.from_xml_path(xml_path)
+    data = mujoco.MjData(model)
+    _try_reset_to_keyframe(model, data, keyframe)
+    joints = _collect_joints(model)
+    name_width = max(5, *(len(j.name) for j in joints))
+
+    dt = float(model.opt.timestep)
+    sleep_dt = dt / max(1e-6, float(real_time_factor))
+    print_period = 1.0 / max(1e-6, float(print_rate_hz))
+    publish_period = 1.0 / max(1e-6, float(publish_rate_hz))
+    last_print_t = 0.0
+    last_pub_t = 0.0
+
+    if ros_node is not None:
+        ros_node.get_logger().info(f"Found {len(joints)} hinge/slide joints")
+        ros_node.get_logger().info(
+            f"Sim dt={dt:.6f}s, real_time_factor={real_time_factor:.3f} (sleep ~{sleep_dt:.6f}s)"
+        )
+    else:
+        print(f"[mjc_viewer_py] Found {len(joints)} hinge/slide joints")
+
+    def loop(*, viewer) -> None:
+        nonlocal last_print_t, last_pub_t
+        wall_t = time.time()
+        while (viewer is None or viewer.is_running()) and (ros_node is None or rclpy.ok()):
+            mujoco.mj_step(model, data)
+
+            if ros_node is not None:
+                rclpy.spin_once(ros_node, timeout_sec=0.0)
+
+            now = time.time()
+            if now - last_pub_t >= publish_period:
+                if ros_joint_state_publisher is not None and ros_node is not None:
+                    msg = JointState()
+                    msg.header.stamp = ros_node.get_clock().now().to_msg()
+                    msg.name = [j.name for j in joints]
+                    msg.position = [float(data.qpos[j.qpos_adr]) for j in joints]
+                    ros_joint_state_publisher.publish(msg)
+                last_pub_t = now
+
+            if now - last_print_t >= print_period:
+                table = _format_joint_table(joints, data, name_width=name_width)
+                if ros_node is not None:
+                    ros_node.get_logger().info("\n" + table)
+                else:
+                    print(table, flush=True)
+                last_print_t = now
+
+            if viewer is not None:
+                viewer.sync()
+
+            wall_t += sleep_dt
+            remaining = wall_t - time.time()
+            if remaining > 0:
+                time.sleep(remaining)
+            else:
+                wall_t = time.time()
+
+    if headless:
+        if ros_node is not None:
+            ros_node.get_logger().warn("Running headless (no mujoco.viewer window)")
+        else:
+            print("[mjc_viewer_py] Running headless (no mujoco.viewer window)")
+        loop(viewer=None)
+        return
+
+    try:
+        with mujoco.viewer.launch_passive(model, data) as viewer:
+            loop(viewer=viewer)
+    except Exception as exc:
+        msg = f"mujoco.viewer failed, falling back to headless: {exc}"
+        if ros_node is not None:
+            ros_node.get_logger().error(msg)
+        else:
+            print(f"[mjc_viewer_py] {msg}")
+        loop(viewer=None)
+
+
+def main() -> None:
+    if ROS_AVAILABLE:
+        rclpy.init()
+        node = Node("mjc_viewer")  # type: ignore[call-arg]
+        node.declare_parameter("xml_path", "gaoda_jiyuan/scene.xml")
+        node.declare_parameter("joint_state_topic", "joint_states")
+        node.declare_parameter("print_rate_hz", 10.0)
+        node.declare_parameter("publish_rate_hz", 60.0)
+        node.declare_parameter("real_time_factor", 1.0)
+        node.declare_parameter("keyframe", "home")
+        node.declare_parameter("headless", False)
+
+        xml_path = str(node.get_parameter("xml_path").value)
+        keyframe = str(node.get_parameter("keyframe").value)
+        print_rate_hz = float(node.get_parameter("print_rate_hz").value)
+        publish_rate_hz = float(node.get_parameter("publish_rate_hz").value)
+        real_time_factor = float(node.get_parameter("real_time_factor").value)
+        joint_state_topic = str(node.get_parameter("joint_state_topic").value)
+        headless = bool(node.get_parameter("headless").value)
+        publisher = node.create_publisher(JointState, joint_state_topic, 10)
+
+        try:
+            _run_viewer_common(
+                xml_path=xml_path,
+                keyframe=keyframe,
+                print_rate_hz=print_rate_hz,
+                publish_rate_hz=publish_rate_hz,
+                real_time_factor=real_time_factor,
+                headless=headless,
+                ros_node=node,
+                ros_joint_state_publisher=publisher,
+            )
+        finally:
+            node.destroy_node()
+            rclpy.shutdown()
+    else:
+        print(f"[mjc_viewer_py] ROS not available: {ROS_IMPORT_ERROR}")
+        xml_path = os.environ.get("MJC_VIEWER_XML", "gaoda_jiyuan/scene.xml")
+        keyframe = os.environ.get("MJC_VIEWER_KEYFRAME", "home")
+        print_rate_hz = float(os.environ.get("MJC_VIEWER_PRINT_HZ", "10.0"))
+        publish_rate_hz = float(os.environ.get("MJC_VIEWER_PUB_HZ", "60.0"))
+        real_time_factor = float(os.environ.get("MJC_VIEWER_RTF", "1.0"))
+        headless = os.environ.get("MJC_VIEWER_HEADLESS", "0").lower() in ("1", "true", "yes", "on")
+        _run_viewer_common(
+            xml_path=xml_path,
+            keyframe=keyframe,
+            print_rate_hz=print_rate_hz,
+            publish_rate_hz=publish_rate_hz,
+            real_time_factor=real_time_factor,
+            headless=headless,
+        )
+
+
+if __name__ == "__main__":
+    main()
