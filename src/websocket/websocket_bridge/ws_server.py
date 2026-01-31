@@ -425,12 +425,18 @@ class WebSocketBridgeServer:
         Args:
             servo_cmd: 舵机命令字典
         """
+        parsed_cmd = self.handler.message_handler.parse_servo_control(servo_cmd)
+        if parsed_cmd is None:
+            if self.debug:
+                print(f"[WebSocketServer] 无法解析舵机命令: {servo_cmd}")
+            return
+
         # 使用 handler 的舵机命令回调
         if hasattr(self.handler, 'on_servo_command') and self.handler.on_servo_command:
             try:
-                await self.handler.on_servo_command(servo_cmd)
+                await self.handler.on_servo_command(parsed_cmd)
                 if self.debug:
-                    print(f"[WebSocketServer] 舵机命令已转发到 ROS2: {servo_cmd}")
+                    print(f"[WebSocketServer] 舵机命令已转发到 ROS2: {parsed_cmd}")
             except Exception as e:
                 print(f"[WebSocketServer] ROS2 命令处理失败: {e}")
         else:

@@ -60,6 +60,28 @@ class TestWebSocketHandler:
         assert response_data["command"]["servo_type"] == "bus"
 
     @pytest.mark.asyncio
+    async def test_handle_web_servo_message(self):
+        """测试处理 web_servo 格式的舵机控制消息"""
+        raw_message = json.dumps({
+            "character_name": "robot",
+            "web_servo": {
+                "is_bus_servo": True,
+                "servo_id": 3,
+                "position": 120,
+                "speed": 90
+            },
+            "action": {}
+        })
+        response = await self.handler.handle_message(raw_message)
+
+        assert response is not None
+        response_data = json.loads(response)
+        assert response_data["type"] == "servo_control_ack"
+        assert response_data["status"] == "accepted"
+        assert response_data["command"]["servo_id"] == 3
+        assert response_data["command"]["servo_type"] == "bus"
+
+    @pytest.mark.asyncio
     async def test_handle_invalid_servo_control(self):
         """测试处理无效的舵机控制消息"""
         raw_message = json.dumps({

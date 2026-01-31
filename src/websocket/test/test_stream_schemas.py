@@ -47,10 +47,12 @@ class TestStreamSchemas:
         data1 = {"servo_id": 1, "position": 90}
         data2 = {"id": 2, "angle": 45}
         data3 = {"channel": 5, "position": 200}
+        data4 = {"web_servo": {"is_bus_servo": True, "servo_id": 1, "position": 90}}
 
         assert self.schemas.validate_web_command(data1) is True
         assert self.schemas.validate_web_command(data2) is True
         assert self.schemas.validate_web_command(data3) is True
+        assert self.schemas.validate_web_command(data4) is True
 
     def test_validate_web_command_invalid(self):
         """测试验证无效命令"""

@@ -62,6 +62,21 @@ class TestMessageHandler:
 
         assert msg_type == MessageType.SERVO_CONTROL
 
+    def test_get_message_type_inferred_web_servo(self):
+        """测试根据 web_servo 推断舵机控制类型"""
+        data = {
+            "character_name": "robot",
+            "web_servo": {
+                "is_bus_servo": True,
+                "servo_id": 1,
+                "position": 90,
+                "speed": 100
+            }
+        }
+        msg_type = self.handler.get_message_type(data)
+
+        assert msg_type == MessageType.SERVO_CONTROL
+
     def test_get_message_type_inferred_heartbeat(self):
         """测试根据内容推断心跳类型"""
         # 无 type 字段，但有心跳特征字段
@@ -138,6 +153,41 @@ class TestMessageHandler:
         assert result["servo_type"] == "pca"
         assert result["servo_id"] == 7
         assert result["position"] == 200
+
+    def test_parse_web_servo_payload_bus(self):
+        """测试解析 web_servo 格式 - 总线舵机"""
+        data = {
+            "character_name": "robot",
+            "web_servo": {
+                "is_bus_servo": True,
+                "servo_id": 2,
+                "position": 45,
+                "speed": 120
+            }
+        }
+        result = self.handler.parse_servo_control(data)
+
+        assert result is not None
+        assert result["servo_type"] == "bus"
+        assert result["servo_id"] == 2
+        assert result["position"] == 45
+        assert result["speed"] == 120
+
+    def test_parse_web_servo_payload_pca(self):
+        """测试解析 web_servo 格式 - PCA 舵机"""
+        data = {
+            "web_servo": {
+                "is_bus_servo": False,
+                "servo_id": 5,
+                "position": 300
+            }
+        }
+        result = self.handler.parse_servo_control(data)
+
+        assert result is not None
+        assert result["servo_type"] == "pca"
+        assert result["servo_id"] == 5
+        assert result["position"] == 300
 
     def test_parse_servo_control_invalid_data(self):
         """测试解析无效的舵机控制数据"""
@@ -261,6 +311,9 @@ class TestMessageHandler:
         assert self.handler._is_servo_control({"servo_id": 1, "position": 90})
         assert self.handler._is_servo_control({"id": 1, "angle": 45})
         assert self.handler._is_servo_control({"channel": 5, "speed": 100})
+        assert self.handler._is_servo_control({
+            "web_servo": {"is_bus_servo": True, "servo_id": 1, "position": 90}
+        })
 
         # 不应该识别为舵机控制
         assert not self.handler._is_servo_control({"type": "heartbeat"})

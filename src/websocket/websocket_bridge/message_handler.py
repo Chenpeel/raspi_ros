@@ -115,8 +115,19 @@ class MessageHandler:
 
     def _is_servo_control(self, data: Dict[str, Any]) -> bool:
         """检查是否为舵机控制命令"""
+        if not isinstance(data, dict):
+            return False
+        # 新格式: 顶层包含 web_servo
+        if "web_servo" in data:
+            web_servo = data.get("web_servo")
+            if isinstance(web_servo, dict):
+                return any(
+                    key in web_servo
+                    for key in ("is_bus_servo", "servo_id", "channel", "position", "speed")
+                )
+            return True
         servo_keys = {'b', 'c', 'p', 'id', 'servo_id', 'channel',
-                      'angle', 'position', 'speed'}
+                      'angle', 'position', 'speed', 'is_bus_servo'}
         return bool(set(data.keys()) & servo_keys)
 
     async def process_message(self, data: Dict[str, Any]) -> Optional[str]:
@@ -188,6 +199,18 @@ class MessageHandler:
 
         格式解析:
         {
+          "character_name": "robot",
+          "web_servo": {         // 标准 Web 端格式
+            "is_bus_servo": true,
+            "servo_id": 1,
+            "position": 90,
+            "speed": 100
+          },
+          "action": {}
+        }
+
+        兼容旧格式:
+        {
           "b": -1|0,           // -1=总线舵机, 0=PCA舵机
           "c": servo_id,       // 舵机 ID 或通道
           "p": position,       // 位置或角度
@@ -211,6 +234,16 @@ class MessageHandler:
         """
         if not isinstance(data, dict):
             return None
+
+        # 新格式: web_servo payload（优先）
+        if "web_servo" in data:
+            return self._parse_web_servo_payload(data.get("web_servo"), data)
+
+        # 允许直接传入 web_servo 子对象
+        if any(key in data for key in ("is_bus_servo", "servo_id", "position")):
+            parsed = self._parse_web_servo_payload(data, None)
+            if parsed is not None:
+                return parsed
 
         # 尝试解析格式 {b, c, p, s}
         if 'b' in data and 'c' in data and 'p' in data:
@@ -257,11 +290,79 @@ class MessageHandler:
 
         return None
 
+    def _parse_web_servo_payload(self, web_servo: Any,
+                                 outer: Optional[Dict[str, Any]] = None
+                                 ) -> Optional[Dict[str, Any]]:
+        """解析 web_servo 标准 payload"""
+        if not isinstance(web_servo, dict):
+            return None
+
+        try:
+            # 优先使用 is_bus_servo 判断类型
+            is_bus_servo = None
+            raw_flag = web_servo.get("is_bus_servo")
+            if isinstance(raw_flag, bool):
+                is_bus_servo = raw_flag
+            elif isinstance(raw_flag, (int, float)):
+                is_bus_servo = bool(int(raw_flag))
+            elif isinstance(raw_flag, str):
+                flag = raw_flag.strip().lower()
+                if flag in ("true", "1", "yes", "y", "bus"):
+                    is_bus_servo = True
+                elif flag in ("false", "0", "no", "n", "pca", "pwm"):
+                    is_bus_servo = False
+
+            # 若缺少 is_bus_servo，则尝试 servo_type 兼容
+            if is_bus_servo is None:
+                servo_type_val = web_servo.get("servo_type")
+                if servo_type_val is None and outer:
+                    servo_type_val = outer.get("servo_type")
+                if servo_type_val is not None:
+                    servo_type_str = str(servo_type_val).strip().lower()
+                    if servo_type_str in ("bus", "bus_servo"):
+                        is_bus_servo = True
+                    elif servo_type_str in ("pca", "pca_servo", "pwm"):
+                        is_bus_servo = False
+
+            if is_bus_servo is None:
+                return None
+
+            servo_id = web_servo.get("servo_id", web_servo.get("channel"))
+            if servo_id is None:
+                return None
+
+            position = web_servo.get("position", web_servo.get("angle"))
+            if position is None:
+                return None
+
+            speed = web_servo.get("speed", 100)
+            port = web_servo.get("port", 0)
+
+            return {
+                "servo_type": "bus" if is_bus_servo else "pca",
+                "servo_id": int(servo_id),
+                "position": int(position),
+                "speed": int(speed),
+                "port": int(port)
+            }
+        except (ValueError, TypeError) as e:
+            logger.error(f"解析 web_servo 失败: {e}")
+
+        return None
+
     def _parse_full_format(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """解析完整格式的舵机控制命令"""
         try:
             # 尝试识别舵机类型和 ID
             servo_type = "bus"  # 默认
+
+            # 兼容 servo_type 字段
+            if "servo_type" in data:
+                servo_type_val = str(data.get("servo_type", "")).strip().lower()
+                if servo_type_val in ("bus", "bus_servo"):
+                    servo_type = "bus"
+                elif servo_type_val in ("pca", "pca_servo", "pwm"):
+                    servo_type = "pca"
 
             # 检查是否为总线舵机
             if 'b' in data:

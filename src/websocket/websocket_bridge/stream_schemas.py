@@ -52,7 +52,11 @@ class StreamSchemas:
         # 检查关键字段
         if not isinstance(data, dict):
             return False
-        
+
+        # 新格式: 标准 web_servo payload
+        if "web_servo" in data:
+            return True
+
         # 如果包含 {b, c, p} 字段，则为简写协议
         if 'b' in data and 'c' in data and 'p' in data:
             return True
