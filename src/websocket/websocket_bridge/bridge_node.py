@@ -127,6 +127,27 @@ class WebSocketROS2Bridge(Node):
 
         self.get_logger().info('WebSocket服务器线程已启动')
 
+    @staticmethod
+    def _coerce_float(value, default=None):
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return default
+
+    @staticmethod
+    def _coerce_uint16(value, default=None):
+        try:
+            val = int(round(float(value)))
+        except (TypeError, ValueError):
+            return default
+        return max(0, min(65535, val))
+
+    @staticmethod
+    def _map_centered_angle_to_pulse(angle: float) -> int:
+        """Map angle in [-90, 90] to pulse width 500-2500us."""
+        angle = max(-90.0, min(90.0, angle))
+        return int(round(500 + (angle + 90.0) * (2000.0 / 180.0)))
+
     async def handle_servo_command(self, servo_cmd: dict):
         """
         处理来自WebSocket的舵机控制命令
@@ -141,12 +162,36 @@ class WebSocketROS2Bridge(Node):
                 }
         """
         try:
+            servo_type = servo_cmd.get("servo_type", "bus")
+            raw_position = servo_cmd.get("position")
+            if raw_position is None:
+                raise ValueError("缺少 position 字段")
+
+            position_val = self._coerce_float(raw_position, None)
+            if position_val is None:
+                raise ValueError(f"非法 position: {raw_position}")
+
+            if servo_type == "bus":
+                # 支持中心角 [-90, 90]，映射到 500-2500us
+                if position_val < -90.0:
+                    position = self._map_centered_angle_to_pulse(-90.0)
+                elif position_val > 90.0:
+                    # 超出中心角范围时保持兼容（0-180角度或直接脉宽）
+                    position = self._coerce_uint16(position_val, 0)
+                else:
+                    position = self._map_centered_angle_to_pulse(position_val)
+            else:
+                # PCA 舵机只接受非负值
+                position = self._coerce_uint16(position_val, 0)
+
+            speed = self._coerce_uint16(servo_cmd.get("speed", 100), 100)
+
             # 转换为ServoCommand消息
             msg = ServoCommand()
-            msg.servo_type = servo_cmd.get("servo_type", "bus")
+            msg.servo_type = servo_type
             msg.servo_id = servo_cmd["servo_id"]
-            msg.position = servo_cmd["position"]
-            msg.speed = servo_cmd.get("speed", 100)  # 默认速度100ms
+            msg.position = position
+            msg.speed = speed  # 默认速度100ms
             msg.stamp = self.get_clock().now().to_msg()
 
             # 发布到ROS 2话题
