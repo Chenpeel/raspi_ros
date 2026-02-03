@@ -25,7 +25,8 @@ class WebSocketBridgeServer:
     """
 
     def __init__(self, host: str = "0.0.0.0", port: int = 9102,
-                 device_id: str = "default", debug: bool = False):
+                 device_id: str = "default", debug: bool = False,
+                 debug_logger=None):
         """
         初始化 WebSocket 服务器
 
@@ -39,8 +40,13 @@ class WebSocketBridgeServer:
         self.port = port
         self.device_id = device_id
         self.debug = debug
+        self.debug_logger = debug_logger
 
-        self.handler = WebSocketHandler(device_id=device_id, debug=debug)
+        self.handler = WebSocketHandler(
+            device_id=device_id,
+            debug=debug,
+            debug_logger=debug_logger
+        )
         self.clients: Set[WebSocketServerProtocol] = set()
         self.client_info = {}  # 客户端信息 {websocket: {"id": str, "name": str}}
 
@@ -56,6 +62,14 @@ class WebSocketBridgeServer:
         # 心跳配置
         self.heartbeat_interval = 15.0  # 秒
         self.heartbeat_timeout = 5.0  # 秒
+
+    def _debug(self, category, message):
+        if not self.debug:
+            return
+        if self.debug_logger:
+            self.debug_logger.record(category, message)
+        else:
+            print(f"[WebSocketServer] {message}")
 
     def set_servo_command_callback(self, callback):
         """设置舵机命令回调"""
@@ -97,8 +111,7 @@ class WebSocketBridgeServer:
             try:
                 await client.close()
             except Exception as e:
-                if self.debug:
-                    print(f"[WebSocketServer] 关闭连接失败: {e}")
+                self._debug("ws_close", f"关闭连接失败: {e}")
 
         if self.server:
             self.server.close()
@@ -145,8 +158,7 @@ class WebSocketBridgeServer:
             message: 消息内容
         """
         try:
-            if self.debug:
-                print(f"[WebSocketServer] 收到消息: {message[:100]}...")
+            self._debug("ws_message", f"收到消息: {message[:100]}...")
 
             # 解析消息
             try:
@@ -184,8 +196,7 @@ class WebSocketBridgeServer:
 
             if response:
                 await websocket.send(response)
-                if self.debug:
-                    print(f"[WebSocketServer] 发送响应: {response[:100]}...")
+                self._debug("ws_send", f"发送响应: {response[:100]}...")
 
         except Exception as e:
             print(f"[WebSocketServer] 处理消息异常: {e}")
@@ -199,8 +210,7 @@ class WebSocketBridgeServer:
                 }, ensure_ascii=False)
                 await websocket.send(error_resp)
             except Exception as e2:
-                if self.debug:
-                    print(f"[WebSocketServer] 发送错误响应失败: {e2}")
+                self._debug("ws_error", f"发送错误响应失败: {e2}")
 
     async def heartbeat_loop(self):
         """
@@ -261,8 +271,7 @@ class WebSocketBridgeServer:
 
             await asyncio.gather(*tasks, return_exceptions=True)
 
-            if self.debug:
-                print(f"[WebSocketServer] 广播状态到 {len(self.clients)} 个客户端")
+            self._debug("ws_broadcast", f"广播状态到 {len(self.clients)} 个客户端")
 
         except Exception as e:
             print(f"[WebSocketServer] 广播状态异常: {e}")
@@ -377,8 +386,7 @@ class WebSocketBridgeServer:
 
         await asyncio.gather(*tasks, return_exceptions=True)
 
-        if self.debug:
-            print(f"[WebSocketServer] 广播用户列表: {len(online_users)} 个在线用户")
+        self._debug("ws_user_list", f"广播用户列表: {len(online_users)} 个在线用户")
 
     async def _handle_private_to_robot(self, websocket: WebSocketServerProtocol, data: dict):
         """
@@ -390,8 +398,7 @@ class WebSocketBridgeServer:
         """
         content = data.get("content", "")
 
-        if self.debug:
-            print(f"[WebSocketServer] 收到发给机器人的消息: {content[:100]}")
+        self._debug("ws_private", f"收到发给机器人的消息: {content[:100]}")
 
         # 尝试解析为 JSON（舵机控制命令）
         try:
@@ -409,8 +416,7 @@ class WebSocketBridgeServer:
             }
             await websocket.send(json.dumps(ack, ensure_ascii=False))
 
-            if self.debug:
-                print(f"[WebSocketServer] 舵机命令已处理: {servo_cmd}")
+            self._debug("ws_servo", f"舵机命令已处理: {servo_cmd}")
 
         except json.JSONDecodeError:
             # 如果不是 JSON，作为普通消息处理
@@ -427,16 +433,14 @@ class WebSocketBridgeServer:
         """
         parsed_cmd = self.handler.message_handler.parse_servo_control(servo_cmd)
         if parsed_cmd is None:
-            if self.debug:
-                print(f"[WebSocketServer] 无法解析舵机命令: {servo_cmd}")
+            self._debug("ws_servo", f"无法解析舵机命令: {servo_cmd}")
             return
 
         # 使用 handler 的舵机命令回调
         if hasattr(self.handler, 'on_servo_command') and self.handler.on_servo_command:
             try:
                 await self.handler.on_servo_command(parsed_cmd)
-                if self.debug:
-                    print(f"[WebSocketServer] 舵机命令已转发到 ROS2: {parsed_cmd}")
+                self._debug("ws_servo", f"舵机命令已转发到 ROS2: {parsed_cmd}")
             except Exception as e:
                 print(f"[WebSocketServer] ROS2 命令处理失败: {e}")
         else:

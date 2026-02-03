@@ -29,7 +29,8 @@ class WebSocketHandler:
     4. 订阅 ROS 2 状态并回传 Web
     """
     
-    def __init__(self, device_id: str = "default", debug: bool = False):
+    def __init__(self, device_id: str = "default", debug: bool = False,
+                 debug_logger=None):
         """
         初始化 WebSocket 处理器
 
@@ -40,6 +41,7 @@ class WebSocketHandler:
         self.device_id = device_id
         self.debug = debug
         self.message_handler = MessageHandler(debug=debug)
+        self.debug_logger = debug_logger
         
         # ROS 2 相关的回调
         self.on_servo_command = None  # Callable[[dict], None]
@@ -54,6 +56,14 @@ class WebSocketHandler:
             "uptime": 0
         }
         self.last_heartbeat = time.time()
+
+    def _debug(self, category, message):
+        if not self.debug:
+            return
+        if self.debug_logger:
+            self.debug_logger.record(category, message)
+        else:
+            print(f"[WebSocketHandler] {message}")
     
     def register_servo_command_handler(self, callback: Callable):
         """
@@ -110,8 +120,7 @@ class WebSocketHandler:
         # 获取消息类型
         msg_type = self.message_handler.get_message_type(data)
         
-        if self.debug:
-            print(f"[WebSocketHandler] 处理消息: {msg_type.value}")
+        self._debug("ws_handler", f"处理消息: {msg_type.value}")
         
         # 根据消息类型分发
         if msg_type == MessageType.HEARTBEAT:
@@ -146,8 +155,7 @@ class WebSocketHandler:
             "timestamp": int(time.time())
         }
         
-        if self.debug:
-            print(f"[WebSocketHandler] 发送心跳响应")
+        self._debug("ws_handler", "发送心跳响应")
         
         return json.dumps(response, ensure_ascii=False)
     
@@ -164,8 +172,7 @@ class WebSocketHandler:
                 device_id=self.device_id
             )
 
-        if self.debug:
-            print(f"[WebSocketHandler] 解析舵机命令: {servo_cmd}")
+        self._debug("ws_handler", f"解析舵机命令: {servo_cmd}")
 
         # 调用 ROS 2 命令处理器
         if self.on_servo_command:
@@ -215,8 +222,7 @@ class WebSocketHandler:
             "timestamp": int(time.time())
         }
         
-        if self.debug:
-            print(f"[WebSocketHandler] 设备已注册: {device_name}")
+        self._debug("ws_handler", f"设备已注册: {device_name}")
         
         return json.dumps(response, ensure_ascii=False)
     
@@ -224,8 +230,7 @@ class WebSocketHandler:
         """处理广播消息"""
         content = data.get("content", {})
         
-        if self.debug:
-            print(f"[WebSocketHandler] 收到广播: {content}")
+        self._debug("ws_handler", f"收到广播: {content}")
         
         # 如果广播内容包含舵机命令
         servo_cmd = self.message_handler.parse_servo_control(content)
@@ -241,8 +246,7 @@ class WebSocketHandler:
         """处理私有消息"""
         content = data.get("content", data)
         
-        if self.debug:
-            print(f"[WebSocketHandler] 收到私有消息")
+        self._debug("ws_handler", "收到私有消息")
         
         # 尝试解析为舵机命令
         servo_cmd = self.message_handler.parse_servo_control(content)

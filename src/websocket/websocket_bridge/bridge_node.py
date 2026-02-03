@@ -18,6 +18,7 @@ from servo_msgs.msg import ServoCommand, ServoState
 from sensor_msgs.msg import ImuData
 
 from .ws_server import WebSocketBridgeServer
+from .debug_aggregator import DebugAggregator
 
 
 class WebSocketROS2Bridge(Node):
@@ -50,6 +51,9 @@ class WebSocketROS2Bridge(Node):
         self.declare_parameter('imu_debug', debug)
         self.declare_parameter('heartbeat_debug', False)
         self.declare_parameter('ws_debug', False)
+        self.declare_parameter('debug_aggregate', True)
+        self.declare_parameter('debug_aggregate_period', 1.0)
+        self.declare_parameter('debug_aggregate_max_len', 120)
 
         # 从ROS参数读取配置
         self.ws_host = self.get_parameter('ws_host').value
@@ -59,6 +63,20 @@ class WebSocketROS2Bridge(Node):
         self.imu_debug = self.get_parameter('imu_debug').value
         self.heartbeat_debug = self.get_parameter('heartbeat_debug').value
         self.ws_debug = self.get_parameter('ws_debug').value
+        self.debug_aggregate = self.get_parameter('debug_aggregate').value
+        self.debug_aggregate_period = float(self.get_parameter('debug_aggregate_period').value)
+        self.debug_aggregate_max_len = int(self.get_parameter('debug_aggregate_max_len').value)
+
+        if self.debug_aggregate_period <= 0:
+            self.debug_aggregate_period = 1.0
+
+        self.debug_aggregator = None
+        if self.debug_aggregate:
+            self.debug_aggregator = DebugAggregator(
+                emit=self.get_logger().info,
+                max_len=self.debug_aggregate_max_len
+            )
+            self.create_timer(self.debug_aggregate_period, self.debug_aggregator.flush)
 
         # ROS 2话题
         # 发布舵机命令到驱动节点
@@ -106,7 +124,8 @@ class WebSocketROS2Bridge(Node):
                 host=self.ws_host,
                 port=self.ws_port,
                 device_id=self.device_id,
-                debug=self.ws_debug
+                debug=self.ws_debug,
+                debug_logger=self.debug_aggregator
             )
 
             # 注册回调
@@ -203,11 +222,14 @@ class WebSocketROS2Bridge(Node):
             # 发布到ROS 2话题
             self.servo_command_pub.publish(msg)
 
-            if self.debug:
-                self.get_logger().info(
-                    f'发布舵机命令: {msg.servo_type} '
-                    f'ID={msg.servo_id} POS={msg.position} SPEED={msg.speed}'
-                )
+            self._debug_log(
+                "servo_command",
+                (
+                    f"{msg.servo_type} ID={msg.servo_id} "
+                    f"POS={msg.position} SPEED={msg.speed}"
+                ),
+                self.debug
+            )
 
         except Exception as e:
             self.get_logger().error(f'处理舵机命令失败: {e}')
@@ -215,8 +237,7 @@ class WebSocketROS2Bridge(Node):
 
     async def handle_heartbeat(self):
         """处理心跳消息"""
-        if self.heartbeat_debug:
-            self.get_logger().debug('收到WebSocket心跳')
+        self._debug_log("heartbeat", "received", self.heartbeat_debug)
 
     async def handle_status_query(self) -> dict:
         """
@@ -254,11 +275,14 @@ class WebSocketROS2Bridge(Node):
                 "timestamp": msg.stamp.sec + msg.stamp.nanosec / 1e9
             }
 
-            if self.debug:
-                self.get_logger().info(
-                    f'收到舵机状态: {msg.servo_type} '
-                    f'ID={msg.servo_id} POS={msg.position} ERR={msg.error_code}'
-                )
+            self._debug_log(
+                "servo_state",
+                (
+                    f"{msg.servo_type} ID={msg.servo_id} "
+                    f"POS={msg.position} ERR={msg.error_code}"
+                ),
+                self.debug
+            )
 
             # 更新WebSocket服务器的状态
             if self.ws_server:
@@ -338,11 +362,14 @@ class WebSocketROS2Bridge(Node):
                 "timestamp": msg.stamp.sec + msg.stamp.nanosec / 1e9
             }
 
-            if self.imu_debug:
-                self.get_logger().info(
-                    f'收到 IMU 数据: euler=({msg.roll:.1f}, {msg.pitch:.1f}, {msg.yaw:.1f}) '
-                    f'accel=({msg.accel_x:.2f}, {msg.accel_y:.2f}, {msg.accel_z:.2f})'
-                )
+            self._debug_log(
+                "imu",
+                (
+                    f"euler=({msg.roll:.1f}, {msg.pitch:.1f}, {msg.yaw:.1f}) "
+                    f"accel=({msg.accel_x:.2f}, {msg.accel_y:.2f}, {msg.accel_z:.2f})"
+                ),
+                self.imu_debug
+            )
 
             # 广播到所有 WebSocket 客户端
             if self.ws_server and self.ws_loop and not self.ws_loop.is_closed():
@@ -358,6 +385,14 @@ class WebSocketROS2Bridge(Node):
 
         except Exception as e:
             self.get_logger().error(f'处理 IMU 数据回调异常: {e}')
+
+    def _debug_log(self, category, message, enabled):
+        if not enabled:
+            return
+        if self.debug_aggregator:
+            self.debug_aggregator.record(category, message)
+        else:
+            self.get_logger().info(message)
 
     def shutdown(self):
         """关闭节点和WebSocket服务器"""
