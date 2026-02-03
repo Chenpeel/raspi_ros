@@ -53,14 +53,14 @@ class TestKinematicsSolverInitialization:
         solver = Parallel3DOFKinematicsSolver()
 
         # 检查右脚舵机ID
-        assert solver.servo_config['right_ankle']['servo_1']['id'] == 10
-        assert solver.servo_config['right_ankle']['servo_2']['id'] == 11
-        assert solver.servo_config['right_ankle']['servo_3']['id'] == 12
+        assert solver.servo_config['right_ankle']['servo_1']['id'] == 9
+        assert solver.servo_config['right_ankle']['servo_2']['id'] == 10
+        assert solver.servo_config['right_ankle']['servo_3']['id'] == 11
 
         # 检查左脚舵机ID
-        assert solver.servo_config['left_ankle']['servo_1']['id'] == 13
-        assert solver.servo_config['left_ankle']['servo_2']['id'] == 14
-        assert solver.servo_config['left_ankle']['servo_3']['id'] == 15
+        assert solver.servo_config['left_ankle']['servo_1']['id'] == 12
+        assert solver.servo_config['left_ankle']['servo_2']['id'] == 13
+        assert solver.servo_config['left_ankle']['servo_3']['id'] == 14
 
         # 检查位置映射参数
         mapping = solver.servo_config['position_mapping']

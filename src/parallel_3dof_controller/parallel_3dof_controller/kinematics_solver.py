@@ -82,15 +82,15 @@ class Parallel3DOFKinematicsSolver:
         return {
             # 右脚踝舵机ID
             'right_ankle': {
-                'servo_1': {'id': 12, 'offset': 0.0, 'direction': 1},
-                'servo_2': {'id': 13, 'offset': 0.0, 'direction': 1},
-                'servo_3': {'id': 14, 'offset': 0.0, 'direction': 1}
-            },
-            # 左脚踝舵机ID
-            'left_ankle': {
                 'servo_1': {'id': 9, 'offset': 0.0, 'direction': 1},
                 'servo_2': {'id': 10, 'offset': 0.0, 'direction': 1},
                 'servo_3': {'id': 11, 'offset': 0.0, 'direction': 1}
+            },
+            # 左脚踝舵机ID
+            'left_ankle': {
+                'servo_1': {'id': 12, 'offset': 0.0, 'direction': 1},
+                'servo_2': {'id': 13, 'offset': 0.0, 'direction': 1},
+                'servo_3': {'id': 14, 'offset': 0.0, 'direction': 1}
             },
             # 舵机位置映射参数
             'position_mapping': {
