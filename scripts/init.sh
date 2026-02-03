@@ -140,5 +140,18 @@ echo ""
 # 延迟1秒让用户看到信息
 sleep 1
 
-# 使用 exec 替换当前进程
-exec ros2 launch websocket_bridge full_system.launch.py
+# 选择启动模式
+LAUNCH_MODE=${LAUNCH_MODE:-full}
+LAUNCH_DEBUG=${LAUNCH_DEBUG:-false}
+PARALLEL_INSTANCES_FILE=${PARALLEL_INSTANCES_FILE:-/root/ros_ws/src/parallel_3dof_controller/config/parallel_3dof_instances.yaml}
+
+if [ "$LAUNCH_MODE" = "multi" ]; then
+    log_info "Launch mode: websocket_bus_servo + parallel_3dof_multi"
+    exec ros2 launch websocket_bridge websocket_bus_servo.launch.py \
+        instances_file:="$PARALLEL_INSTANCES_FILE" \
+        debug:="$LAUNCH_DEBUG"
+else
+    log_info "Launch mode: full_system"
+    exec ros2 launch websocket_bridge full_system.launch.py \
+        debug:="$LAUNCH_DEBUG"
+fi

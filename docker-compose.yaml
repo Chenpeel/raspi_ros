@@ -70,8 +70,7 @@ services:
             - PYTHONUNBUFFERED=1
             - TZ=Asia/Shanghai
             - DEVELOPMENT_MODE=1
-            - LAUNCH_MODE=multi
-            - PARALLEL_INSTANCES_FILE=/root/ros_ws/src/parallel_3dof_controller/config/parallel_3dof_instances.yaml
+            - LAUNCH_DEBUG=true
 
         # 开发模式 profile（只有指定时才启动）
         profiles:
