@@ -47,12 +47,14 @@ class WebSocketROS2Bridge(Node):
         self.declare_parameter('ws_port', ws_port)
         self.declare_parameter('device_id', device_id)
         self.declare_parameter('debug', debug)
+        self.declare_parameter('imu_debug', debug)
 
         # 从ROS参数读取配置
         self.ws_host = self.get_parameter('ws_host').value
         self.ws_port = self.get_parameter('ws_port').value
         self.device_id = self.get_parameter('device_id').value
         self.debug = self.get_parameter('debug').value
+        self.imu_debug = self.get_parameter('imu_debug').value
 
         # ROS 2话题
         # 发布舵机命令到驱动节点
@@ -332,7 +334,7 @@ class WebSocketROS2Bridge(Node):
                 "timestamp": msg.stamp.sec + msg.stamp.nanosec / 1e9
             }
 
-            if self.debug:
+            if self.imu_debug:
                 self.get_logger().info(
                     f'收到 IMU 数据: euler=({msg.roll:.1f}, {msg.pitch:.1f}, {msg.yaw:.1f}) '
                     f'accel=({msg.accel_x:.2f}, {msg.accel_y:.2f}, {msg.accel_z:.2f})'
@@ -347,7 +349,7 @@ class WebSocketROS2Bridge(Node):
                             self.ws_loop
                         )
                     except RuntimeError as e:
-                        if self.debug:
+                        if self.imu_debug:
                             self.get_logger().warning(f'无法广播 IMU 数据（事件循环不可用）: {e}')
 
         except Exception as e:

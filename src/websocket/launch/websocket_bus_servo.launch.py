@@ -40,12 +40,22 @@ def generate_launch_description():
         description='parallel_3dof_controller multi-instance config file'
     )
 
+    imu_debug_arg = DeclareLaunchArgument(
+        'imu_debug',
+        default_value=LaunchConfiguration('debug'),
+        description='IMU 是否启用调试模式'
+    )
+
     # WebSocket桥接节点
     bridge_node = Node(
         package='websocket_bridge',
         executable='bridge_node',
         name='websocket_ros2_bridge',
-        output='screen'
+        output='screen',
+        parameters=[
+            {'debug': LaunchConfiguration('debug')},
+            {'imu_debug': LaunchConfiguration('imu_debug')}
+        ]
     )
 
     # 总线舵机驱动
@@ -78,6 +88,7 @@ def generate_launch_description():
         debug_arg,
         serial_port_arg,
         instances_file_arg,
+        imu_debug_arg,
         bridge_node,
         bus_servo_node,
         parallel_3dof_multi,

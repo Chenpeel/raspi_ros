@@ -167,7 +167,8 @@ def generate_launch_description():
             {'ws_host': ws_host},
             {'ws_port': ws_port},
             {'device_id': device_id},
-            {'debug': debug}
+            {'debug': debug},
+            {'imu_debug': imu_debug}
         ],
         remappings=[
             # 如果需要重新映射话题名称，可以在这里配置

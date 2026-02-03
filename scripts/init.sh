@@ -150,7 +150,8 @@ if [ "$LAUNCH_MODE" = "multi" ]; then
     log_info "Launch mode: websocket_bus_servo + parallel_3dof_multi"
     exec ros2 launch websocket_bridge websocket_bus_servo.launch.py \
         instances_file:="$PARALLEL_INSTANCES_FILE" \
-        debug:="$LAUNCH_DEBUG"
+        debug:="$LAUNCH_DEBUG" \
+        imu_debug:="$LAUNCH_IMU_DEBUG"
 else
     log_info "Launch mode: full_system"
     exec ros2 launch websocket_bridge full_system.launch.py \
