@@ -7,9 +7,11 @@
 """
 
 from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
-from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration
+from launch_ros.substitutions import FindPackageShare
 
 
 def generate_launch_description():
@@ -26,6 +28,16 @@ def generate_launch_description():
         'port',
         default_value='/dev/ttyAMA0',
         description='串口设备路径'
+    )
+
+    instances_file_arg = DeclareLaunchArgument(
+        'instances_file',
+        default_value=PathJoinSubstitution([
+            FindPackageShare('parallel_3dof_controller'),
+            'config',
+            'parallel_3dof_instances.yaml'
+        ]),
+        description='parallel_3dof_controller multi-instance config file'
     )
 
     # WebSocket桥接节点
@@ -50,9 +62,23 @@ def generate_launch_description():
         ]
     )
 
+    # 3-DOF并联控制器多实例
+    parallel_3dof_multi = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(PathJoinSubstitution([
+            FindPackageShare('parallel_3dof_controller'),
+            'launch',
+            'parallel_3dof_multi.launch.py'
+        ])),
+        launch_arguments={
+            'instances_file': LaunchConfiguration('instances_file')
+        }.items()
+    )
+
     return LaunchDescription([
         debug_arg,
         serial_port_arg,
+        instances_file_arg,
         bridge_node,
         bus_servo_node,
+        parallel_3dof_multi,
     ])

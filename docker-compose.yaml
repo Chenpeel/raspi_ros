@@ -72,6 +72,9 @@ services:
             - DEVELOPMENT_MODE=1
             - LAUNCH_DEBUG=true
 
+        # 开发模式：自动启动
+        command: bash /root/ros_ws/scripts/init.sh
+
         # 开发模式 profile（只有指定时才启动）
         profiles:
             - dev
