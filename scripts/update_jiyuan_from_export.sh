@@ -11,8 +11,8 @@ This script:
   1) Fixes jiyuqn -> jiyuan naming in the export folder
   2) Mirrors right_*.STL -> left_*.STL
   3) Mirrors URDF in-place (jiyuan.urdf becomes bilateral)
-  4) Syncs export -> src/jiyuan
-  5) Updates src/robot_description to the latest jiyuan model
+  4) Syncs export -> src/robot_description
+  5) Updates robot_description assets (assets.urdf/assets.csv)
 EOF
 }
 
@@ -24,17 +24,12 @@ fi
 export_dir="${1:-$HOME/Desktop/jiyuan}"
 ros_root="$(cd "$(dirname "$0")/.." && pwd)"
 ros_src="${ros_root}/src"
-jiyuan_pkg="${ros_src}/jiyuan"
 robot_desc="${ros_src}/robot_description"
 rl_root="$(cd "${ros_root}/../rl" && pwd)"
 mirror_tool="${rl_root}/utils/urdf2ros2/mirror_tool.py"
 
 if [[ ! -d "${export_dir}" ]]; then
   echo "Error: export dir not found: ${export_dir}"
-  exit 1
-fi
-if [[ ! -d "${jiyuan_pkg}" ]]; then
-  echo "Error: jiyuan package not found: ${jiyuan_pkg}"
   exit 1
 fi
 if [[ ! -d "${robot_desc}" ]]; then
@@ -143,25 +138,21 @@ tmp_urdf="${export_dir}/urdf/.jiyuan_bilateral.tmp.urdf"
   -o "${tmp_urdf}"
 mv "${tmp_urdf}" "${export_dir}/urdf/jiyuan.urdf"
 
-echo "[4/5] Sync export -> src/jiyuan"
-rsync -a "${export_dir}/meshes/" "${jiyuan_pkg}/meshes/"
-rsync -a "${export_dir}/urdf/" "${jiyuan_pkg}/urdf/"
+echo "[4/5] Sync export -> src/robot_description"
+rsync -a "${export_dir}/meshes/" "${robot_desc}/meshes/"
+rsync -a "${export_dir}/urdf/" "${robot_desc}/urdf/"
 if [[ -d "${export_dir}/textures" ]]; then
-  rsync -a "${export_dir}/textures/" "${jiyuan_pkg}/textures/"
+  rsync -a "${export_dir}/textures/" "${robot_desc}/textures/"
 fi
 if [[ -d "${export_dir}/mjcf" ]]; then
-  rsync -a "${export_dir}/mjcf/" "${jiyuan_pkg}/mjcf/"
+  rsync -a "${export_dir}/mjcf/" "${robot_desc}/mjcf/"
 fi
 
-echo "[5/5] Update src/robot_description"
-rsync -a "${jiyuan_pkg}/meshes/" "${robot_desc}/meshes/"
-cp "${jiyuan_pkg}/urdf/jiyuan.urdf" "${robot_desc}/urdf/assets.urdf"
-cp "${jiyuan_pkg}/urdf/jiyuan.csv" "${robot_desc}/urdf/assets.csv"
+echo "[5/5] Update robot_description assets"
+cp "${robot_desc}/urdf/jiyuan.urdf" "${robot_desc}/urdf/assets.urdf"
+cp "${robot_desc}/urdf/jiyuan.csv" "${robot_desc}/urdf/assets.csv"
 perl -pi -e 's/package:\\/\\/jiyuan\\//package:\\/\\/robot_description\\//g' \
   "${robot_desc}/urdf/assets.urdf" "${robot_desc}/urdf/assets.csv"
-if [[ -d "${jiyuan_pkg}/mjcf" ]]; then
-  rsync -a "${jiyuan_pkg}/mjcf/" "${robot_desc}/mjcf/"
-fi
 
 echo ""
 echo "Done."
