@@ -32,8 +32,14 @@ def generate_launch_description():
 
     bus_servo_debug_arg = DeclareLaunchArgument(
         'bus_servo_debug',
-        default_value=LaunchConfiguration('debug'),
+        default_value='true',
         description='总线舵机驱动调试模式'
+    )
+
+    heartbeat_debug_arg = DeclareLaunchArgument(
+        'heartbeat_debug',
+        default_value='false',
+        description='心跳调试模式'
     )
 
     serial_port_arg = DeclareLaunchArgument(
@@ -54,7 +60,7 @@ def generate_launch_description():
 
     imu_debug_arg = DeclareLaunchArgument(
         'imu_debug',
-        default_value=LaunchConfiguration('debug'),
+        default_value='false',
         description='IMU 是否启用调试模式'
     )
 
@@ -66,7 +72,8 @@ def generate_launch_description():
         output='screen',
         parameters=[
             {'debug': LaunchConfiguration('bridge_debug')},
-            {'imu_debug': LaunchConfiguration('imu_debug')}
+            {'imu_debug': LaunchConfiguration('imu_debug')},
+            {'heartbeat_debug': LaunchConfiguration('heartbeat_debug')}
         ]
     )
 
@@ -102,6 +109,7 @@ def generate_launch_description():
         bus_servo_debug_arg,
         serial_port_arg,
         instances_file_arg,
+        heartbeat_debug_arg,
         imu_debug_arg,
         bridge_node,
         bus_servo_node,

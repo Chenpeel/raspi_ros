@@ -48,6 +48,7 @@ class WebSocketROS2Bridge(Node):
         self.declare_parameter('device_id', device_id)
         self.declare_parameter('debug', debug)
         self.declare_parameter('imu_debug', debug)
+        self.declare_parameter('heartbeat_debug', False)
 
         # 从ROS参数读取配置
         self.ws_host = self.get_parameter('ws_host').value
@@ -55,6 +56,7 @@ class WebSocketROS2Bridge(Node):
         self.device_id = self.get_parameter('device_id').value
         self.debug = self.get_parameter('debug').value
         self.imu_debug = self.get_parameter('imu_debug').value
+        self.heartbeat_debug = self.get_parameter('heartbeat_debug').value
 
         # ROS 2话题
         # 发布舵机命令到驱动节点
@@ -211,7 +213,7 @@ class WebSocketROS2Bridge(Node):
 
     async def handle_heartbeat(self):
         """处理心跳消息"""
-        if self.debug:
+        if self.heartbeat_debug:
             self.get_logger().debug('收到WebSocket心跳')
 
     async def handle_status_query(self) -> dict:

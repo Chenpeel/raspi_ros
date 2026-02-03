@@ -86,8 +86,14 @@ def generate_launch_description():
 
     bus_servo_debug_arg = DeclareLaunchArgument(
         'bus_servo_debug',
-        default_value=LaunchConfiguration('debug'),
+        default_value='true',
         description='总线舵机驱动调试模式'
+    )
+
+    heartbeat_debug_arg = DeclareLaunchArgument(
+        'heartbeat_debug',
+        default_value='false',
+        description='心跳调试模式'
     )
 
     # 串口设备参数
@@ -131,7 +137,7 @@ def generate_launch_description():
 
     imu_debug_arg = DeclareLaunchArgument(
         'imu_debug',
-        default_value=LaunchConfiguration('debug'),
+        default_value='false',
         description='IMU 是否启用调试模式'
     )
 
@@ -170,6 +176,7 @@ def generate_launch_description():
     imu_sensor_id = LaunchConfiguration('imu_sensor_id')
     bridge_debug = LaunchConfiguration('bridge_debug')
     bus_servo_debug = LaunchConfiguration('bus_servo_debug')
+    heartbeat_debug = LaunchConfiguration('heartbeat_debug')
 
     pca_debug_arg = DeclareLaunchArgument(
         'pca_debug',
@@ -189,7 +196,8 @@ def generate_launch_description():
             {'ws_port': ws_port},
             {'device_id': device_id},
             {'debug': bridge_debug},
-            {'imu_debug': imu_debug}
+            {'imu_debug': imu_debug},
+            {'heartbeat_debug': heartbeat_debug}
         ],
         remappings=[
             # 如果需要重新映射话题名称，可以在这里配置
@@ -305,6 +313,7 @@ def generate_launch_description():
         debug_arg,
         bridge_debug_arg,
         bus_servo_debug_arg,
+        heartbeat_debug_arg,
         serial_port_arg,
         baudrate_arg,
         i2c_address_arg,
