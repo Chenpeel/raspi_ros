@@ -143,7 +143,10 @@ sleep 1
 # 选择启动模式
 LAUNCH_MODE=${LAUNCH_MODE:-full}
 LAUNCH_DEBUG=${LAUNCH_DEBUG:-false}
+LAUNCH_BRIDGE_DEBUG=${LAUNCH_BRIDGE_DEBUG:-$LAUNCH_DEBUG}
+LAUNCH_BUS_SERVO_DEBUG=${LAUNCH_BUS_SERVO_DEBUG:-$LAUNCH_DEBUG}
 LAUNCH_IMU_DEBUG=${LAUNCH_IMU_DEBUG:-$LAUNCH_DEBUG}
+LAUNCH_PCA_DEBUG=${LAUNCH_PCA_DEBUG:-$LAUNCH_DEBUG}
 PARALLEL_INSTANCES_FILE=${PARALLEL_INSTANCES_FILE:-/root/ros_ws/src/parallel_3dof_controller/config/parallel_3dof_instances.yaml}
 
 if [ "$LAUNCH_MODE" = "multi" ]; then
@@ -151,10 +154,15 @@ if [ "$LAUNCH_MODE" = "multi" ]; then
     exec ros2 launch websocket_bridge websocket_bus_servo.launch.py \
         instances_file:="$PARALLEL_INSTANCES_FILE" \
         debug:="$LAUNCH_DEBUG" \
+        bridge_debug:="$LAUNCH_BRIDGE_DEBUG" \
+        bus_servo_debug:="$LAUNCH_BUS_SERVO_DEBUG" \
         imu_debug:="$LAUNCH_IMU_DEBUG"
 else
     log_info "Launch mode: full_system"
     exec ros2 launch websocket_bridge full_system.launch.py \
         debug:="$LAUNCH_DEBUG" \
-        imu_debug:="$LAUNCH_IMU_DEBUG"
+        bridge_debug:="$LAUNCH_BRIDGE_DEBUG" \
+        bus_servo_debug:="$LAUNCH_BUS_SERVO_DEBUG" \
+        imu_debug:="$LAUNCH_IMU_DEBUG" \
+        pca_debug:="$LAUNCH_PCA_DEBUG"
 fi

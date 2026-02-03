@@ -78,6 +78,18 @@ def generate_launch_description():
         description='是否启用调试模式'
     )
 
+    bridge_debug_arg = DeclareLaunchArgument(
+        'bridge_debug',
+        default_value=LaunchConfiguration('debug'),
+        description='WebSocket桥接节点调试模式'
+    )
+
+    bus_servo_debug_arg = DeclareLaunchArgument(
+        'bus_servo_debug',
+        default_value=LaunchConfiguration('debug'),
+        description='总线舵机驱动调试模式'
+    )
+
     # 串口设备参数
     serial_port_arg = DeclareLaunchArgument(
         'serial_port',
@@ -156,6 +168,15 @@ def generate_launch_description():
     imu_publish_rate = LaunchConfiguration('imu_publish_rate')
     imu_algo_type = LaunchConfiguration('imu_algo_type')
     imu_sensor_id = LaunchConfiguration('imu_sensor_id')
+    bridge_debug = LaunchConfiguration('bridge_debug')
+    bus_servo_debug = LaunchConfiguration('bus_servo_debug')
+
+    pca_debug_arg = DeclareLaunchArgument(
+        'pca_debug',
+        default_value=LaunchConfiguration('debug'),
+        description='PCA9685 舵机驱动调试模式'
+    )
+    pca_debug = LaunchConfiguration('pca_debug')
 
     # 1. WebSocket桥接节点
     bridge_node = Node(
@@ -167,7 +188,7 @@ def generate_launch_description():
             {'ws_host': ws_host},
             {'ws_port': ws_port},
             {'device_id': device_id},
-            {'debug': debug},
+            {'debug': bridge_debug},
             {'imu_debug': imu_debug}
         ],
         remappings=[
@@ -198,7 +219,7 @@ def generate_launch_description():
                 {'baudrate': baudrate},
                 {'default_speed': 100},
                 {'servo_ids': servo_ids},
-                {'debug': debug},
+                {'debug': bus_servo_debug},
                 {'log_id': True}
             ],
             remappings=[
@@ -246,7 +267,7 @@ def generate_launch_description():
     #         {'max_pwm': 520},
     #         {'min_us': 500},
     #         {'max_us': 2500},
-    #         {'debug': debug}
+    #         {'debug': pca_debug}
     #     ],
     #     remappings=[
     #         ('~/command', '/servo/command'),
@@ -282,6 +303,8 @@ def generate_launch_description():
         ws_port_arg,
         device_id_arg,
         debug_arg,
+        bridge_debug_arg,
+        bus_servo_debug_arg,
         serial_port_arg,
         baudrate_arg,
         i2c_address_arg,
@@ -292,6 +315,7 @@ def generate_launch_description():
         imu_publish_rate_arg,
         imu_algo_type_arg,
         imu_sensor_id_arg,
+        pca_debug_arg,
 
         # 启动信息
         log_info,

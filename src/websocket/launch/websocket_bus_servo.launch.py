@@ -24,6 +24,18 @@ def generate_launch_description():
         description='启用调试模式'
     )
 
+    bridge_debug_arg = DeclareLaunchArgument(
+        'bridge_debug',
+        default_value=LaunchConfiguration('debug'),
+        description='WebSocket桥接节点调试模式'
+    )
+
+    bus_servo_debug_arg = DeclareLaunchArgument(
+        'bus_servo_debug',
+        default_value=LaunchConfiguration('debug'),
+        description='总线舵机驱动调试模式'
+    )
+
     serial_port_arg = DeclareLaunchArgument(
         'port',
         default_value='/dev/ttyAMA0',
@@ -53,7 +65,7 @@ def generate_launch_description():
         name='websocket_ros2_bridge',
         output='screen',
         parameters=[
-            {'debug': LaunchConfiguration('debug')},
+            {'debug': LaunchConfiguration('bridge_debug')},
             {'imu_debug': LaunchConfiguration('imu_debug')}
         ]
     )
@@ -67,7 +79,7 @@ def generate_launch_description():
         parameters=[
             {'port': LaunchConfiguration('port')},
             {'baudrate': 115200},
-            {'debug': LaunchConfiguration('debug')},
+            {'debug': LaunchConfiguration('bus_servo_debug')},
             {'log_id': True}
         ]
     )
@@ -86,6 +98,8 @@ def generate_launch_description():
 
     return LaunchDescription([
         debug_arg,
+        bridge_debug_arg,
+        bus_servo_debug_arg,
         serial_port_arg,
         instances_file_arg,
         imu_debug_arg,
