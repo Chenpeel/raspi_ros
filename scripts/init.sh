@@ -143,6 +143,7 @@ sleep 1
 # 选择启动模式
 LAUNCH_MODE=${LAUNCH_MODE:-full}
 LAUNCH_DEBUG=${LAUNCH_DEBUG:-false}
+LAUNCH_IMU_DEBUG=${LAUNCH_IMU_DEBUG:-$LAUNCH_DEBUG}
 PARALLEL_INSTANCES_FILE=${PARALLEL_INSTANCES_FILE:-/root/ros_ws/src/parallel_3dof_controller/config/parallel_3dof_instances.yaml}
 
 if [ "$LAUNCH_MODE" = "multi" ]; then
@@ -153,5 +154,6 @@ if [ "$LAUNCH_MODE" = "multi" ]; then
 else
     log_info "Launch mode: full_system"
     exec ros2 launch websocket_bridge full_system.launch.py \
-        debug:="$LAUNCH_DEBUG"
+        debug:="$LAUNCH_DEBUG" \
+        imu_debug:="$LAUNCH_IMU_DEBUG"
 fi

@@ -117,6 +117,12 @@ def generate_launch_description():
         description='IMU 串口波特率'
     )
 
+    imu_debug_arg = DeclareLaunchArgument(
+        'imu_debug',
+        default_value=LaunchConfiguration('debug'),
+        description='IMU 是否启用调试模式'
+    )
+
     imu_publish_rate_arg = DeclareLaunchArgument(
         'imu_publish_rate',
         default_value='50.0',
@@ -146,6 +152,7 @@ def generate_launch_description():
     i2c_bus = LaunchConfiguration('i2c_bus')
     imu_port = LaunchConfiguration('imu_port')
     imu_baudrate = LaunchConfiguration('imu_baudrate')
+    imu_debug = LaunchConfiguration('imu_debug')
     imu_publish_rate = LaunchConfiguration('imu_publish_rate')
     imu_algo_type = LaunchConfiguration('imu_algo_type')
     imu_sensor_id = LaunchConfiguration('imu_sensor_id')
@@ -214,7 +221,7 @@ def generate_launch_description():
             {'port': imu_port},  # 串口设备
             {'baudrate': imu_baudrate},  # 串口波特率
             {'publish_rate': imu_publish_rate},
-            {'debug': debug},
+            {'debug': imu_debug},
             {'algo_type': imu_algo_type},
             {'calibrate_on_start': False},
             {'sensor_id': imu_sensor_id}
@@ -280,6 +287,7 @@ def generate_launch_description():
         i2c_bus_arg,
         imu_port_arg,  # IMU 串口设备
         imu_baudrate_arg,  # IMU 串口波特率
+        imu_debug_arg,
         imu_publish_rate_arg,
         imu_algo_type_arg,
         imu_sensor_id_arg,

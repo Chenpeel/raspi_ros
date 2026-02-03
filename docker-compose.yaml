@@ -71,6 +71,7 @@ services:
             - TZ=Asia/Shanghai
             - DEVELOPMENT_MODE=1
             - LAUNCH_DEBUG=true
+            - LAUNCH_IMU_DEBUG=false
 
         # 开发模式：自动启动
         command: bash /root/ros_ws/scripts/init.sh
