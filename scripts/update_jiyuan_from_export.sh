@@ -64,7 +64,47 @@ do
   fi
 done
 
-echo "[2/5] Mirror STL: right_*.STL -> left_*.STL"
+echo "[2/5] Pre-clean URDF (remove existing left_*, fix duplicate right_spine_003_joint)"
+/usr/bin/python3 - <<PY
+import xml.etree.ElementTree as ET
+from collections import Counter
+from pathlib import Path
+
+urdf_path = Path(r"${export_dir}") / "urdf" / "jiyuan.urdf"
+if not urdf_path.exists():
+    raise SystemExit(f"URDF not found: {urdf_path}")
+
+tree = ET.parse(urdf_path)
+root = tree.getroot()
+
+# Remove any existing left_* links/joints (idempotent mirroring)
+for tag in ("link", "joint"):
+    for elem in list(root.findall(tag)):
+        name = elem.get("name", "")
+        if name.startswith("left_"):
+            root.remove(elem)
+
+# Fix known duplicate joint naming from export (right_spine_003_joint)
+joints = [j for j in root.findall("joint") if j.get("name") == "right_spine_003_joint"]
+if len(joints) > 1:
+    for j in joints:
+        parent = j.find("parent")
+        child = j.find("child")
+        if parent is not None and child is not None:
+            if parent.get("link") == "right_spine_004_ground_link" and child.get("link") == "right_spine_004_link":
+                j.set("name", "right_spine_004_ground_joint")
+
+# Ensure no duplicate names remain
+for tag in ("link", "joint"):
+    names = [e.get("name") for e in root.findall(tag) if e.get("name")]
+    dup = [n for n, c in Counter(names).items() if c > 1]
+    if dup:
+        raise SystemExit(f"Duplicate {tag} names after cleanup: {dup}")
+
+tree.write(urdf_path, encoding="utf-8", xml_declaration=True)
+PY
+
+echo "[3/5] Mirror STL: right_*.STL -> left_*.STL"
 /usr/bin/python3 - <<PY
 from pathlib import Path
 import struct
@@ -127,7 +167,7 @@ for right_path in right_files:
     print(f"  ✓ {right_path.name} -> {left_path.name}")
 PY
 
-echo "[3/5] Mirror URDF in-place (overwrite jiyuan.urdf)"
+echo "[4/5] Mirror URDF in-place (overwrite jiyuan.urdf)"
 if [[ ! -f "${export_dir}/urdf/jiyuan.urdf" ]]; then
   echo "Error: ${export_dir}/urdf/jiyuan.urdf not found"
   exit 1
@@ -138,7 +178,7 @@ tmp_urdf="${export_dir}/urdf/.jiyuan_bilateral.tmp.urdf"
   -o "${tmp_urdf}"
 mv "${tmp_urdf}" "${export_dir}/urdf/jiyuan.urdf"
 
-echo "[4/5] Sync export -> src/robot_description"
+echo "[5/5] Sync export -> src/robot_description"
 rsync -a "${export_dir}/meshes/" "${robot_desc}/meshes/"
 rsync -a "${export_dir}/urdf/" "${robot_desc}/urdf/"
 if [[ -d "${export_dir}/textures" ]]; then
@@ -148,11 +188,24 @@ if [[ -d "${export_dir}/mjcf" ]]; then
   rsync -a "${export_dir}/mjcf/" "${robot_desc}/mjcf/"
 fi
 
-echo "[5/5] Update robot_description assets"
+echo "[6/6] Update robot_description assets"
 cp "${robot_desc}/urdf/jiyuan.urdf" "${robot_desc}/urdf/assets.urdf"
 cp "${robot_desc}/urdf/jiyuan.csv" "${robot_desc}/urdf/assets.csv"
-perl -pi -e 's/package:\\/\\/jiyuan\\//package:\\/\\/robot_description\\//g' \
-  "${robot_desc}/urdf/assets.urdf" "${robot_desc}/urdf/assets.csv"
+/usr/bin/python3 - <<PY
+from pathlib import Path
+
+files = [
+    Path(r"${robot_desc}") / "urdf" / "assets.urdf",
+    Path(r"${robot_desc}") / "urdf" / "assets.csv",
+]
+
+for path in files:
+    if not path.exists():
+        continue
+    text = path.read_text(encoding="utf-8")
+    text = text.replace("package://jiyuan/", "package://robot_description/")
+    path.write_text(text, encoding="utf-8")
+PY
 
 echo ""
 echo "Done."
