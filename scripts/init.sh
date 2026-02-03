@@ -149,6 +149,9 @@ LAUNCH_IMU_DEBUG=${LAUNCH_IMU_DEBUG:-false}
 LAUNCH_HEARTBEAT_DEBUG=${LAUNCH_HEARTBEAT_DEBUG:-false}
 LAUNCH_PCA_DEBUG=${LAUNCH_PCA_DEBUG:-$LAUNCH_DEBUG}
 LAUNCH_WS_DEBUG=${LAUNCH_WS_DEBUG:-false}
+LAUNCH_DEBUG_AGGREGATE=${LAUNCH_DEBUG_AGGREGATE:-true}
+LAUNCH_DEBUG_AGGREGATE_PERIOD=${LAUNCH_DEBUG_AGGREGATE_PERIOD:-1.0}
+LAUNCH_DEBUG_AGGREGATE_MAX_LEN=${LAUNCH_DEBUG_AGGREGATE_MAX_LEN:-120}
 PARALLEL_INSTANCES_FILE=${PARALLEL_INSTANCES_FILE:-/root/ros_ws/src/parallel_3dof_controller/config/parallel_3dof_instances.yaml}
 
 if [ "$LAUNCH_MODE" = "multi" ]; then
@@ -160,7 +163,10 @@ if [ "$LAUNCH_MODE" = "multi" ]; then
         bus_servo_debug:="$LAUNCH_BUS_SERVO_DEBUG" \
         imu_debug:="$LAUNCH_IMU_DEBUG" \
         heartbeat_debug:="$LAUNCH_HEARTBEAT_DEBUG" \
-        ws_debug:="$LAUNCH_WS_DEBUG"
+        ws_debug:="$LAUNCH_WS_DEBUG" \
+        debug_aggregate:="$LAUNCH_DEBUG_AGGREGATE" \
+        debug_aggregate_period:="$LAUNCH_DEBUG_AGGREGATE_PERIOD" \
+        debug_aggregate_max_len:="$LAUNCH_DEBUG_AGGREGATE_MAX_LEN"
 else
     log_info "Launch mode: full_system"
     exec ros2 launch websocket_bridge full_system.launch.py \
@@ -170,5 +176,8 @@ else
         imu_debug:="$LAUNCH_IMU_DEBUG" \
         heartbeat_debug:="$LAUNCH_HEARTBEAT_DEBUG" \
         pca_debug:="$LAUNCH_PCA_DEBUG" \
-        ws_debug:="$LAUNCH_WS_DEBUG"
+        ws_debug:="$LAUNCH_WS_DEBUG" \
+        debug_aggregate:="$LAUNCH_DEBUG_AGGREGATE" \
+        debug_aggregate_period:="$LAUNCH_DEBUG_AGGREGATE_PERIOD" \
+        debug_aggregate_max_len:="$LAUNCH_DEBUG_AGGREGATE_MAX_LEN"
 fi

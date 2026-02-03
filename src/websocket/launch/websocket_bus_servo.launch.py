@@ -48,6 +48,24 @@ def generate_launch_description():
         description='WebSocket服务端调试模式'
     )
 
+    debug_aggregate_arg = DeclareLaunchArgument(
+        'debug_aggregate',
+        default_value='true',
+        description='是否聚合调试日志'
+    )
+
+    debug_aggregate_period_arg = DeclareLaunchArgument(
+        'debug_aggregate_period',
+        default_value='1.0',
+        description='调试日志聚合刷新周期(秒)'
+    )
+
+    debug_aggregate_max_len_arg = DeclareLaunchArgument(
+        'debug_aggregate_max_len',
+        default_value='120',
+        description='调试日志聚合单条最大长度'
+    )
+
     serial_port_arg = DeclareLaunchArgument(
         'port',
         default_value='/dev/ttyAMA0',
@@ -80,7 +98,10 @@ def generate_launch_description():
             {'debug': LaunchConfiguration('bridge_debug')},
             {'imu_debug': LaunchConfiguration('imu_debug')},
             {'heartbeat_debug': LaunchConfiguration('heartbeat_debug')},
-            {'ws_debug': LaunchConfiguration('ws_debug')}
+            {'ws_debug': LaunchConfiguration('ws_debug')},
+            {'debug_aggregate': LaunchConfiguration('debug_aggregate')},
+            {'debug_aggregate_period': LaunchConfiguration('debug_aggregate_period')},
+            {'debug_aggregate_max_len': LaunchConfiguration('debug_aggregate_max_len')}
         ]
     )
 
@@ -118,6 +139,9 @@ def generate_launch_description():
         instances_file_arg,
         heartbeat_debug_arg,
         ws_debug_arg,
+        debug_aggregate_arg,
+        debug_aggregate_period_arg,
+        debug_aggregate_max_len_arg,
         imu_debug_arg,
         bridge_node,
         bus_servo_node,

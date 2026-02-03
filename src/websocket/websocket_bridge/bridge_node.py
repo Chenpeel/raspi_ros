@@ -303,7 +303,7 @@ class WebSocketROS2Bridge(Node):
                         if self.debug:
                             self.get_logger().warning(f'无法广播状态（事件循环不可用）: {e}')
                 elif self.debug:
-                    self.get_logger().debug('跳过广播：WebSocket事件循环未运行')
+                    self._debug_log("ws_broadcast_skip", "event loop not running", self.debug)
 
         except Exception as e:
             self.get_logger().error(f'处理舵机状态回调异常: {e}')

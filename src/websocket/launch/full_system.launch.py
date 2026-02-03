@@ -102,6 +102,24 @@ def generate_launch_description():
         description='WebSocket服务端调试模式'
     )
 
+    debug_aggregate_arg = DeclareLaunchArgument(
+        'debug_aggregate',
+        default_value='true',
+        description='是否聚合调试日志'
+    )
+
+    debug_aggregate_period_arg = DeclareLaunchArgument(
+        'debug_aggregate_period',
+        default_value='1.0',
+        description='调试日志聚合刷新周期(秒)'
+    )
+
+    debug_aggregate_max_len_arg = DeclareLaunchArgument(
+        'debug_aggregate_max_len',
+        default_value='120',
+        description='调试日志聚合单条最大长度'
+    )
+
     # 串口设备参数
     serial_port_arg = DeclareLaunchArgument(
         'serial_port',
@@ -184,6 +202,9 @@ def generate_launch_description():
     bus_servo_debug = LaunchConfiguration('bus_servo_debug')
     heartbeat_debug = LaunchConfiguration('heartbeat_debug')
     ws_debug = LaunchConfiguration('ws_debug')
+    debug_aggregate = LaunchConfiguration('debug_aggregate')
+    debug_aggregate_period = LaunchConfiguration('debug_aggregate_period')
+    debug_aggregate_max_len = LaunchConfiguration('debug_aggregate_max_len')
 
     pca_debug_arg = DeclareLaunchArgument(
         'pca_debug',
@@ -205,7 +226,10 @@ def generate_launch_description():
             {'debug': bridge_debug},
             {'imu_debug': imu_debug},
             {'heartbeat_debug': heartbeat_debug},
-            {'ws_debug': ws_debug}
+            {'ws_debug': ws_debug},
+            {'debug_aggregate': debug_aggregate},
+            {'debug_aggregate_period': debug_aggregate_period},
+            {'debug_aggregate_max_len': debug_aggregate_max_len}
         ],
         remappings=[
             # 如果需要重新映射话题名称，可以在这里配置
@@ -323,6 +347,9 @@ def generate_launch_description():
         bus_servo_debug_arg,
         heartbeat_debug_arg,
         ws_debug_arg,
+        debug_aggregate_arg,
+        debug_aggregate_period_arg,
+        debug_aggregate_max_len_arg,
         serial_port_arg,
         baudrate_arg,
         i2c_address_arg,
