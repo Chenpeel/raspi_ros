@@ -1,0 +1,20 @@
+{
+    "map": {
+        "right_hip_cube_joint_ctrl/right_hip_cube_joint": "1",
+        "right_thigh_joint_ctrl/right_thigh_joint": "2",
+        "right_hip_roll_joint_ctrl/right_hip_roll_joint": "6",
+        "right_knee_joint_ctrl/right_knee_joint": "7",
+        "right_ankle_cube_joint_ctrl/right_ankle_cube_joint": "9",
+        "right_ankle_axle_joint_ctrl/right_ankle_axle_joint": "10",
+        "right_foot_joint_ctrl/right_foot_joint": "11",
+        "right_toe_joint_ctrl/right_toe_joint": "null",
+        "left_hip_cube_joint_ctrl/left_hip_cube_joint": "3",
+        "left_thigh_joint_ctrl/left_thigh_joint": "5",
+        "left_hip_roll_joint_ctrl/left_hip_roll_joint": "4",
+        "left_knee_joint_ctrl/left_knee_joint": "8",
+        "left_ankle_cube_joint_ctrl/left_ankle_cube_joint": "12",
+        "left_ankle_axle_joint_ctrl/left_ankle_axle_joint": "13",
+        "left_foot_joint_ctrl/left_foot_joint": "14",
+        "left_toe_joint_ctrl/left_toe_joint": "null"
+    }
+}
