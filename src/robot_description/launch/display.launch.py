@@ -7,7 +7,7 @@ from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
 
 def generate_launch_description():
-    pkg_share = get_package_share_directory('assets')
+    pkg_share = get_package_share_directory('robot_description')
     default_model_path = os.path.join(pkg_share, 'urdf', 'assets.urdf')
     default_rviz_config_path = os.path.join(pkg_share, 'config', 'urdf.rviz')
 
