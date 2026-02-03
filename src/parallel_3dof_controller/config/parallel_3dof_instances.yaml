@@ -1,0 +1,37 @@
+# Example multi-instance configuration for parallel_3dof_controller
+instances:
+  - name: ankle_left
+    namespace: left
+    params:
+      l0: 0.02
+      l1: 0.01
+      l2: 0.03
+      servo_ids: [12, 13, 14]
+      servo_offsets: [0.0, 0.0, 0.0]
+      servo_directions: [1, 1, 1]
+      default_speed: 100
+      debug: false
+
+  - name: ankle_right
+    namespace: right
+    params:
+      l0: 0.02
+      l1: 0.01
+      l2: 0.03
+      servo_ids: [9, 10, 11]
+      servo_offsets: [0.0, 0.0, 0.0]
+      servo_directions: [1, 1, 1]
+      default_speed: 100
+      debug: false
+
+  - name: ankle_custom_1
+    namespace: extra1
+    params:
+      l0: 0.025
+      l1: 0.015
+      l2: 0.035
+      servo_ids: [21, 22, 23]
+      servo_offsets: [0.0, 0.0, 0.0]
+      servo_directions: [1, 1, 1]
+      default_speed: 120
+      debug: false

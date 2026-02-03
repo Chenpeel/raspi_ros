@@ -228,7 +228,7 @@ class Parallel3DOFKinematicsSolver:
             roll: 横滚角 (弧度)
             pitch: 俯仰角 (弧度)
             yaw: 偏航角 (弧度)
-            ankle_side: 'right' 或 'left'
+            ankle_side: 'right'/'left' 或自定义舵机组名
             speed: 舵机运动时间 (毫秒)
 
         返回:
@@ -251,13 +251,24 @@ class Parallel3DOFKinematicsSolver:
 
         # 2. 获取舵机配置
         ankle_key = f'{ankle_side}_ankle'
-        if ankle_key not in self.servo_config:
-            raise ValueError(f"未知的脚踝侧: {ankle_side}")
+        if ankle_key in self.servo_config:
+            group_key = ankle_key
+        elif ankle_side in self.servo_config:
+            group_key = ankle_side
+        else:
+            available = [
+                key for key in self.servo_config.keys()
+                if key != 'position_mapping'
+            ]
+            raise ValueError(
+                f"未知的脚踝侧/舵机组: {ankle_side}, 可用: {available}"
+            )
 
+        servo_group = self.servo_config[group_key]
         servo_configs = [
-            self.servo_config[ankle_key]['servo_1'],
-            self.servo_config[ankle_key]['servo_2'],
-            self.servo_config[ankle_key]['servo_3']
+            servo_group['servo_1'],
+            servo_group['servo_2'],
+            servo_group['servo_3']
         ]
 
         # 3. 转换为舵机命令
