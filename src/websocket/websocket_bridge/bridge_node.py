@@ -49,6 +49,7 @@ class WebSocketROS2Bridge(Node):
         self.declare_parameter('debug', debug)
         self.declare_parameter('imu_debug', debug)
         self.declare_parameter('heartbeat_debug', False)
+        self.declare_parameter('ws_debug', False)
 
         # 从ROS参数读取配置
         self.ws_host = self.get_parameter('ws_host').value
@@ -57,6 +58,7 @@ class WebSocketROS2Bridge(Node):
         self.debug = self.get_parameter('debug').value
         self.imu_debug = self.get_parameter('imu_debug').value
         self.heartbeat_debug = self.get_parameter('heartbeat_debug').value
+        self.ws_debug = self.get_parameter('ws_debug').value
 
         # ROS 2话题
         # 发布舵机命令到驱动节点
@@ -104,7 +106,7 @@ class WebSocketROS2Bridge(Node):
                 host=self.ws_host,
                 port=self.ws_port,
                 device_id=self.device_id,
-                debug=self.debug
+                debug=self.ws_debug
             )
 
             # 注册回调

@@ -96,6 +96,12 @@ def generate_launch_description():
         description='心跳调试模式'
     )
 
+    ws_debug_arg = DeclareLaunchArgument(
+        'ws_debug',
+        default_value='false',
+        description='WebSocket服务端调试模式'
+    )
+
     # 串口设备参数
     serial_port_arg = DeclareLaunchArgument(
         'serial_port',
@@ -177,6 +183,7 @@ def generate_launch_description():
     bridge_debug = LaunchConfiguration('bridge_debug')
     bus_servo_debug = LaunchConfiguration('bus_servo_debug')
     heartbeat_debug = LaunchConfiguration('heartbeat_debug')
+    ws_debug = LaunchConfiguration('ws_debug')
 
     pca_debug_arg = DeclareLaunchArgument(
         'pca_debug',
@@ -197,7 +204,8 @@ def generate_launch_description():
             {'device_id': device_id},
             {'debug': bridge_debug},
             {'imu_debug': imu_debug},
-            {'heartbeat_debug': heartbeat_debug}
+            {'heartbeat_debug': heartbeat_debug},
+            {'ws_debug': ws_debug}
         ],
         remappings=[
             # 如果需要重新映射话题名称，可以在这里配置
@@ -314,6 +322,7 @@ def generate_launch_description():
         bridge_debug_arg,
         bus_servo_debug_arg,
         heartbeat_debug_arg,
+        ws_debug_arg,
         serial_port_arg,
         baudrate_arg,
         i2c_address_arg,

@@ -42,6 +42,12 @@ def generate_launch_description():
         description='心跳调试模式'
     )
 
+    ws_debug_arg = DeclareLaunchArgument(
+        'ws_debug',
+        default_value='false',
+        description='WebSocket服务端调试模式'
+    )
+
     serial_port_arg = DeclareLaunchArgument(
         'port',
         default_value='/dev/ttyAMA0',
@@ -73,7 +79,8 @@ def generate_launch_description():
         parameters=[
             {'debug': LaunchConfiguration('bridge_debug')},
             {'imu_debug': LaunchConfiguration('imu_debug')},
-            {'heartbeat_debug': LaunchConfiguration('heartbeat_debug')}
+            {'heartbeat_debug': LaunchConfiguration('heartbeat_debug')},
+            {'ws_debug': LaunchConfiguration('ws_debug')}
         ]
     )
 
@@ -110,6 +117,7 @@ def generate_launch_description():
         serial_port_arg,
         instances_file_arg,
         heartbeat_debug_arg,
+        ws_debug_arg,
         imu_debug_arg,
         bridge_node,
         bus_servo_node,
