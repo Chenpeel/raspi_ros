@@ -15,6 +15,7 @@ class MessageType(Enum):
     """消息类型定义"""
     HEARTBEAT = "heartbeat"
     SERVO_CONTROL = "servo_control"
+    BVH_PLAY = "bvh_play"
     BROADCAST = "broadcast"
     PRIVATE = "private"
     REGISTER = "register"
@@ -99,19 +100,25 @@ class MessageHandler:
                     data.get("TYPE") or
                     "").lower().strip()
 
-        if not msg_type:
-            # 尝试根据内容推断类型
-            if self._is_servo_control(data):
-                return MessageType.SERVO_CONTROL
-            elif "timestamp" in data and "status" in data:
-                return MessageType.HEARTBEAT
-            return MessageType.UNKNOWN
+        if msg_type:
+            # 映射到枚举
+            if msg_type in ("action", "bvh_play"):
+                return MessageType.BVH_PLAY
+            try:
+                return MessageType(msg_type)
+            except ValueError:
+                pass
 
-        # 映射到枚举
-        try:
-            return MessageType(msg_type)
-        except ValueError:
-            return MessageType.UNKNOWN
+        # 基于内容推断BVH播放
+        if self._is_bvh_action(data):
+            return MessageType.BVH_PLAY
+
+        # 尝试根据内容推断类型
+        if self._is_servo_control(data):
+            return MessageType.SERVO_CONTROL
+        if "timestamp" in data and "status" in data:
+            return MessageType.HEARTBEAT
+        return MessageType.UNKNOWN
 
     def _is_servo_control(self, data: Dict[str, Any]) -> bool:
         """检查是否为舵机控制命令"""
@@ -129,6 +136,18 @@ class MessageHandler:
         servo_keys = {'b', 'c', 'p', 'id', 'servo_id', 'channel',
                       'angle', 'position', 'speed', 'is_bus_servo'}
         return bool(set(data.keys()) & servo_keys)
+
+    def _is_bvh_action(self, data: Dict[str, Any]) -> bool:
+        if not isinstance(data, dict):
+            return False
+        action = data.get("action")
+        if isinstance(action, dict) and "bvh" in action:
+            return True
+        if "bvh" in data:
+            return True
+        if data.get("controller_type") == "action" and isinstance(action, dict):
+            return True
+        return False
 
     async def process_message(self, data: Dict[str, Any]) -> Optional[str]:
         """
@@ -166,6 +185,47 @@ class MessageHandler:
             if self.debug:
                 logger.debug(f"未知消息类型: {msg_type.value}")
             return None
+
+    def parse_bvh_action(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """
+        解析BVH动作请求
+
+        支持格式:
+        {
+          "type": "bvh_play",
+          "action": "walk",
+          "loop": false
+        }
+        或
+        {
+          "action": { "bvh": "walk", "loop": false }
+        }
+        """
+        if not isinstance(data, dict):
+            return None
+
+        action_name = None
+        loop_flag = False
+        speed_ms = None
+
+        if isinstance(data.get("action"), dict):
+            action = data.get("action")
+            action_name = action.get("bvh") or action.get("name")
+            loop_flag = bool(action.get("loop", False))
+            speed_ms = action.get("speed_ms")
+        else:
+            action_name = data.get("bvh") or data.get("action")
+            loop_flag = bool(data.get("loop", False))
+            speed_ms = data.get("speed_ms")
+
+        if action_name is None:
+            return None
+
+        return {
+            "action": action_name,
+            "loop": loop_flag,
+            "speed_ms": speed_ms
+        }
 
     def _create_heartbeat_response(self) -> str:
         """创建心跳响应"""

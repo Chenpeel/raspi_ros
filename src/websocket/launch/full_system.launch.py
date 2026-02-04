@@ -17,6 +17,7 @@ from pathlib import Path
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, LogInfo
+from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
@@ -120,6 +121,12 @@ def generate_launch_description():
         description='调试日志聚合单条最大长度'
     )
 
+    bvh_action_file_arg = DeclareLaunchArgument(
+        'bvh_action_file',
+        default_value='',
+        description='BVH动作配置文件路径'
+    )
+
     # 串口设备参数
     serial_port_arg = DeclareLaunchArgument(
         'serial_port',
@@ -182,6 +189,11 @@ def generate_launch_description():
         default_value='0',
         description='IMU 传感器ID'
     )
+    imu_enable_arg = DeclareLaunchArgument(
+        'imu_enable',
+        default_value='false',
+        description='是否启动IMU节点'
+    )
 
     # 获取参数值
     ws_host = LaunchConfiguration('ws_host')
@@ -198,6 +210,7 @@ def generate_launch_description():
     imu_publish_rate = LaunchConfiguration('imu_publish_rate')
     imu_algo_type = LaunchConfiguration('imu_algo_type')
     imu_sensor_id = LaunchConfiguration('imu_sensor_id')
+    imu_enable = LaunchConfiguration('imu_enable')
     bridge_debug = LaunchConfiguration('bridge_debug')
     bus_servo_debug = LaunchConfiguration('bus_servo_debug')
     heartbeat_debug = LaunchConfiguration('heartbeat_debug')
@@ -205,6 +218,7 @@ def generate_launch_description():
     debug_aggregate = LaunchConfiguration('debug_aggregate')
     debug_aggregate_period = LaunchConfiguration('debug_aggregate_period')
     debug_aggregate_max_len = LaunchConfiguration('debug_aggregate_max_len')
+    bvh_action_file = LaunchConfiguration('bvh_action_file')
 
     pca_debug_arg = DeclareLaunchArgument(
         'pca_debug',
@@ -229,7 +243,8 @@ def generate_launch_description():
             {'ws_debug': ws_debug},
             {'debug_aggregate': debug_aggregate},
             {'debug_aggregate_period': debug_aggregate_period},
-            {'debug_aggregate_max_len': debug_aggregate_max_len}
+            {'debug_aggregate_max_len': debug_aggregate_max_len},
+            {'bvh_action_file': bvh_action_file}
         ],
         remappings=[
             # 如果需要重新映射话题名称，可以在这里配置
@@ -279,6 +294,7 @@ def generate_launch_description():
         executable='imu_serial_driver',  # 使用串口版本
         name='imu_serial_driver',
         output='screen',
+        condition=IfCondition(imu_enable),
         parameters=[
             {'port': imu_port},  # 串口设备
             {'baudrate': imu_baudrate},  # 串口波特率
@@ -350,6 +366,7 @@ def generate_launch_description():
         debug_aggregate_arg,
         debug_aggregate_period_arg,
         debug_aggregate_max_len_arg,
+        bvh_action_file_arg,
         serial_port_arg,
         baudrate_arg,
         i2c_address_arg,
@@ -360,6 +377,7 @@ def generate_launch_description():
         imu_publish_rate_arg,
         imu_algo_type_arg,
         imu_sensor_id_arg,
+        imu_enable_arg,
         pca_debug_arg,
 
         # 启动信息

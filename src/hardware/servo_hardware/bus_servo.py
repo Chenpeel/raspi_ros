@@ -5,14 +5,22 @@
 支持协议格式: #ID(3位)P位置(4位)T速度(4位)!
 """
 
+import json
+import os
 import serial
 import time
 import threading
+from pathlib import Path
 from typing import Optional, Set
 
 import rclpy
 from rclpy.node import Node
 from servo_msgs.msg import ServoCommand, ServoState
+
+try:
+    from ament_index_python.packages import get_package_share_directory
+except ImportError:  # pragma: no cover - fallback for non-ROS envs
+    get_package_share_directory = None
 
 
 class BusServoDriver(Node):
@@ -42,6 +50,7 @@ class BusServoDriver(Node):
         self.declare_parameter('log_id', True)  # 是否打印舵机ID日志
         # 使用 [0] 作为默认值让ROS 2推断为INTEGER_ARRAY类型
         self.declare_parameter('servo_ids', [0])  # 本驱动板负责的舵机ID列表
+        self.declare_parameter('offset_map', '')  # 舵机偏移量配置文件
 
         # 获取参数
         self.port = self.get_parameter('port').value
@@ -51,6 +60,7 @@ class BusServoDriver(Node):
         self.debug = self.get_parameter('debug').value
         self.log_id = self.get_parameter('log_id').value
         servo_ids_param = self.get_parameter('servo_ids').value
+        offset_map_param = self.get_parameter('offset_map').value
 
         # 转换为set以提高查找效率（过滤掉默认值0）
         self.servo_ids = set(id for id in servo_ids_param if id > 0)
@@ -66,6 +76,9 @@ class BusServoDriver(Node):
 
         # 记录已控制的舵机ID
         self.connected_servos: Set[int] = set()
+
+        # 加载舵机偏移量
+        self.offset_map = self._load_offset_map(offset_map_param)
 
         # 初始化串口
         if not self._init_serial():
@@ -102,6 +115,67 @@ class BusServoDriver(Node):
                 f'总线舵机驱动已启动: {self.port}@{self.baudrate} '
                 f'(处理所有舵机ID)'
             )
+
+    def _resolve_offset_map_path(self, override_path: str) -> str:
+        if override_path and os.path.exists(override_path):
+            return override_path
+
+        if get_package_share_directory:
+            try:
+                share_dir = get_package_share_directory('servo_hardware')
+                candidate = os.path.join(
+                    share_dir, 'config', 'servo_offset_map.json'
+                )
+                if os.path.exists(candidate):
+                    return candidate
+            except Exception:
+                pass
+
+        candidate = Path(__file__).resolve().parent / 'config' / 'servo_offset_map.json'
+        if candidate.exists():
+            return str(candidate)
+
+        return ''
+
+    def _load_offset_map(self, override_path: str) -> dict:
+        path = self._resolve_offset_map_path(override_path)
+        if not path:
+            self.get_logger().info('未找到舵机偏移量配置文件，使用默认偏移(0)')
+            return {}
+
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+        except Exception as e:
+            self.get_logger().warn(f'加载舵机偏移量失败: {e}')
+            return {}
+
+        offset_map: dict[int, float] = {}
+        if isinstance(data, dict):
+            # 兼容旧格式: {ids: [...], offsets: [...]}
+            if 'ids' in data and 'offsets' in data:
+                ids = data.get('ids', [])
+                offsets = data.get('offsets', [])
+                for sid, offset in zip(ids, offsets):
+                    try:
+                        offset_map[int(sid)] = float(offset)
+                    except (TypeError, ValueError):
+                        continue
+            else:
+                for key, value in data.items():
+                    try:
+                        offset_map[int(key)] = float(value)
+                    except (TypeError, ValueError):
+                        continue
+
+        if offset_map:
+            self.get_logger().info(
+                f'已加载舵机偏移量配置: {path} (数量={len(offset_map)})'
+            )
+        else:
+            self.get_logger().info(f'舵机偏移量为空: {path}')
+
+        return offset_map
 
     def _init_serial(self) -> bool:
         """初始化/打开串口"""
@@ -607,6 +681,13 @@ class BusServoDriver(Node):
             self.get_logger().warn(
                 f'位置值 {pos} 非常规(既不是角度也不是脉宽),将尝试直接发送'
             )
+
+        offset = self.offset_map.get(sid, 0.0)
+        if offset:
+            try:
+                pulse = int(round(pulse + offset))
+            except Exception:
+                pulse = int(pulse)
 
         frame = self._format_frame(sid, pulse, speed)
 

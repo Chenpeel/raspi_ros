@@ -47,6 +47,7 @@ class WebSocketHandler:
         self.on_servo_command = None  # Callable[[dict], None]
         self.on_heartbeat = None  # Callable[[], None]
         self.on_status_query = None  # Callable[[], None]
+        self.on_bvh_play = None  # Callable[[dict], None]
         
         # 状态管理
         self.servo_state = {}
@@ -91,6 +92,15 @@ class WebSocketHandler:
             callback: async def callback() -> dict
         """
         self.on_status_query = callback
+
+    def register_bvh_play_handler(self, callback: Callable):
+        """
+        注册BVH播放处理回调
+
+        Args:
+            callback: async def callback(payload: dict) -> None
+        """
+        self.on_bvh_play = callback
     
     def register_message_handler(self, msg_type: str, callback: Callable):
         """
@@ -127,6 +137,8 @@ class WebSocketHandler:
             return await self._handle_heartbeat(data)
         elif msg_type == MessageType.SERVO_CONTROL:
             return await self._handle_servo_control(data)
+        elif msg_type == MessageType.BVH_PLAY:
+            return await self._handle_bvh_play(data)
         elif msg_type == MessageType.STATUS_QUERY:
             return await self._handle_status_query(data)
         elif msg_type == MessageType.REGISTER:
@@ -193,6 +205,38 @@ class WebSocketHandler:
             data={
                 "status": "accepted",
                 "command": servo_cmd
+            },
+            device_id=self.device_id
+        )
+
+    async def _handle_bvh_play(self, data: Dict[str, Any]) -> Optional[str]:
+        """处理BVH动作播放请求"""
+        payload = self.message_handler.parse_bvh_action(data)
+        if payload is None:
+            return ErrorResponse.create(
+                error_code=ErrorCode.INVALID_PARAMETER_VALUE,
+                message="BVH action payload invalid",
+                details={"received_data": data},
+                device_id=self.device_id
+            )
+
+        if self.on_bvh_play:
+            try:
+                await self.on_bvh_play(payload)
+            except Exception as e:
+                return ErrorResponse.create(
+                    error_code=ErrorCode.ROS_CALLBACK_FAILED,
+                    message=f"BVH play failed: {str(e)}",
+                    details={"payload": payload, "exception": str(e)},
+                    device_id=self.device_id
+                )
+
+        return SuccessResponse.create(
+            response_type="bvh_play_ack",
+            data={
+                "status": "accepted",
+                "action": payload.get("action"),
+                "loop": bool(payload.get("loop", False))
             },
             device_id=self.device_id
         )

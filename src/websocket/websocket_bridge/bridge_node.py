@@ -15,9 +15,16 @@ import rclpy
 from rclpy.node import Node
 from rclpy.executors import MultiThreadedExecutor
 from servo_msgs.msg import ServoCommand, ServoState
-from sensor_msgs.msg import ImuData
+
+try:
+    from sensor_msgs.msg import ImuData
+    HAS_IMU_DATA = True
+except Exception:  # pragma: no cover - optional dependency
+    ImuData = None
+    HAS_IMU_DATA = False
 
 from .ws_server import WebSocketBridgeServer
+from .bvh_player import BvhActionPlayer
 from .debug_aggregator import DebugAggregator
 
 
@@ -54,6 +61,7 @@ class WebSocketROS2Bridge(Node):
         self.declare_parameter('debug_aggregate', True)
         self.declare_parameter('debug_aggregate_period', 1.0)
         self.declare_parameter('debug_aggregate_max_len', 120)
+        self.declare_parameter('bvh_action_file', '')
 
         # 从ROS参数读取配置
         self.ws_host = self.get_parameter('ws_host').value
@@ -66,6 +74,7 @@ class WebSocketROS2Bridge(Node):
         self.debug_aggregate = self.get_parameter('debug_aggregate').value
         self.debug_aggregate_period = float(self.get_parameter('debug_aggregate_period').value)
         self.debug_aggregate_max_len = int(self.get_parameter('debug_aggregate_max_len').value)
+        self.bvh_action_file = self.get_parameter('bvh_action_file').value
 
         if self.debug_aggregate_period <= 0:
             self.debug_aggregate_period = 1.0
@@ -95,11 +104,22 @@ class WebSocketROS2Bridge(Node):
         )
 
         # 订阅 IMU 传感器数据
-        self.imu_data_sub = self.create_subscription(
-            ImuData,
-            '/sensor/imu',
-            self.imu_data_callback,
-            10
+        self.imu_data_sub = None
+        if HAS_IMU_DATA:
+            self.imu_data_sub = self.create_subscription(
+                ImuData,
+                '/sensor/imu',
+                self.imu_data_callback,
+                10
+            )
+        else:
+            self.get_logger().warn('ImuData消息不可用，已跳过IMU订阅')
+
+        # BVH播放器
+        self.bvh_player = BvhActionPlayer(
+            publish_callback=self._publish_bvh_command,
+            config_path=self.bvh_action_file,
+            logger=self.get_logger()
         )
 
         # WebSocket服务器
@@ -132,6 +152,7 @@ class WebSocketROS2Bridge(Node):
             self.ws_server.set_servo_command_callback(self.handle_servo_command)
             self.ws_server.set_heartbeat_callback(self.handle_heartbeat)
             self.ws_server.set_status_query_callback(self.handle_status_query)
+            self.ws_server.set_bvh_play_callback(self.handle_bvh_play)
 
             # 运行服务器
             try:
@@ -234,6 +255,28 @@ class WebSocketROS2Bridge(Node):
         except Exception as e:
             self.get_logger().error(f'处理舵机命令失败: {e}')
             raise
+
+    def _publish_bvh_command(self, servo_type: str, servo_id: int,
+                             position: int, speed: int) -> None:
+        msg = ServoCommand()
+        msg.servo_type = servo_type
+        msg.servo_id = int(servo_id)
+        msg.position = int(position)
+        msg.speed = int(speed)
+        msg.stamp = self.get_clock().now().to_msg()
+        self.servo_command_pub.publish(msg)
+
+    async def handle_bvh_play(self, payload: dict):
+        """处理BVH动作播放请求"""
+        action = payload.get("action")
+        loop = bool(payload.get("loop", False))
+        speed_ms = payload.get("speed_ms")
+
+        if action in (None, '', 'null'):
+            self.bvh_player.stop()
+            return
+
+        self.bvh_player.play(action, loop=loop, speed_ms=speed_ms)
 
     async def handle_heartbeat(self):
         """处理心跳消息"""
@@ -397,6 +440,10 @@ class WebSocketROS2Bridge(Node):
     def shutdown(self):
         """关闭节点和WebSocket服务器"""
         self.get_logger().info('开始关闭WebSocket桥接节点...')
+
+        # 停止BVH播放
+        if self.bvh_player:
+            self.bvh_player.stop()
 
         # 停止WebSocket服务器
         if self.ws_server and self.ws_loop:

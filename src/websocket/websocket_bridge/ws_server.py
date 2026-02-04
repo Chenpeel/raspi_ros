@@ -83,6 +83,10 @@ class WebSocketBridgeServer:
         """设置状态查询回调"""
         self.handler.register_status_query_handler(callback)
 
+    def set_bvh_play_callback(self, callback):
+        """设置BVH播放回调"""
+        self.handler.register_bvh_play_handler(callback)
+
     async def start(self):
         """启动 WebSocket 服务器"""
         try:
@@ -433,7 +437,16 @@ class WebSocketBridgeServer:
         """
         parsed_cmd = self.handler.message_handler.parse_servo_control(servo_cmd)
         if parsed_cmd is None:
-            self._debug("ws_servo", f"无法解析舵机命令: {servo_cmd}")
+            # 尝试解析BVH动作
+            bvh_payload = self.handler.message_handler.parse_bvh_action(servo_cmd)
+            if bvh_payload and getattr(self.handler, 'on_bvh_play', None):
+                try:
+                    await self.handler.on_bvh_play(bvh_payload)
+                    self._debug("ws_bvh", f"BVH action forwarded: {bvh_payload}")
+                except Exception as e:
+                    print(f"[WebSocketServer] BVH action failed: {e}")
+            else:
+                self._debug("ws_servo", f"无法解析舵机命令: {servo_cmd}")
             return
 
         # 使用 handler 的舵机命令回调

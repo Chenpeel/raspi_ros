@@ -1,0 +1,62 @@
+{
+    "bvh_list": [null, "walk", "run", "jump"],
+    "bvh_dir": "",
+    "default_channel": "Zrotation",
+    "default_scale": 10.0,
+    "default_bias": 1500.0,
+    "default_min": 500.0,
+    "default_max": 2500.0,
+    "default_speed_ms": 33,
+    "default_servo_type": "bus",
+    "bvh_data": {
+        "walk": {
+            "ids": [1, 2, 3],
+            "positions": [1500, 1600, 1700],
+            "speeds": [100, 100, 100]
+        },
+        "run": {
+            "ids": [1, 2, 3],
+            "positions": [1800, 1900, 2000],
+            "speeds": [150, 150, 150]
+        },
+        "jump": {
+            "ids": [1, 2, 3],
+            "positions": [2000, 2100, 2200],
+            "speeds": [200, 200, 200]
+        }
+    },
+    "joint_map": {
+        "hip.R": {
+            "right_hip_cube_joint_ctrl/right_hip_cube_joint": "1",
+            "right_thigh_joint_ctrl/right_thigh_joint": "2",
+            "right_hip_roll_joint_ctrl/right_hip_roll_joint": "6"
+        },
+        "knee.R": {
+            "right_knee_joint_ctrl/right_knee_joint": "7"
+        },
+        "ankle.R": {
+            "right_ankle_cube_joint_ctrl/right_ankle_cube_joint": "9",
+            "right_ankle_axle_joint_ctrl/right_ankle_axle_joint": "10",
+            "right_foot_joint_ctrl/right_foot_joint": "11"
+        },
+        "toe.R": {
+            "right_toe_joint_ctrl/right_toe_joint": "null"
+        },
+        "hip.L": {
+            "left_hip_cube_joint_ctrl/left_hip_cube_joint": "3",
+            "left_thigh_joint_ctrl/left_thigh_joint": "5",
+            "left_hip_roll_joint_ctrl/left_hip_roll_joint": "4"
+        },
+        "knee.L": {
+            "left_knee_joint_ctrl/left_knee_joint": "8"
+        },
+        "ankle.L": {
+            "left_ankle_cube_joint_ctrl/left_ankle_cube_joint": "12",
+            "left_ankle_axle_joint_ctrl/left_ankle_axle_joint": "13",
+            "left_foot_joint_ctrl/left_foot_joint": "14"
+        },
+        "toe.L": {
+            "left_toe_joint_ctrl/left_toe_joint": "null"
+        }
+    }
+}
