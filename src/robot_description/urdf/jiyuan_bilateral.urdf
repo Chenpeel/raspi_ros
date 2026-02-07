@@ -1,15 +1,15 @@
 <?xml version='1.0' encoding='utf-8'?>
-<robot name="jiyuan_bilateral_bilateral">
+<robot name="jiyuan_bilateral">
   <link name="base_link">
     <inertial>
-      <origin xyz="0.000342841578761649 0.0533737179043439 -0.00322755034160716" rpy="0 0 0" />
-      <mass value="0.578447340656943" />
-      <inertia ixx="0.00245194046846196" ixy="-1.92136996193314E-06" ixz="-1.37944712014845E-06" iyy="0.00268497193612229" iyz="0.000478440184651817" izz="0.0026510301534111" />
+      <origin xyz="0.00034282 0.053374 -0.0032276" rpy="0 0 0" />
+      <mass value="0.57845" />
+      <inertia ixx="0.0024519" ixy="-1.9211E-06" ixz="-1.38E-06" iyy="0.002685" iyz="0.00047844" izz="0.002651" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/base_link.STL" />
+        <mesh filename="package://jiyuan/meshes/base_link.STL" />
       </geometry>
       <material name="">
         <color rgba="1 1 1 1" />
@@ -18,20 +18,20 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/base_link.STL" />
+        <mesh filename="package://jiyuan/meshes/base_link.STL" />
       </geometry>
     </collision>
   </link>
   <link name="right_hip_pitch_engine_link">
     <inertial>
-      <origin xyz="-0.00639528170474211 -5.28330276241918E-05 -1.32444315893138E-07" rpy="0 0 0" />
-      <mass value="0.00680931690813817" />
-      <inertia ixx="3.39928584447202E-06" ixy="-2.74780005767967E-12" ixz="1.29764844440883E-11" iyy="3.82287795367196E-06" iyz="-3.93183797563819E-11" izz="9.53831394208114E-07" />
+      <origin xyz="-0.0063953 -5.2833E-05 -1.3244E-07" rpy="0 0 0" />
+      <mass value="0.0068093" />
+      <inertia ixx="3.3993E-06" ixy="-2.7478E-12" ixz="1.2976E-11" iyy="3.8229E-06" iyz="-3.9318E-11" izz="9.5383E-07" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_hip_pitch_engine_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_hip_pitch_engine_link.STL" />
       </geometry>
       <material name="">
         <color rgba="1 1 1 1" />
@@ -40,12 +40,12 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_hip_pitch_engine_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_hip_pitch_engine_link.STL" />
       </geometry>
     </collision>
   </link>
   <joint name="right_hip_pitch_engine_joint" type="revolute">
-    <origin xyz="-0.084333154461223 2.45945382447853E-05 0" rpy="0 0 0" />
+    <origin xyz="-0.084333 2.4595E-05 0" rpy="0 0 0" />
     <parent link="base_link" />
     <child link="right_hip_pitch_engine_link" />
     <axis xyz="0 0 1" />
@@ -53,14 +53,14 @@
   </joint>
   <link name="right_hip_yaw_engine_link">
     <inertial>
-      <origin xyz="-0.00997581688662634 -4.91949854028881E-05 -3.35518278792401E-06" rpy="0 0 0" />
-      <mass value="0.00745115887807254" />
-      <inertia ixx="4.37003711979543E-06" ixy="1.54442408912393E-20" ixz="1.55388242853849E-20" iyy="1.36593231884734E-06" iyz="-1.97036141605652E-10" izz="5.12920734013458E-06" />
+      <origin xyz="-0.0099758 -4.9195E-05 -3.3552E-06" rpy="0 0 0" />
+      <mass value="0.0074512" />
+      <inertia ixx="4.37E-06" ixy="1.5796E-20" ixz="1.5601E-20" iyy="1.3659E-06" iyz="-1.9704E-10" izz="5.1292E-06" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_hip_yaw_engine_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_hip_yaw_engine_link.STL" />
       </geometry>
       <material name="">
         <color rgba="1 1 1 1" />
@@ -69,12 +69,12 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_hip_yaw_engine_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_hip_yaw_engine_link.STL" />
       </geometry>
     </collision>
   </link>
   <joint name="right_hip_yaw_engine_joint" type="revolute">
-    <origin xyz="-0.084333154461223 2.45945382447853E-05 0" rpy="0 0 0" />
+    <origin xyz="-0.084333 2.4595E-05 0" rpy="0 0 0" />
     <parent link="base_link" />
     <child link="right_hip_yaw_engine_link" />
     <axis xyz="0 1 0" />
@@ -82,14 +82,14 @@
   </joint>
   <link name="right_hip_roll_link">
     <inertial>
-      <origin xyz="0.0250955672145867 -0.000100584304280602 -6.72379018460021E-07" rpy="0 0 0" />
+      <origin xyz="0.0250955672145867 -0.000100584304280606 -6.7237901846017E-07" rpy="0 0 0" />
       <mass value="0.00374844887826709" />
-      <inertia ixx="1.73509180930169E-07" ixy="2.26869315440614E-14" ixz="-1.348110168534E-13" iyy="5.29714495902645E-07" iyz="5.67701628384787E-10" izz="4.86108472108004E-07" />
+      <inertia ixx="1.73509180930169E-07" ixy="2.26869315431247E-14" ixz="-1.34811016869735E-13" iyy="5.29714495902645E-07" iyz="5.6770162838478E-10" izz="4.86108472108004E-07" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_hip_roll_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_hip_roll_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -98,12 +98,12 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_hip_roll_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_hip_roll_link.STL" />
       </geometry>
     </collision>
   </link>
   <joint name="right_hip_roll_joint" type="revolute">
-    <origin xyz="-0.084333154461223 2.45945382447853E-05 0" rpy="0 0 0" />
+    <origin xyz="-0.084333 2.4595E-05 0" rpy="0 0 0" />
     <parent link="base_link" />
     <child link="right_hip_roll_link" />
     <axis xyz="-1 0 0" />
@@ -111,14 +111,14 @@
   </joint>
   <link name="right_hip_cube_link">
     <inertial>
-      <origin xyz="0.00499999363631391 -4.91949854027494E-05 -2.68144890015451E-15" rpy="0 0 0" />
+      <origin xyz="0.00499999363631388 -4.91949854027524E-05 -2.68303901281554E-15" rpy="0 0 0" />
       <mass value="0.000245876972106249" />
-      <inertia ixx="4.25015788197773E-09" ixy="6.85161708351657E-24" ixz="-4.41516842085342E-23" iyy="2.40441823778431E-09" iyz="-2.06386564924476E-15" izz="2.40441187048372E-09" />
+      <inertia ixx="4.25015788197773E-09" ixy="6.9949922766458E-24" ixz="-4.43315434602229E-23" iyy="2.40441823778431E-09" iyz="-2.06386564924903E-15" izz="2.40441187048372E-09" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_hip_cube_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_hip_cube_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -127,7 +127,7 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_hip_cube_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_hip_cube_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -140,23 +140,23 @@
   </joint>
   <link name="right_thigh_link">
     <inertial>
-      <origin xyz="-0.0338250068183917 -0.233568091984252 -0.00694723150581045" rpy="0 0 0" />
-      <mass value="0.651256730970666" />
-      <inertia ixx="0.00206893634437099" ixy="0.000272110721077152" ixz="-6.12788038461608E-05" iyy="0.00177958880876041" iyz="0.000133779452072601" izz="0.00201266566655095" />
+      <origin xyz="-0.033824 -0.2337 -0.0069562" rpy="0 0 0" />
+      <mass value="0.65016" />
+      <inertia ixx="0.0020682" ixy="0.00027178" ixz="-6.1286E-05" iyy="0.0017795" iyz="0.00013379" izz="0.0020118" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_thigh_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_thigh_link.STL" />
       </geometry>
       <material name="">
-        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+        <color rgba="0.79216 0.81961 0.93333 1" />
       </material>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_thigh_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_thigh_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -169,14 +169,14 @@
   </joint>
   <link name="right_shin_link">
     <inertial>
-      <origin xyz="8.93525504408327E-05 -0.207812925039368 0.00356242368804441" rpy="0 0 0" />
-      <mass value="0.347813967537165" />
-      <inertia ixx="0.00126357262237321" ixy="-1.32038172506396E-06" ixz="-3.06631552454993E-07" iyy="0.000301407339733946" iyz="6.71088337977351E-05" izz="0.00128278527429904" />
+      <origin xyz="8.93526611711049E-05 -0.207812929060435 0.00356241705006883" rpy="0 0 0" />
+      <mass value="0.34781395968867" />
+      <inertia ixx="0.00126357262100729" ixy="-1.32038148891233E-06" ixz="-3.06631747492304E-07" iyy="0.000301407339095669" iyz="6.71088331510038E-05" izz="0.00128278527343138" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_shin_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_shin_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -185,12 +185,12 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_shin_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_shin_link.STL" />
       </geometry>
     </collision>
   </link>
   <joint name="right_knee_joint" type="revolute">
-    <origin xyz="-0.025666845538777 -0.429824594538245 -0.0115000000000049" rpy="0 0 0" />
+    <origin xyz="-0.025667 -0.42982 -0.0115" rpy="0 0 0" />
     <parent link="right_thigh_link" />
     <child link="right_shin_link" />
     <axis xyz="1 0 0" />
@@ -198,14 +198,14 @@
   </joint>
   <link name="right_ankle_cube_link">
     <inertial>
-      <origin xyz="-0.025670003801888 -0.88668648907311 0.00800489820165312" rpy="0 0 0" />
-      <mass value="0.000189328304341638" />
-      <inertia ixx="1.15268360237197E-09" ixy="-8.75476909303627E-33" ixz="-2.1460399983049E-15" iyy="1.81031848738358E-09" iyz="-4.36007820098051E-26" izz="1.15268986006577E-09" />
+      <origin xyz="-0.0256700054371817 -0.886686489538835 0.0080048825338952" rpy="0 0 0" />
+      <mass value="0.000189328304341637" />
+      <inertia ixx="1.15268360237197E-09" ixy="3.15542212093433E-27" ixz="-2.14604000018949E-15" iyy="1.81031848738358E-09" iyz="-3.37400441896974E-26" izz="1.15268986006577E-09" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_ankle_cube_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_ankle_cube_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -214,12 +214,12 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_ankle_cube_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_ankle_cube_link.STL" />
       </geometry>
     </collision>
   </link>
   <joint name="right_ankle_cube_joint" type="revolute">
-    <origin xyz="0.025666845538777 0.429824594538245 0.0115000000000049" rpy="0 0 0" />
+    <origin xyz="0.025667 0.42982 0.0115" rpy="0 0 0" />
     <parent link="right_shin_link" />
     <child link="right_ankle_cube_link" />
     <axis xyz="0 0 1" />
@@ -227,14 +227,14 @@
   </joint>
   <link name="right_ankle_axle_link">
     <inertial>
-      <origin xyz="-6.92213906759859E-05 -0.0250851665328068 7.51570114941435E-05" rpy="0 0 0" />
+      <origin xyz="-6.92284854639791E-05 -0.0250851709238344 7.51565288376506E-05" rpy="0 0 0" />
       <mass value="0.00188539443116976" />
-      <inertia ixx="3.40886776481147E-07" ixy="-5.50460625860004E-14" ixz="-1.93998889501305E-10" iyy="1.59411257248695E-08" iyz="-1.08549833532568E-15" izz="3.43001179235715E-07" />
+      <inertia ixx="3.40886776481147E-07" ixy="-5.50460625038679E-14" ixz="-1.93998889501311E-10" iyy="1.59411257248695E-08" iyz="-1.08549831946723E-15" izz="3.43001179235715E-07" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_ankle_axle_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_ankle_axle_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -243,12 +243,12 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_ankle_axle_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_ankle_axle_link.STL" />
       </geometry>
     </collision>
   </link>
   <joint name="right_ankle_axle_joint" type="revolute">
-    <origin xyz="-0.0256700103430628 -0.886686499663044 0.00800489064197998" rpy="0 0 0" />
+    <origin xyz="-0.02567 -0.88669 0.0080049" rpy="0 0 0" />
     <parent link="right_ankle_cube_link" />
     <child link="right_ankle_axle_link" />
     <axis xyz="1 0 0" />
@@ -256,14 +256,14 @@
   </joint>
   <link name="right_foot_link">
     <inertial>
-      <origin xyz="-0.00433742702605386 -0.0410689912642686 0.0153050659615987" rpy="0 0 0" />
-      <mass value="0.138474623900111" />
-      <inertia ixx="0.000249638228785326" ixy="-7.51556284441056E-08" ixz="6.92688285527476E-08" iyy="0.000245679101559375" iyz="-9.50093987655504E-06" izz="0.000115983156725437" />
+      <origin xyz="-0.00433741507724755 -0.0410689898489927 0.0153050757452187" rpy="0 0 0" />
+      <mass value="0.138474623900114" />
+      <inertia ixx="0.000249638228785333" ixy="-7.51556284438262E-08" ixz="6.92688285526244E-08" iyy="0.000245679102238425" iyz="-9.50094091422734E-06" izz="0.000115983156046398" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_foot_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_foot_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -272,12 +272,12 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_foot_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_foot_link.STL" />
       </geometry>
     </collision>
   </link>
   <joint name="right_foot_joint" type="revolute">
-    <origin xyz="0 -0.0147499860831098 0" rpy="0 0 0" />
+    <origin xyz="0 -0.01475 0" rpy="0 0 0" />
     <parent link="right_ankle_axle_link" />
     <child link="right_foot_link" />
     <axis xyz="0 -1 0" />
@@ -285,14 +285,14 @@
   </joint>
   <link name="right_toe_link">
     <inertial>
-      <origin xyz="-0.000572444640377659 0.00216340409996052 0.021116546041816" rpy="0 0 0" />
-      <mass value="0.0528822247684903" />
-      <inertia ixx="3.25175653226149E-05" ixy="-1.62060260555305E-08" ixz="-8.56599509772465E-07" iyy="5.35566607091479E-05" iyz="-5.09324728976432E-08" izz="3.36873480136063E-05" />
+      <origin xyz="-0.000572445111661657 0.00216341147892951 0.0211165512866275" rpy="0 0 0" />
+      <mass value="0.0528822247684934" />
+      <inertia ixx="3.25175653226182E-05" ixy="-1.62060260488611E-08" ixz="-8.56599509785864E-07" iyy="5.35566607088569E-05" iyz="-5.09324728971251E-08" izz="3.36873480133124E-05" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_toe_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_toe_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -301,12 +301,12 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_toe_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_toe_link.STL" />
       </geometry>
     </collision>
   </link>
   <joint name="right_toe_joint" type="revolute">
-    <origin xyz="0.000499999710812979 -0.0646056174661427 0.105614593490204" rpy="0 0 0" />
+    <origin xyz="0.00050001 -0.064606 0.10561" rpy="0 0 0" />
     <parent link="right_foot_link" />
     <child link="right_toe_link" />
     <axis xyz="1 0 0" />
@@ -316,12 +316,12 @@
     <inertial>
       <origin xyz="-6.81364790209148E-05 -0.0166556791326088 -8.82627506705036E-05" rpy="0 0 0" />
       <mass value="0.00172774341614448" />
-      <inertia ixx="3.37594632257428E-07" ixy="-4.42992152760797E-14" ixz="6.34127654350488E-10" iyy="1.31803592087778E-08" iyz="4.34897905557677E-14" izz="3.40137650046851E-07" />
+      <inertia ixx="3.37594632257428E-07" ixy="-4.42992152760539E-14" ixz="6.34127654350489E-10" iyy="1.31803592087778E-08" iyz="4.34897905557677E-14" izz="3.40137650046851E-07" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/spine_001_axle_link.STL" />
+        <mesh filename="package://jiyuan/meshes/spine_001_axle_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -330,7 +330,7 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/spine_001_axle_link.STL" />
+        <mesh filename="package://jiyuan/meshes/spine_001_axle_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -343,28 +343,28 @@
   </joint>
   <link name="spine_001_cube_link">
     <inertial>
-      <origin xyz="1.51788304147971E-17 -3.32695611338085E-09 -8.67361737988404E-18" rpy="0 0 0" />
-      <mass value="0.000189328304341632" />
-      <inertia ixx="1.15268986006576E-09" ixy="3.52197995188594E-25" ixz="2.14603999937639E-15" iyy="1.81031848738356E-09" iyz="1.09859925104699E-25" izz="1.15268360237195E-09" />
+      <origin xyz="1.5179E-17 -3.327E-09 -8.6736E-18" rpy="0 0 0" />
+      <mass value="0.00018933" />
+      <inertia ixx="1.1527E-09" ixy="3.6512E-25" ixz="2.146E-15" iyy="1.8103E-09" iyz="9.6935E-26" izz="1.1527E-09" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/spine_001_cube_link.STL" />
+        <mesh filename="package://jiyuan/meshes/spine_001_cube_link.STL" />
       </geometry>
       <material name="">
-        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+        <color rgba="0.79216 0.81961 0.93333 1" />
       </material>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/spine_001_cube_link.STL" />
+        <mesh filename="package://jiyuan/meshes/spine_001_cube_link.STL" />
       </geometry>
     </collision>
   </link>
   <joint name="spine_001_axle_joint" type="revolute">
-    <origin xyz="0 0.011 0" rpy="-0.344154933334362 0.174881984566998 0" />
+    <origin xyz="0 0.011 0" rpy="-0.34415 0.17488 0" />
     <parent link="spine_001_axle_link" />
     <child link="spine_001_cube_link" />
     <axis xyz="-1 0 0" />
@@ -372,14 +372,14 @@
   </joint>
   <link name="spine_001_link">
     <inertial>
-      <origin xyz="0.00477881144454462 0.0803583169100199 3.47839628433988E-06" rpy="0 0 0" />
+      <origin xyz="0.00477881144454462 0.0803583169100199 3.47839628434508E-06" rpy="0 0 0" />
       <mass value="0.0320197009924435" />
-      <inertia ixx="3.92472750224256E-06" ixy="6.40845526362862E-08" ixz="-1.94138164905801E-09" iyy="5.00674291577168E-06" iyz="6.52922320204402E-10" izz="3.92225457418834E-06" />
+      <inertia ixx="3.92472750224256E-06" ixy="6.40845526362863E-08" ixz="-1.94138164905822E-09" iyy="5.00674291577168E-06" iyz="6.52922320204428E-10" izz="3.92225457418834E-06" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/spine_001_link.STL" />
+        <mesh filename="package://jiyuan/meshes/spine_001_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -388,7 +388,7 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/spine_001_link.STL" />
+        <mesh filename="package://jiyuan/meshes/spine_001_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -401,14 +401,14 @@
   </joint>
   <link name="spine_002_axle_link">
     <inertial>
-      <origin xyz="-8.5293056884324E-07 0.00445734981920043 4.63084204836706E-09" rpy="0 0 0" />
+      <origin xyz="-8.52930568843247E-07 0.00445734981920043 4.63084204836706E-09" rpy="0 0 0" />
       <mass value="0.000510082145710689" />
-      <inertia ixx="9.61926882973004E-09" ixy="4.36960296659341E-14" ixz="7.25336258511661E-11" iyy="9.66869078023053E-09" iyz="-2.58349805821469E-15" izz="1.22172647528038E-08" />
+      <inertia ixx="9.61926882973004E-09" ixy="4.36960296659349E-14" ixz="7.25336258511661E-11" iyy="9.66869078023053E-09" iyz="-2.58349805811129E-15" izz="1.22172647528038E-08" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/spine_002_axle_link.STL" />
+        <mesh filename="package://jiyuan/meshes/spine_002_axle_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -417,27 +417,27 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/spine_002_axle_link.STL" />
+        <mesh filename="package://jiyuan/meshes/spine_002_axle_link.STL" />
       </geometry>
     </collision>
   </link>
   <joint name="spine_001_joint" type="revolute">
-    <origin xyz="0.00670068441639467 0.112400448523802 0" rpy="3.10340201864658E-05 -0.164530504019474 -0.0597333970241516" />
+    <origin xyz="0.0067007 0.1124 0" rpy="3.1034E-05 -0.16453 -0.059733" />
     <parent link="spine_001_link" />
     <child link="spine_002_axle_link" />
-    <axis xyz="-0.000186916583478837 0.999999982531095 0" />
+    <axis xyz="-0.00018692 1 0" />
     <limit lower="-3.14" upper="3.14" effort="100" velocity="1" />
   </joint>
   <link name="spine_002_cube_link">
     <inertial>
-      <origin xyz="-7.88528636374956E-12 -3.32694677362966E-09 -2.08166817117217E-17" rpy="0 0 0" />
+      <origin xyz="-7.88528633664451E-12 -3.32694677362966E-09 -2.08166817117217E-17" rpy="0 0 0" />
       <mass value="0.000189328304341632" />
-      <inertia ixx="1.15269355427671E-09" ixy="1.55865494430096E-12" ixz="2.14603397213778E-15" iyy="1.8103147931726E-09" iyz="-5.08637466127586E-18" izz="1.15268360237194E-09" />
+      <inertia ixx="1.15269355427671E-09" ixy="1.55865494430096E-12" ixz="2.14603397211516E-15" iyy="1.8103147931726E-09" iyz="-5.08637468712525E-18" izz="1.15268360237194E-09" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/spine_002_cube_link.STL" />
+        <mesh filename="package://jiyuan/meshes/spine_002_cube_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -446,36 +446,36 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/spine_002_cube_link.STL" />
+        <mesh filename="package://jiyuan/meshes/spine_002_cube_link.STL" />
       </geometry>
     </collision>
   </link>
   <joint name="spine_002_axle_join" type="revolute">
-    <origin xyz="0 0.0109999998078421 0" rpy="-0.17440079274189 0.0283053809155349 0.00252199483425913" />
+    <origin xyz="0 0.011 0" rpy="-0.1744 0.028305 0.002522" />
     <parent link="spine_002_axle_link" />
     <child link="spine_002_cube_link" />
-    <axis xyz="0.99999719125963 -0.00237012085153487 0" />
+    <axis xyz="1 -0.0023701 0" />
     <limit lower="-3.14" upper="3.14" effort="100" velocity="1" />
   </joint>
   <link name="spine_002_link">
     <inertial>
-      <origin xyz="0.000801973808676076 0.0795245678000815 0.000127820576549247" rpy="0 0 0" />
-      <mass value="0.0309518546203202" />
-      <inertia ixx="3.72797062909746E-06" ixy="-2.81832386956808E-08" ixz="-4.42587281548403E-08" iyy="4.75187414875097E-06" iyz="-2.12158099072287E-08" izz="3.77640370140202E-06" />
+      <origin xyz="0.00080197 0.079525 0.00012782" rpy="0 0 0" />
+      <mass value="0.030952" />
+      <inertia ixx="3.728E-06" ixy="-2.8183E-08" ixz="-4.4259E-08" iyy="4.7519E-06" iyz="-2.1216E-08" izz="3.7764E-06" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/spine_002_link.STL" />
+        <mesh filename="package://jiyuan/meshes/spine_002_link.STL" />
       </geometry>
       <material name="">
-        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+        <color rgba="0.79216 0.81961 0.93333 1" />
       </material>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/spine_002_link.STL" />
+        <mesh filename="package://jiyuan/meshes/spine_002_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -488,14 +488,14 @@
   </joint>
   <link name="spine_003_axle_link">
     <inertial>
-      <origin xyz="-1.2343072277775E-06 0.00445735132318464 1.25901573819198E-08" rpy="0 0 0" />
+      <origin xyz="-1.23430722777752E-06 0.00445735132318459 1.2590157368042E-08" rpy="0 0 0" />
       <mass value="0.000510082296418304" />
-      <inertia ixx="9.79300454363617E-09" ixy="7.40587106164338E-14" ixz="6.53013199671426E-10" iyy="9.66869325506815E-09" iyz="1.37516106939874E-13" izz="1.20435450931177E-08" />
+      <inertia ixx="9.79300454363617E-09" ixy="7.4058710616434E-14" ixz="6.53013199671426E-10" iyy="9.66869325506815E-09" iyz="1.37516106939253E-13" izz="1.20435450931177E-08" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/spine_003_axle_link.STL" />
+        <mesh filename="package://jiyuan/meshes/spine_003_axle_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -504,27 +504,27 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/spine_003_axle_link.STL" />
+        <mesh filename="package://jiyuan/meshes/spine_003_axle_link.STL" />
       </geometry>
     </collision>
   </link>
   <joint name="spine_002_joint" type="revolute">
-    <origin xyz="0.000806435919506334 0.111797091469804 0" rpy="0 -0.0274704855817947 -0.00748662087643142" />
+    <origin xyz="0.00080644 0.1118 0" rpy="0 -0.02747 -0.0074866" />
     <parent link="spine_002_link" />
     <child link="spine_003_axle_link" />
-    <axis xyz="0.000273253759191587 -0.999999962666191 0" />
+    <axis xyz="0.00027325 -1 0" />
     <limit lower="-3.14" upper="3.14" effort="100" velocity="1" />
   </joint>
   <link name="spine_003_cube_link">
     <inertial>
-      <origin xyz="2.24132802595367E-10 3.31939192799169E-09 3.46944695195361E-17" rpy="0 0 0" />
-      <mass value="0.000189328304341632" />
-      <inertia ixx="1.15567454139414E-09" ixy="4.42029813738197E-11" ixz="-2.14116450403375E-15" iyy="1.80733380605517E-09" iyz="1.44576079131681E-16" izz="1.15268360237194E-09" />
+      <origin xyz="0.00176093277803284 0.0797669236359637 -9.4114251502353E-06" rpy="0 0 0" />
+      <mass value="0.03220902930632" />
+      <inertia ixx="3.9230871825677E-06" ixy="2.36035212478525E-08" ixz="-2.21265322262875E-09" iyy="5.01182275407829E-06" iyz="5.22385707879387E-10" izz="3.92293074826743E-06" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/spine_003_cube_link.STL" />
+        <mesh filename="package://jiyuan/meshes/spine_003_cube_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -533,27 +533,27 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/spine_003_cube_link.STL" />
+        <mesh filename="package://jiyuan/meshes/spine_003_cube_link.STL" />
       </geometry>
     </collision>
   </link>
   <joint name="spine_003_axle_joint" type="revolute">
-    <origin xyz="0 0.0109999995893339 0" rpy="0.186095390069988 0.251012260294841 0.0688886558053852" />
+    <origin xyz="0 0.011 0" rpy="0.1861 0.25101 0.068889" />
     <parent link="spine_003_axle_link" />
     <child link="spine_003_cube_link" />
-    <axis xyz="0.997728143633419 -0.0673687717107211 0" />
+    <axis xyz="0.99773 -0.067369 0" />
     <limit lower="-3.14" upper="3.14" effort="100" velocity="1" />
   </joint>
   <link name="spine_003_link">
     <inertial>
-      <origin xyz="0.00177134494191662 0.0802385750035131 -9.46707370307054E-06" rpy="0 0 0" />
-      <mass value="0.0320197010019784" />
-      <inertia ixx="3.92193150802631E-06" ixy="2.35593182664786E-08" ixz="-2.21265108146424E-09" iyy="5.01001542027223E-06" iyz="5.22385563303224E-10" izz="3.92177806466506E-06" />
+      <origin xyz="-8.1370475639004E-07 0.00445734940001424 2.72269845558171E-11" rpy="0 0 0" />
+      <mass value="0.000510082123516246" />
+      <inertia ixx="9.73607642682156E-09" ixy="-4.16691187289796E-14" ixz="5.43222243324636E-10" iyy="9.66869022459252E-09" iyz="9.58488402691034E-14" izz="1.21004535832996E-08" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/spine_003_link.STL" />
+        <mesh filename="package://jiyuan/meshes/spine_003_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -562,56 +562,27 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/spine_003_link.STL" />
+        <mesh filename="package://jiyuan/meshes/spine_003_link.STL" />
       </geometry>
     </collision>
   </link>
   <joint name="spine_003_cube_joint" type="revolute">
-    <origin xyz="0 0 0" rpy="0 0 0" />
+    <origin xyz="0.0025012 0.11227 0" rpy="4.9543E-05 -0.2591 -0.022468" />
     <parent link="spine_003_cube_link" />
     <child link="spine_003_link" />
-    <axis xyz="0 0 1" />
+    <axis xyz="-0.00018692 1 0" />
     <limit lower="-3.14" upper="3.14" effort="100" velocity="1" />
   </joint>
   <link name="spine_004_axle_link">
     <inertial>
-      <origin xyz="-8.1370475639004E-07 0.00445734940001424 2.72269845558171E-11" rpy="0 0 0" />
-      <mass value="0.000510082123516246" />
-      <inertia ixx="9.73607642682156E-09" ixy="-4.16691187289795E-14" ixz="5.43222243324636E-10" iyy="9.66869022459252E-09" iyz="9.58488402690517E-14" izz="1.21004535832996E-08" />
-    </inertial>
-    <visual>
-      <origin xyz="0 0 0" rpy="0 0 0" />
-      <geometry>
-        <mesh filename="package://robot_description/meshes/spine_004_axle_link.STL" />
-      </geometry>
-      <material name="">
-        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
-      </material>
-    </visual>
-    <collision>
-      <origin xyz="0 0 0" rpy="0 0 0" />
-      <geometry>
-        <mesh filename="package://robot_description/meshes/spine_004_axle_link.STL" />
-      </geometry>
-    </collision>
-  </link>
-  <joint name="spine_003_joint" type="revolute">
-    <origin xyz="0.00250119688024906 0.112272142645293 0" rpy="4.95430163599117E-05 -0.259096323257594 -0.0224676694074587" />
-    <parent link="spine_003_link" />
-    <child link="spine_004_axle_link" />
-    <axis xyz="-0.000186916583478925 0.999999982531095 0" />
-    <limit lower="-3.14" upper="3.14" effort="100" velocity="1" />
-  </joint>
-  <link name="spine_004_cube_link">
-    <inertial>
-      <origin xyz="-6.70852193240812E-11 -3.32450422746433E-09 9.58594315036976E-13" rpy="0 0 0" />
+      <origin xyz="-6.70852574879977E-11 -3.32450422746433E-09 9.79341607809658E-13" rpy="0 0 0" />
       <mass value="0.000189328304341632" />
       <inertia ixx="1.15292131882603E-09" ixy="1.23353286800362E-11" ixz="2.14566230487006E-15" iyy="1.81008702862328E-09" iyz="-4.02609733996255E-17" izz="1.15268360237194E-09" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/spine_004_cube_link.STL" />
+        <mesh filename="package://jiyuan/meshes/spine_004_axle_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -620,27 +591,27 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/spine_004_cube_link.STL" />
+        <mesh filename="package://jiyuan/meshes/spine_004_axle_link.STL" />
       </geometry>
     </collision>
   </link>
-  <joint name="spine_004_axle_joint" type="revolute">
-    <origin xyz="0 0.0109999998063652 0" rpy="0.259937971789517 0.210585098557286 0.0187470971171111" />
-    <parent link="spine_004_axle_link" />
-    <child link="spine_004_cube_link" />
-    <axis xyz="-0.999824004673546 0.0187605884383361 0" />
+  <joint name="spine_003_joint" type="revolute">
+    <origin xyz="0 0.011 0" rpy="0.25994 0.21059 0.018747" />
+    <parent link="spine_003_link" />
+    <child link="spine_004_axle_link" />
+    <axis xyz="-0.99982 0.018761 0" />
     <limit lower="-3.14" upper="3.14" effort="100" velocity="1" />
   </joint>
-  <link name="spine_004_link">
+  <link name="spine_004_cube_link">
     <inertial>
-      <origin xyz="-0.00238122688957205 0.0648563004557857 3.61472670068197E-05" rpy="0 0 0" />
+      <origin xyz="-0.0023812268907852 0.064856300455308 3.6147266431058E-05" rpy="0 0 0" />
       <mass value="0.0123462395112595" />
-      <inertia ixx="1.24638411276011E-06" ixy="2.30755786575525E-08" ixz="7.22859540584703E-10" iyy="6.16681440516875E-07" iyz="2.65703348308066E-11" izz="1.24420291683789E-06" />
+      <inertia ixx="1.24638411276011E-06" ixy="2.30755786575526E-08" ixz="7.22859540584597E-10" iyy="6.16681440516875E-07" iyz="2.65703348309919E-11" izz="1.24420291683789E-06" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/spine_004_link.STL" />
+        <mesh filename="package://jiyuan/meshes/spine_004_cube_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -649,12 +620,41 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/spine_004_link.STL" />
+        <mesh filename="package://jiyuan/meshes/spine_004_cube_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="spine_004_axle_joint" type="revolute">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <parent link="spine_004_axle_link" />
+    <child link="spine_004_cube_link" />
+    <axis xyz="0 0 1" />
+    <limit lower="-3.14" upper="3.14" effort="100" velocity="1" />
+  </joint>
+  <link name="spine_004_link">
+    <inertial>
+      <origin xyz="1.97342957947155E-10 3.32109806322478E-09 9.71445146547012E-17" rpy="0 0 0" />
+      <mass value="0.000189328304341631" />
+      <inertia ixx="1.15500369334742E-09" ixy="3.89395580407495E-11" ixz="-2.14226130109088E-15" iyy="1.80800465410188E-09" iyz="1.2729562851119E-16" izz="1.15268360237194E-09" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://jiyuan/meshes/spine_004_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://jiyuan/meshes/spine_004_link.STL" />
       </geometry>
     </collision>
   </link>
   <joint name="spine_004_cube_joint" type="revolute">
-    <origin xyz="0 0 0" rpy="0 0 0" />
+    <origin xyz="-0.0047469 0.12971 0" rpy="-0.018441 -0.43543 0.080276" />
     <parent link="spine_004_cube_link" />
     <child link="spine_004_link" />
     <axis xyz="0 0 1" />
@@ -662,14 +662,14 @@
   </joint>
   <link name="neck_axle_link">
     <inertial>
-      <origin xyz="1.97342957947155E-10 3.32109806322478E-09 9.71445146547012E-17" rpy="0 0 0" />
-      <mass value="0.000189328304341631" />
-      <inertia ixx="1.15500369334742E-09" ixy="3.89395580407495E-11" ixz="-2.14226130109088E-15" iyy="1.80800465410189E-09" iyz="1.27295628485341E-16" izz="1.15268360237194E-09" />
+      <origin xyz="0.00168666140150243 0.0275125888594623 0.00224980746190397" rpy="0 0 0" />
+      <mass value="0.00172774344297369" />
+      <inertia ixx="3.36323269685378E-07" ixy="-1.90478602162489E-08" ixz="-1.80062813445951E-09" iyy="1.66696191120477E-08" iyz="-2.76150288032438E-08" izz="3.37919748790985E-07" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/neck_axle_link.STL" />
+        <mesh filename="package://jiyuan/meshes/neck_axle_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -678,27 +678,27 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/neck_axle_link.STL" />
+        <mesh filename="package://jiyuan/meshes/neck_axle_link.STL" />
       </geometry>
     </collision>
   </link>
   <joint name="spine_004_joint" type="revolute">
-    <origin xyz="-0.00474688798162995 0.129713172249461 0" rpy="-0.0184410969908424 -0.435431971027392 0.0802758501201312" />
+    <origin xyz="0 0 0" rpy="0 0 0" />
     <parent link="spine_004_link" />
     <child link="neck_axle_link" />
-    <axis xyz="0 0 1" />
+    <axis xyz="0.99824 -0.059317 0" />
     <limit lower="-3.14" upper="3.14" effort="100" velocity="1" />
   </joint>
   <link name="neck_cube_link">
     <inertial>
-      <origin xyz="7.32482458266021E-05 -0.0033443104319979 -8.44870465414316E-05" rpy="0 0 0" />
-      <mass value="0.00172774344297369" />
-      <inertia ixx="3.37669619299395E-07" ixy="4.74595439912183E-11" ixz="-7.6630048630174E-10" iyy="1.31803653827576E-08" iyz="-9.10725093518117E-14" izz="3.40062652906258E-07" />
+      <origin xyz="1.44463327726009E-06 -0.00976336445340054 -2.96557468024983E-05" rpy="0 0 0" />
+      <mass value="0.0140124948869863" />
+      <inertia ixx="1.70656929568422E-06" ixy="-1.25067666124979E-10" ixz="1.02914122663796E-13" iyy="2.55846558262143E-06" iyz="-9.83384498835642E-11" izz="1.71196954793651E-06" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/neck_cube_link.STL" />
+        <mesh filename="package://jiyuan/meshes/neck_cube_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -707,7 +707,7 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/neck_cube_link.STL" />
+        <mesh filename="package://jiyuan/meshes/neck_cube_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -715,48 +715,19 @@
     <origin xyz="0.0018322 0.030834 0.0026322" rpy="0.087233 0.22756 -0.039767" />
     <parent link="neck_axle_link" />
     <child link="neck_cube_link" />
-    <axis xyz="0.97403 0.00014263 0.22641" />
-    <limit lower="-3.14" upper="3.14" effort="100" velocity="1" />
-  </joint>
-  <link name="neck_link">
-    <inertial>
-      <origin xyz="1.44463327725996E-06 -0.00976336445340054 -2.96557468024983E-05" rpy="0 0 0" />
-      <mass value="0.0140124948869863" />
-      <inertia ixx="1.70656929568422E-06" ixy="-1.2506766612499E-10" ixz="1.0291412265966E-13" iyy="2.55846558262143E-06" iyz="-9.83384498834848E-11" izz="1.71196954793651E-06" />
-    </inertial>
-    <visual>
-      <origin xyz="0 0 0" rpy="0 0 0" />
-      <geometry>
-        <mesh filename="package://robot_description/meshes/neck_link.STL" />
-      </geometry>
-      <material name="">
-        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
-      </material>
-    </visual>
-    <collision>
-      <origin xyz="0 0 0" rpy="0 0 0" />
-      <geometry>
-        <mesh filename="package://robot_description/meshes/neck_link.STL" />
-      </geometry>
-    </collision>
-  </link>
-  <joint name="neck_joint" type="revolute">
-    <origin xyz="0 0 0" rpy="0 0 0" />
-    <parent link="neck_cube_link" />
-    <child link="neck_link" />
     <axis xyz="0.00014644 -1 0" />
     <limit lower="-3.14" upper="3.14" effort="100" velocity="1" />
   </joint>
   <link name="right_branch_link">
     <inertial>
-      <origin xyz="0.0342087441276741 -0.00176734097123937 -0.00120947727238396" rpy="0 0 0" />
+      <origin xyz="0.0342087441276742 -0.00176734097123937 -0.00120947727238396" rpy="0 0 0" />
       <mass value="0.013497890740739" />
-      <inertia ixx="1.2926414536493E-06" ixy="5.38399776707783E-08" ixz="4.32856935211769E-08" iyy="1.06891317628328E-06" iyz="3.95744816457389E-09" izz="1.75257133082468E-06" />
+      <inertia ixx="1.2926414536493E-06" ixy="5.38399776707783E-08" ixz="4.32856935211768E-08" iyy="1.06891317628328E-06" iyz="3.95744816457389E-09" izz="1.75257133082468E-06" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_branch_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_branch_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -765,12 +736,12 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_branch_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_branch_link.STL" />
       </geometry>
     </collision>
   </link>
   <joint name="right_branch_link" type="fixed">
-    <origin xyz="-0.0772640532330563 0.102209980220283 0.00749936807653298" rpy="3.16095910023056E-05 -0.114736944872298 -0.00748936555497514" />
+    <origin xyz="-0.077264 0.10221 0.0074994" rpy="3.161E-05 -0.11474 -0.0074894" />
     <parent link="spine_002_link" />
     <child link="right_branch_link" />
     <axis xyz="0 0 0" />
@@ -778,23 +749,23 @@
   </joint>
   <link name="right_spine_003_link">
     <inertial>
-      <origin xyz="0.00036404463207966 0.0420089912020032 -0.0225452756157186" rpy="0 0 0" />
-      <mass value="0.0192570395361066" />
-      <inertia ixx="3.29487915932372E-06" ixy="-5.96656270484953E-08" ixz="2.76839158630015E-07" iyy="2.37144676466391E-06" iyz="3.13580776458497E-07" izz="2.15117263561911E-06" />
+      <origin xyz="0.00036404 0.042009 -0.022545" rpy="0 0 0" />
+      <mass value="0.019257" />
+      <inertia ixx="3.2949E-06" ixy="-5.9666E-08" ixz="2.7684E-07" iyy="2.3714E-06" iyz="3.1358E-07" izz="2.1512E-06" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_spine_003_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_spine_003_link.STL" />
       </geometry>
       <material name="">
-        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 0.25" />
+        <color rgba="0.79216 0.81961 0.93333 0.25" />
       </material>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_spine_003_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_spine_003_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -802,19 +773,19 @@
     <origin xyz="0 0 0" rpy="0 0 0" />
     <parent link="right_branch_link" />
     <child link="right_spine_003_link" />
-    <axis xyz="0.000274286186586446 -0.999999962383543 0" />
+    <axis xyz="0.00027429 -1 0" />
     <limit lower="-3.14" upper="3.14" effort="100" velocity="1" />
   </joint>
   <link name="right_spine_004_ground_link">
     <inertial>
-      <origin xyz="0.0334438419965927 0.0335246343121994 0.025836416760253" rpy="0 0 0" />
+      <origin xyz="0.0334438419965925 0.0335246343121995 0.0258364167602531" rpy="0 0 0" />
       <mass value="0.0371077097805639" />
-      <inertia ixx="1.15914902522178E-05" ixy="-1.87344982433402E-08" ixz="-4.94055284300337E-07" iyy="1.17589174084433E-05" iyz="-1.04248798188576E-08" izz="1.87631928022744E-05" />
+      <inertia ixx="1.15914902522178E-05" ixy="-1.87344982433419E-08" ixz="-4.94055284300337E-07" iyy="1.17589174084433E-05" iyz="-1.04248798188569E-08" izz="1.87631928022743E-05" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_spine_004_ground_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_spine_004_ground_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -823,12 +794,12 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_spine_004_ground_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_spine_004_ground_link.STL" />
       </geometry>
     </collision>
   </link>
   <joint name="right_spine_003_joint" type="revolute">
-    <origin xyz="-0.00410736211631267 0.072996321531915 -0.0467839448006484" rpy="0 -1.48365130116614 0.000274286189964258" />
+    <origin xyz="-0.0041074 0.072996 -0.046784" rpy="0 -1.4837 0.00027429" />
     <parent link="right_spine_003_link" />
     <child link="right_spine_004_ground_link" />
     <axis xyz="-1 0 0" />
@@ -837,13 +808,13 @@
   <link name="right_spine_004_link">
     <inertial>
       <origin xyz="0.028182942237352 8.13448473200862E-05 2.7605138357284E-06" rpy="0 0 0" />
-      <mass value="0.00196590214384828" />
+      <mass value="0.00196590214384826" />
       <inertia ixx="2.04393171947593E-08" ixy="1.45941256926745E-10" ixz="2.98882648257208E-10" iyy="3.48329498920359E-07" iyz="6.34072572822225E-10" izz="3.5162747886882E-07" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_spine_004_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_spine_004_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -852,36 +823,36 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_spine_004_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_spine_004_link.STL" />
       </geometry>
     </collision>
   </link>
-  <joint name="right_spine_004_ground_joint" type="revolute">
-    <origin xyz="0.0432453683180946 0.0420609379831153 0.0515775502791956" rpy="-0.398518691440589 1.5703508296409 -0.660318062648173" />
+  <joint name="right_spine_003_joint" type="revolute">
+    <origin xyz="0.043245 0.042061 0.051578" rpy="-0.39852 1.5704 -0.66032" />
     <parent link="right_spine_004_ground_link" />
     <child link="right_spine_004_link" />
-    <axis xyz="0.999999495252397 -0.000443611072507391 -0.000901501063456533" />
+    <axis xyz="1 -0.00044361 -0.0009015" />
     <limit lower="-3.14" upper="3.14" effort="100" velocity="1" />
   </joint>
   <link name="right_shoulder_link">
     <inertial>
-      <origin xyz="4.60695540049905E-09 -1.3096792217393E-07 1.04989524490895E-07" rpy="0 0 0" />
-      <mass value="5.46299456939302E-05" />
-      <inertia ixx="3.36280041911811E-10" ixy="-5.21892557811385E-16" ixz="-3.92534891888924E-14" iyy="2.67929781003683E-10" iyz="1.55043618776817E-15" izz="2.67928900864954E-10" />
+      <origin xyz="4.607E-09 -1.3097E-07 1.0499E-07" rpy="0 0 0" />
+      <mass value="5.463E-05" />
+      <inertia ixx="3.3628E-10" ixy="-5.2189E-16" ixz="-3.9253E-14" iyy="2.6793E-10" iyz="1.5504E-15" izz="2.6793E-10" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_shoulder_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_shoulder_link.STL" />
       </geometry>
       <material name="">
-        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+        <color rgba="0.79216 0.81961 0.93333 1" />
       </material>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_shoulder_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_shoulder_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -889,19 +860,19 @@
     <origin xyz="0 0 0" rpy="0 0 0" />
     <parent link="right_spine_004_link" />
     <child link="right_shoulder_link" />
-    <axis xyz="0.000859407421352749 -0.0871557532121165 0.996194326474967" />
+    <axis xyz="0.00085941 -0.087156 0.99619" />
     <limit lower="-3.14" upper="3.14" effort="100" velocity="1" />
   </joint>
   <link name="right_arm_link">
     <inertial>
-      <origin xyz="-0.0452987392277859 -0.0797744953070252 0.0108548928586347" rpy="0 0 0" />
+      <origin xyz="-0.0452987392277858 -0.0797744953070251 0.0108548928586347" rpy="0 0 0" />
       <mass value="0.0463841814445341" />
-      <inertia ixx="2.78725979874452E-05" ixy="-4.19823686112728E-07" ixz="9.55350276886978E-08" iyy="6.10545701242481E-06" iyz="3.31966464599818E-06" izz="2.78003362567239E-05" />
+      <inertia ixx="2.78725979874452E-05" ixy="-4.19823686112729E-07" ixz="9.55350276886978E-08" iyy="6.10545701242481E-06" iyz="3.31966464599818E-06" izz="2.78003362567239E-05" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_arm_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_arm_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -910,7 +881,7 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_arm_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_arm_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -918,19 +889,19 @@
     <origin xyz="0 0 0" rpy="0 0 0" />
     <parent link="right_shoulder_link" />
     <child link="right_arm_link" />
-    <axis xyz="0.000859407421352749 -0.0871557532121165 0.996194326474967" />
+    <axis xyz="0.00085941 -0.087156 0.99619" />
     <limit lower="-3.14" upper="3.14" effort="100" velocity="1" />
   </joint>
   <link name="right_forearm_link">
     <inertial>
       <origin xyz="-0.000155041944261053 -0.140426426569951 0.0644320441565459" rpy="0 0 0" />
       <mass value="0.0295290267369982" />
-      <inertia ixx="1.2939795738133E-05" ixy="-2.15707921034777E-10" ixz="8.17675472287479E-11" iyy="4.84789752124762E-06" iyz="3.71681839138466E-06" izz="1.1064910717755E-05" />
+      <inertia ixx="1.2939795738133E-05" ixy="-2.1570792103438E-10" ixz="8.17675472287479E-11" iyy="4.84789752124762E-06" iyz="3.71681839138466E-06" izz="1.1064910717755E-05" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_forearm_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_forearm_link.STL" />
       </geometry>
       <material name="">
         <color rgba="1 1 1 1" />
@@ -939,12 +910,12 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_forearm_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_forearm_link.STL" />
       </geometry>
     </collision>
   </link>
   <joint name="right_elbow_joint" type="revolute">
-    <origin xyz="-0.0456518822542674 -0.198226035200409 0.0273940850548131" rpy="-0.13165218489478 0.173467112582246 -0.0249549558994513" />
+    <origin xyz="-0.045652 -0.19823 0.027394" rpy="-0.13165 0.17347 -0.024955" />
     <parent link="right_arm_link" />
     <child link="right_forearm_link" />
     <axis xyz="-1 0 0" />
@@ -954,12 +925,12 @@
     <inertial>
       <origin xyz="-2.77555756156289E-17 -0.0299999966730439 -5.55111512312578E-17" rpy="0 0 0" />
       <mass value="0.000189328304341632" />
-      <inertia ixx="1.15268360237195E-09" ixy="3.55429169456379E-25" ixz="2.14603999851043E-15" iyy="1.81031848738356E-09" iyz="5.16987882845642E-26" izz="1.15268986006575E-09" />
+      <inertia ixx="1.15268360237195E-09" ixy="3.74816215063091E-25" ixz="2.14603999851043E-15" iyy="1.81031848738356E-09" iyz="0" izz="1.15268986006575E-09" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_wrist_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_wrist_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -968,12 +939,12 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_wrist_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_wrist_link.STL" />
       </geometry>
     </collision>
   </link>
   <joint name="right_forearm_joint" type="revolute">
-    <origin xyz="-0.000150000010252893 -0.241006694344342 0.112832954897592" rpy="0.448472339283537 0 -3.14159265358979" />
+    <origin xyz="-0.00015 -0.24101 0.11283" rpy="0.44847 0 -3.1416" />
     <parent link="right_forearm_link" />
     <child link="right_wrist_link" />
     <axis xyz="0 0 -1" />
@@ -988,7 +959,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_wrist_cube_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_wrist_cube_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -997,7 +968,7 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_wrist_cube_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_wrist_cube_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -1012,12 +983,12 @@
     <inertial>
       <origin xyz="-1.09308481710535E-09 -0.00751263403888882 7.02399793883757E-09" rpy="0 0 0" />
       <mass value="0.00350581330345173" />
-      <inertia ixx="2.17576372344675E-07" ixy="2.8169092646938E-14" ixz="-2.52345647756325E-14" iyy="2.34116497931955E-07" iyz="-6.26606307607423E-15" izz="2.17576160385255E-07" />
+      <inertia ixx="2.17576372344675E-07" ixy="2.81690926254313E-14" ixz="-2.52345647789412E-14" iyy="2.34116497931955E-07" iyz="-6.26606309592656E-15" izz="2.17576160385255E-07" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_hand_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_hand_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -1026,7 +997,7 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/right_hand_link.STL" />
+        <mesh filename="package://jiyuan/meshes/right_hand_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -1039,14 +1010,14 @@
   </joint>
 <link name="left_hip_pitch_engine_link">
     <inertial>
-      <origin xyz="-0.00639528170474211 -5.28330276241918E-05 -1.32444315893138E-07" rpy="0 0 0" />
-      <mass value="0.00680931690813817" />
-      <inertia ixx="3.39928584447202E-06" ixy="-2.74780005767967E-12" ixz="1.29764844440883E-11" iyy="3.82287795367196E-06" iyz="-3.93183797563819E-11" izz="9.53831394208114E-07" />
+      <origin xyz="-0.0063953 -5.2833E-05 -1.3244E-07" rpy="0 0 0" />
+      <mass value="0.0068093" />
+      <inertia ixx="3.3993E-06" ixy="-2.7478E-12" ixz="1.2976E-11" iyy="3.8229E-06" iyz="-3.9318E-11" izz="9.5383E-07" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_hip_pitch_engine_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_hip_pitch_engine_link.STL" />
       </geometry>
       <material name="">
         <color rgba="1 1 1 1" />
@@ -1055,20 +1026,20 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_hip_pitch_engine_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_hip_pitch_engine_link.STL" />
       </geometry>
     </collision>
   </link>
   <link name="left_hip_yaw_engine_link">
     <inertial>
-      <origin xyz="-0.00997581688662634 -4.91949854028881E-05 -3.35518278792401E-06" rpy="0 0 0" />
-      <mass value="0.00745115887807254" />
-      <inertia ixx="4.37003711979543E-06" ixy="1.54442408912393E-20" ixz="1.55388242853849E-20" iyy="1.36593231884734E-06" iyz="-1.97036141605652E-10" izz="5.12920734013458E-06" />
+      <origin xyz="-0.0099758 -4.9195E-05 -3.3552E-06" rpy="0 0 0" />
+      <mass value="0.0074512" />
+      <inertia ixx="4.37E-06" ixy="1.5796E-20" ixz="1.5601E-20" iyy="1.3659E-06" iyz="-1.9704E-10" izz="5.1292E-06" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_hip_yaw_engine_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_hip_yaw_engine_link.STL" />
       </geometry>
       <material name="">
         <color rgba="1 1 1 1" />
@@ -1077,20 +1048,20 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_hip_yaw_engine_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_hip_yaw_engine_link.STL" />
       </geometry>
     </collision>
   </link>
   <link name="left_hip_roll_link">
     <inertial>
-      <origin xyz="0.0250955672145867 -0.000100584304280602 -6.72379018460021E-07" rpy="0 0 0" />
+      <origin xyz="0.0250955672145867 -0.000100584304280606 -6.7237901846017E-07" rpy="0 0 0" />
       <mass value="0.00374844887826709" />
-      <inertia ixx="1.73509180930169E-07" ixy="2.26869315440614E-14" ixz="-1.348110168534E-13" iyy="5.29714495902645E-07" iyz="5.67701628384787E-10" izz="4.86108472108004E-07" />
+      <inertia ixx="1.73509180930169E-07" ixy="2.26869315431247E-14" ixz="-1.34811016869735E-13" iyy="5.29714495902645E-07" iyz="5.6770162838478E-10" izz="4.86108472108004E-07" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_hip_roll_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_hip_roll_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -1099,20 +1070,20 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_hip_roll_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_hip_roll_link.STL" />
       </geometry>
     </collision>
   </link>
   <link name="left_hip_cube_link">
     <inertial>
-      <origin xyz="0.00499999363631391 -4.91949854027494E-05 -2.68144890015451E-15" rpy="0 0 0" />
+      <origin xyz="0.00499999363631388 -4.91949854027524E-05 -2.68303901281554E-15" rpy="0 0 0" />
       <mass value="0.000245876972106249" />
-      <inertia ixx="4.25015788197773E-09" ixy="6.85161708351657E-24" ixz="-4.41516842085342E-23" iyy="2.40441823778431E-09" iyz="-2.06386564924476E-15" izz="2.40441187048372E-09" />
+      <inertia ixx="4.25015788197773E-09" ixy="6.9949922766458E-24" ixz="-4.43315434602229E-23" iyy="2.40441823778431E-09" iyz="-2.06386564924903E-15" izz="2.40441187048372E-09" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_hip_cube_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_hip_cube_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -1121,42 +1092,42 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_hip_cube_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_hip_cube_link.STL" />
       </geometry>
     </collision>
   </link>
   <link name="left_thigh_link">
     <inertial>
-      <origin xyz="-0.0338250068183917 -0.233568091984252 -0.00694723150581045" rpy="0 0 0" />
-      <mass value="0.651256730970666" />
-      <inertia ixx="0.00206893634437099" ixy="0.000272110721077152" ixz="-6.12788038461608E-05" iyy="0.00177958880876041" iyz="0.000133779452072601" izz="0.00201266566655095" />
+      <origin xyz="-0.033824 -0.2337 -0.0069562" rpy="0 0 0" />
+      <mass value="0.65016" />
+      <inertia ixx="0.0020682" ixy="0.00027178" ixz="-6.1286E-05" iyy="0.0017795" iyz="0.00013379" izz="0.0020118" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_thigh_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_thigh_link.STL" />
       </geometry>
       <material name="">
-        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+        <color rgba="0.79216 0.81961 0.93333 1" />
       </material>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_thigh_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_thigh_link.STL" />
       </geometry>
     </collision>
   </link>
   <link name="left_shin_link">
     <inertial>
-      <origin xyz="8.93525504408327E-05 -0.207812925039368 0.00356242368804441" rpy="0 0 0" />
-      <mass value="0.347813967537165" />
-      <inertia ixx="0.00126357262237321" ixy="-1.32038172506396E-06" ixz="-3.06631552454993E-07" iyy="0.000301407339733946" iyz="6.71088337977351E-05" izz="0.00128278527429904" />
+      <origin xyz="8.93526611711049E-05 -0.207812929060435 0.00356241705006883" rpy="0 0 0" />
+      <mass value="0.34781395968867" />
+      <inertia ixx="0.00126357262100729" ixy="-1.32038148891233E-06" ixz="-3.06631747492304E-07" iyy="0.000301407339095669" iyz="6.71088331510038E-05" izz="0.00128278527343138" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_shin_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_shin_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -1165,20 +1136,20 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_shin_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_shin_link.STL" />
       </geometry>
     </collision>
   </link>
   <link name="left_ankle_cube_link">
     <inertial>
-      <origin xyz="-0.025670003801888 -0.88668648907311 0.00800489820165312" rpy="0 0 0" />
-      <mass value="0.000189328304341638" />
-      <inertia ixx="1.15268360237197E-09" ixy="-8.75476909303627E-33" ixz="-2.1460399983049E-15" iyy="1.81031848738358E-09" iyz="-4.36007820098051E-26" izz="1.15268986006577E-09" />
+      <origin xyz="-0.0256700054371817 -0.886686489538835 0.0080048825338952" rpy="0 0 0" />
+      <mass value="0.000189328304341637" />
+      <inertia ixx="1.15268360237197E-09" ixy="3.15542212093433E-27" ixz="-2.14604000018949E-15" iyy="1.81031848738358E-09" iyz="-3.37400441896974E-26" izz="1.15268986006577E-09" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_ankle_cube_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_ankle_cube_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -1187,20 +1158,20 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_ankle_cube_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_ankle_cube_link.STL" />
       </geometry>
     </collision>
   </link>
   <link name="left_ankle_axle_link">
     <inertial>
-      <origin xyz="-6.92213906759859E-05 -0.0250851665328068 7.51570114941435E-05" rpy="0 0 0" />
+      <origin xyz="-6.92284854639791E-05 -0.0250851709238344 7.51565288376506E-05" rpy="0 0 0" />
       <mass value="0.00188539443116976" />
-      <inertia ixx="3.40886776481147E-07" ixy="-5.50460625860004E-14" ixz="-1.93998889501305E-10" iyy="1.59411257248695E-08" iyz="-1.08549833532568E-15" izz="3.43001179235715E-07" />
+      <inertia ixx="3.40886776481147E-07" ixy="-5.50460625038679E-14" ixz="-1.93998889501311E-10" iyy="1.59411257248695E-08" iyz="-1.08549831946723E-15" izz="3.43001179235715E-07" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_ankle_axle_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_ankle_axle_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -1209,20 +1180,20 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_ankle_axle_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_ankle_axle_link.STL" />
       </geometry>
     </collision>
   </link>
   <link name="left_foot_link">
     <inertial>
-      <origin xyz="-0.00433742702605386 -0.0410689912642686 0.0153050659615987" rpy="0 0 0" />
-      <mass value="0.138474623900111" />
-      <inertia ixx="0.000249638228785326" ixy="-7.51556284441056E-08" ixz="6.92688285527476E-08" iyy="0.000245679101559375" iyz="-9.50093987655504E-06" izz="0.000115983156725437" />
+      <origin xyz="-0.00433741507724755 -0.0410689898489927 0.0153050757452187" rpy="0 0 0" />
+      <mass value="0.138474623900114" />
+      <inertia ixx="0.000249638228785333" ixy="-7.51556284438262E-08" ixz="6.92688285526244E-08" iyy="0.000245679102238425" iyz="-9.50094091422734E-06" izz="0.000115983156046398" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_foot_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_foot_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -1231,20 +1202,20 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_foot_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_foot_link.STL" />
       </geometry>
     </collision>
   </link>
   <link name="left_toe_link">
     <inertial>
-      <origin xyz="-0.000572444640377659 0.00216340409996052 0.021116546041816" rpy="0 0 0" />
-      <mass value="0.0528822247684903" />
-      <inertia ixx="3.25175653226149E-05" ixy="-1.62060260555305E-08" ixz="-8.56599509772465E-07" iyy="5.35566607091479E-05" iyz="-5.09324728976432E-08" izz="3.36873480136063E-05" />
+      <origin xyz="-0.000572445111661657 0.00216341147892951 0.0211165512866275" rpy="0 0 0" />
+      <mass value="0.0528822247684934" />
+      <inertia ixx="3.25175653226182E-05" ixy="-1.62060260488611E-08" ixz="-8.56599509785864E-07" iyy="5.35566607088569E-05" iyz="-5.09324728971251E-08" izz="3.36873480133124E-05" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_toe_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_toe_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -1253,20 +1224,20 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_toe_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_toe_link.STL" />
       </geometry>
     </collision>
   </link>
   <link name="left_branch_link">
     <inertial>
-      <origin xyz="0.0342087441276741 -0.00176734097123937 -0.00120947727238396" rpy="0 0 0" />
+      <origin xyz="0.0342087441276742 -0.00176734097123937 -0.00120947727238396" rpy="0 0 0" />
       <mass value="0.013497890740739" />
-      <inertia ixx="1.2926414536493E-06" ixy="5.38399776707783E-08" ixz="4.32856935211769E-08" iyy="1.06891317628328E-06" iyz="3.95744816457389E-09" izz="1.75257133082468E-06" />
+      <inertia ixx="1.2926414536493E-06" ixy="5.38399776707783E-08" ixz="4.32856935211768E-08" iyy="1.06891317628328E-06" iyz="3.95744816457389E-09" izz="1.75257133082468E-06" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_branch_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_branch_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -1275,42 +1246,42 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_branch_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_branch_link.STL" />
       </geometry>
     </collision>
   </link>
   <link name="left_spine_003_link">
     <inertial>
-      <origin xyz="0.00036404463207966 0.0420089912020032 -0.0225452756157186" rpy="0 0 0" />
-      <mass value="0.0192570395361066" />
-      <inertia ixx="3.29487915932372E-06" ixy="-5.96656270484953E-08" ixz="2.76839158630015E-07" iyy="2.37144676466391E-06" iyz="3.13580776458497E-07" izz="2.15117263561911E-06" />
+      <origin xyz="0.00036404 0.042009 -0.022545" rpy="0 0 0" />
+      <mass value="0.019257" />
+      <inertia ixx="3.2949E-06" ixy="-5.9666E-08" ixz="2.7684E-07" iyy="2.3714E-06" iyz="3.1358E-07" izz="2.1512E-06" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_spine_003_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_spine_003_link.STL" />
       </geometry>
       <material name="">
-        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 0.25" />
+        <color rgba="0.79216 0.81961 0.93333 0.25" />
       </material>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_spine_003_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_spine_003_link.STL" />
       </geometry>
     </collision>
   </link>
   <link name="left_spine_004_ground_link">
     <inertial>
-      <origin xyz="0.0334438419965927 0.0335246343121994 0.025836416760253" rpy="0 0 0" />
+      <origin xyz="0.0334438419965925 0.0335246343121995 0.0258364167602531" rpy="0 0 0" />
       <mass value="0.0371077097805639" />
-      <inertia ixx="1.15914902522178E-05" ixy="-1.87344982433402E-08" ixz="-4.94055284300337E-07" iyy="1.17589174084433E-05" iyz="-1.04248798188576E-08" izz="1.87631928022744E-05" />
+      <inertia ixx="1.15914902522178E-05" ixy="-1.87344982433419E-08" ixz="-4.94055284300337E-07" iyy="1.17589174084433E-05" iyz="-1.04248798188569E-08" izz="1.87631928022743E-05" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_spine_004_ground_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_spine_004_ground_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -1319,20 +1290,20 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_spine_004_ground_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_spine_004_ground_link.STL" />
       </geometry>
     </collision>
   </link>
   <link name="left_spine_004_link">
     <inertial>
       <origin xyz="0.028182942237352 8.13448473200862E-05 2.7605138357284E-06" rpy="0 0 0" />
-      <mass value="0.00196590214384828" />
+      <mass value="0.00196590214384826" />
       <inertia ixx="2.04393171947593E-08" ixy="1.45941256926745E-10" ixz="2.98882648257208E-10" iyy="3.48329498920359E-07" iyz="6.34072572822225E-10" izz="3.5162747886882E-07" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_spine_004_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_spine_004_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -1341,42 +1312,42 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_spine_004_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_spine_004_link.STL" />
       </geometry>
     </collision>
   </link>
   <link name="left_shoulder_link">
     <inertial>
-      <origin xyz="4.60695540049905E-09 -1.3096792217393E-07 1.04989524490895E-07" rpy="0 0 0" />
-      <mass value="5.46299456939302E-05" />
-      <inertia ixx="3.36280041911811E-10" ixy="-5.21892557811385E-16" ixz="-3.92534891888924E-14" iyy="2.67929781003683E-10" iyz="1.55043618776817E-15" izz="2.67928900864954E-10" />
+      <origin xyz="4.607E-09 -1.3097E-07 1.0499E-07" rpy="0 0 0" />
+      <mass value="5.463E-05" />
+      <inertia ixx="3.3628E-10" ixy="-5.2189E-16" ixz="-3.9253E-14" iyy="2.6793E-10" iyz="1.5504E-15" izz="2.6793E-10" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_shoulder_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_shoulder_link.STL" />
       </geometry>
       <material name="">
-        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+        <color rgba="0.79216 0.81961 0.93333 1" />
       </material>
     </visual>
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_shoulder_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_shoulder_link.STL" />
       </geometry>
     </collision>
   </link>
   <link name="left_arm_link">
     <inertial>
-      <origin xyz="-0.0452987392277859 -0.0797744953070252 0.0108548928586347" rpy="0 0 0" />
+      <origin xyz="-0.0452987392277858 -0.0797744953070251 0.0108548928586347" rpy="0 0 0" />
       <mass value="0.0463841814445341" />
-      <inertia ixx="2.78725979874452E-05" ixy="-4.19823686112728E-07" ixz="9.55350276886978E-08" iyy="6.10545701242481E-06" iyz="3.31966464599818E-06" izz="2.78003362567239E-05" />
+      <inertia ixx="2.78725979874452E-05" ixy="-4.19823686112729E-07" ixz="9.55350276886978E-08" iyy="6.10545701242481E-06" iyz="3.31966464599818E-06" izz="2.78003362567239E-05" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_arm_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_arm_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -1385,7 +1356,7 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_arm_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_arm_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -1393,12 +1364,12 @@
     <inertial>
       <origin xyz="-0.000155041944261053 -0.140426426569951 0.0644320441565459" rpy="0 0 0" />
       <mass value="0.0295290267369982" />
-      <inertia ixx="1.2939795738133E-05" ixy="-2.15707921034777E-10" ixz="8.17675472287479E-11" iyy="4.84789752124762E-06" iyz="3.71681839138466E-06" izz="1.1064910717755E-05" />
+      <inertia ixx="1.2939795738133E-05" ixy="-2.1570792103438E-10" ixz="8.17675472287479E-11" iyy="4.84789752124762E-06" iyz="3.71681839138466E-06" izz="1.1064910717755E-05" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_forearm_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_forearm_link.STL" />
       </geometry>
       <material name="">
         <color rgba="1 1 1 1" />
@@ -1407,7 +1378,7 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_forearm_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_forearm_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -1415,12 +1386,12 @@
     <inertial>
       <origin xyz="-2.77555756156289E-17 -0.0299999966730439 -5.55111512312578E-17" rpy="0 0 0" />
       <mass value="0.000189328304341632" />
-      <inertia ixx="1.15268360237195E-09" ixy="3.55429169456379E-25" ixz="2.14603999851043E-15" iyy="1.81031848738356E-09" iyz="5.16987882845642E-26" izz="1.15268986006575E-09" />
+      <inertia ixx="1.15268360237195E-09" ixy="3.74816215063091E-25" ixz="2.14603999851043E-15" iyy="1.81031848738356E-09" iyz="0" izz="1.15268986006575E-09" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_wrist_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_wrist_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -1429,7 +1400,7 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_wrist_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_wrist_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -1442,7 +1413,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_wrist_cube_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_wrist_cube_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -1451,7 +1422,7 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_wrist_cube_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_wrist_cube_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -1459,12 +1430,12 @@
     <inertial>
       <origin xyz="-1.09308481710535E-09 -0.00751263403888882 7.02399793883757E-09" rpy="0 0 0" />
       <mass value="0.00350581330345173" />
-      <inertia ixx="2.17576372344675E-07" ixy="2.8169092646938E-14" ixz="-2.52345647756325E-14" iyy="2.34116497931955E-07" iyz="-6.26606307607423E-15" izz="2.17576160385255E-07" />
+      <inertia ixx="2.17576372344675E-07" ixy="2.81690926254313E-14" ixz="-2.52345647789412E-14" iyy="2.34116497931955E-07" iyz="-6.26606309592656E-15" izz="2.17576160385255E-07" />
     </inertial>
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_hand_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_hand_link.STL" />
       </geometry>
       <material name="">
         <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
@@ -1473,26 +1444,26 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://robot_description/meshes/left_hand_link.STL" />
+        <mesh filename="package://jiyuan/meshes/left_hand_link.STL" />
       </geometry>
     </collision>
   </link>
   <joint name="left_hip_pitch_engine_joint" type="revolute">
-    <origin xyz="0.0843332 2.45945e-05 0" rpy="0 0 -0" />
+    <origin xyz="0.084333 2.4595e-05 0" rpy="0 0 -0" />
     <parent link="base_link" />
     <child link="left_hip_pitch_engine_link" />
     <axis xyz="-0 0 1" />
     <limit lower="-3.14" upper="3.14" effort="100" velocity="1" />
   </joint>
   <joint name="left_hip_yaw_engine_joint" type="revolute">
-    <origin xyz="0.0843332 2.45945e-05 0" rpy="0 0 -0" />
+    <origin xyz="0.084333 2.4595e-05 0" rpy="0 0 -0" />
     <parent link="base_link" />
     <child link="left_hip_yaw_engine_link" />
     <axis xyz="-0 1 0" />
     <limit lower="-3.14" upper="3.14" effort="100" velocity="1" />
   </joint>
   <joint name="left_hip_roll_joint" type="revolute">
-    <origin xyz="0.0843332 2.45945e-05 0" rpy="0 0 -0" />
+    <origin xyz="0.084333 2.4595e-05 0" rpy="0 0 -0" />
     <parent link="base_link" />
     <child link="left_hip_roll_link" />
     <axis xyz="1 0 0" />
@@ -1513,21 +1484,21 @@
     <limit lower="-3.14" upper="3.14" effort="100" velocity="1" />
   </joint>
   <joint name="left_knee_joint" type="revolute">
-    <origin xyz="0.0256668 -0.429825 -0.0115" rpy="0 0 -0" />
+    <origin xyz="0.025667 -0.42982 -0.0115" rpy="0 0 -0" />
     <parent link="left_thigh_link" />
     <child link="left_shin_link" />
     <axis xyz="-1 0 0" />
     <limit lower="-3.14" upper="3.14" effort="100" velocity="1" />
   </joint>
   <joint name="left_ankle_cube_joint" type="revolute">
-    <origin xyz="-0.0256668 0.429825 0.0115" rpy="0 0 -0" />
+    <origin xyz="-0.025667 0.42982 0.0115" rpy="0 0 -0" />
     <parent link="left_shin_link" />
     <child link="left_ankle_cube_link" />
     <axis xyz="-0 0 1" />
     <limit lower="-3.14" upper="3.14" effort="100" velocity="1" />
   </joint>
   <joint name="left_ankle_axle_joint" type="revolute">
-    <origin xyz="0.02567 -0.886686 0.00800489" rpy="0 0 -0" />
+    <origin xyz="0.02567 -0.88669 0.0080049" rpy="0 0 -0" />
     <parent link="left_ankle_cube_link" />
     <child link="left_ankle_axle_link" />
     <axis xyz="-1 0 0" />
@@ -1541,14 +1512,14 @@
     <limit lower="-3.14" upper="3.14" effort="100" velocity="1" />
   </joint>
   <joint name="left_toe_joint" type="revolute">
-    <origin xyz="-0.0005 -0.0646056 0.105615" rpy="0 0 -0" />
+    <origin xyz="-0.00050001 -0.064606 0.10561" rpy="0 0 -0" />
     <parent link="left_foot_link" />
     <child link="left_toe_link" />
     <axis xyz="-1 0 0" />
     <limit lower="-3.14" upper="3.14" effort="100" velocity="1" />
   </joint>
   <joint name="left_branch_link" type="fixed">
-    <origin xyz="0.0772641 0.10221 0.00749937" rpy="3.16096e-05 0.114737 0.00748937" />
+    <origin xyz="0.077264 0.10221 0.0074994" rpy="3.161e-05 0.11474 0.0074894" />
     <parent link="spine_002_link" />
     <child link="left_branch_link" />
     <axis xyz="-0 0 0" />
@@ -1558,46 +1529,46 @@
     <origin xyz="-0 0 0" rpy="0 0 -0" />
     <parent link="left_branch_link" />
     <child link="left_spine_003_link" />
-    <axis xyz="-0.000274286 -1 0" />
+    <axis xyz="-0.00027429 -1 0" />
     <limit lower="-3.14" upper="3.14" effort="100" velocity="1" />
   </joint>
   <joint name="left_spine_003_joint" type="revolute">
-    <origin xyz="0.00410736 0.0729963 -0.0467839" rpy="3.11428e-19 1.48365 -0.000274286" />
+    <origin xyz="0.0041074 0.072996 -0.046784" rpy="0 1.4837 -0.00027429" />
     <parent link="left_spine_003_link" />
     <child link="left_spine_004_ground_link" />
     <axis xyz="1 0 0" />
     <limit lower="-3.14" upper="3.14" effort="100" velocity="1" />
   </joint>
-  <joint name="left_spine_004_ground_joint" type="revolute">
-    <origin xyz="-0.0432454 0.0420609 0.0515776" rpy="-0.398519 -1.57035 0.660318" />
+  <joint name="left_spine_003_joint" type="revolute">
+    <origin xyz="-0.043245 0.042061 0.051578" rpy="-0.39852 -1.5704 0.66032" />
     <parent link="left_spine_004_ground_link" />
     <child link="left_spine_004_link" />
-    <axis xyz="-0.999999 -0.000443611 -0.000901501" />
+    <axis xyz="-1 -0.00044361 -0.0009015" />
     <limit lower="-3.14" upper="3.14" effort="100" velocity="1" />
   </joint>
   <joint name="left_spine_004_joint" type="revolute">
     <origin xyz="-0 0 0" rpy="0 0 -0" />
     <parent link="left_spine_004_link" />
     <child link="left_shoulder_link" />
-    <axis xyz="-0.000859407 -0.0871558 0.996194" />
+    <axis xyz="-0.00085941 -0.087156 0.99619" />
     <limit lower="-3.14" upper="3.14" effort="100" velocity="1" />
   </joint>
   <joint name="left_shoulder_joint" type="revolute">
     <origin xyz="-0 0 0" rpy="0 0 -0" />
     <parent link="left_shoulder_link" />
     <child link="left_arm_link" />
-    <axis xyz="-0.000859407 -0.0871558 0.996194" />
+    <axis xyz="-0.00085941 -0.087156 0.99619" />
     <limit lower="-3.14" upper="3.14" effort="100" velocity="1" />
   </joint>
   <joint name="left_elbow_joint" type="revolute">
-    <origin xyz="0.0456519 -0.198226 0.0273941" rpy="-0.131652 -0.173467 0.024955" />
+    <origin xyz="0.045652 -0.19823 0.027394" rpy="-0.13165 -0.17347 0.024955" />
     <parent link="left_arm_link" />
     <child link="left_forearm_link" />
     <axis xyz="1 0 0" />
     <limit lower="-3.14" upper="3.14" effort="100" velocity="1" />
   </joint>
   <joint name="left_forearm_joint" type="revolute">
-    <origin xyz="0.00015 -0.241007 0.112833" rpy="0.448472 0 3.14159" />
+    <origin xyz="0.00015 -0.24101 0.11283" rpy="0.44847 0 -3.14159" />
     <parent link="left_forearm_link" />
     <child link="left_wrist_link" />
     <axis xyz="-0 0 -1" />

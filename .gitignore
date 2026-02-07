@@ -39,3 +39,5 @@ xmls/
 # instr files
 .TODOs/
 .claude/
+
+AGENTS.md

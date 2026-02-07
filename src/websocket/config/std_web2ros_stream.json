@@ -9,7 +9,9 @@
         "speed": 100
     },
     "action": {
-        "bvh": "value"
+        "bvh": [null, "walk", "run", "jump"],
+        "loop": false,
+        "speed_ms": 33
     },
     "xbox_controller": {
         "left_stick": {
