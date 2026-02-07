@@ -106,3 +106,9 @@ source install/setup.bash
 1. 配置文件是否存在
 2. 文件路径是否正确
 3. JSON 格式是否正确（可以用 `cat bus_servo_map.json | jq` 验证）
+
+## BVH 动作配置
+
+BVH 动作配置已迁移至 `record_load_action` 包，详见：
+
+- `src/record_load_action/README.md`

@@ -24,7 +24,7 @@ except Exception:  # pragma: no cover - optional dependency
     HAS_IMU_DATA = False
 
 from .ws_server import WebSocketBridgeServer
-from .bvh_player import BvhActionPlayer
+from record_load_action.bvh_player import BvhActionPlayer
 from .debug_aggregator import DebugAggregator
 
 

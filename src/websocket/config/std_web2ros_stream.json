@@ -9,7 +9,14 @@
         "speed": 100
     },
     "action": {
-        "bvh": [null, "walk", "run", "jump"],
+        "bvh": [
+            null,
+            "backwards_rifle_walk",
+            "hip_hop_dancing",
+            "hurricane_kick",
+            "strafing",
+            "walking"
+        ],
         "loop": false,
         "speed_ms": 33
     },

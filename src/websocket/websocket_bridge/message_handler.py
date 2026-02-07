@@ -141,11 +141,13 @@ class MessageHandler:
         if not isinstance(data, dict):
             return False
         action = data.get("action")
-        if isinstance(action, dict) and "bvh" in action:
+        if isinstance(action, dict) and ("bvh" in action or "name" in action):
+            return True
+        if isinstance(action, (str, int, float)) and str(action).strip():
             return True
         if "bvh" in data:
             return True
-        if data.get("controller_type") == "action" and isinstance(action, dict):
+        if data.get("controller_type") == "action" and action is not None:
             return True
         return False
 

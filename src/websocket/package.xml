@@ -10,6 +10,7 @@
   <depend>rclpy</depend>
   <depend>servo_msgs</depend>
   <depend>sensor_msgs</depend>
+  <depend>record_load_action</depend>
   <exec_depend>ament_index_python</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
