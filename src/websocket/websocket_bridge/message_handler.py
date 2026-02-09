@@ -203,11 +203,14 @@ class MessageHandler:
         {
           "type": "bvh_play",
           "action": "walk",
-          "loop": false
+          "loop": false,
+          "speed_ms": 33,
+          "playback_rate": 1.0,
+          "frame_ms": 16.7
         }
         或
         {
-          "action": { "bvh": "walk", "loop": false }
+          "action": { "bvh": "walk", "loop": false, "playback_rate": 1.0 }
         }
         """
         if not isinstance(data, dict):
@@ -216,16 +219,22 @@ class MessageHandler:
         action_name = None
         loop_flag = False
         speed_ms = None
+        playback_rate = None
+        frame_ms = None
 
         if isinstance(data.get("action"), dict):
             action = data.get("action")
             action_name = action.get("bvh") or action.get("name")
             loop_flag = bool(action.get("loop", False))
             speed_ms = action.get("speed_ms")
+            playback_rate = action.get("playback_rate")
+            frame_ms = action.get("frame_ms")
         else:
             action_name = data.get("bvh") or data.get("action")
             loop_flag = bool(data.get("loop", False))
             speed_ms = data.get("speed_ms")
+            playback_rate = data.get("playback_rate")
+            frame_ms = data.get("frame_ms")
 
         if action_name is None:
             # Allow explicit stop when action/bvh key is present
@@ -233,14 +242,18 @@ class MessageHandler:
                 return {
                     "action": None,
                     "loop": loop_flag,
-                    "speed_ms": speed_ms
+                    "speed_ms": speed_ms,
+                    "playback_rate": playback_rate,
+                    "frame_ms": frame_ms
                 }
             return None
 
         return {
             "action": action_name,
             "loop": loop_flag,
-            "speed_ms": speed_ms
+            "speed_ms": speed_ms,
+            "playback_rate": playback_rate,
+            "frame_ms": frame_ms
         }
 
     def _create_heartbeat_response(self) -> str:

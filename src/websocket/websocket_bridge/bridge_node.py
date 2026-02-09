@@ -271,12 +271,20 @@ class WebSocketROS2Bridge(Node):
         action = payload.get("action")
         loop = bool(payload.get("loop", False))
         speed_ms = payload.get("speed_ms")
+        playback_rate = payload.get("playback_rate")
+        frame_ms = payload.get("frame_ms")
 
         if action in (None, '', 'null'):
             self.bvh_player.stop()
             return
 
-        self.bvh_player.play(action, loop=loop, speed_ms=speed_ms)
+        self.bvh_player.play(
+            action,
+            loop=loop,
+            speed_ms=speed_ms,
+            playback_rate=playback_rate,
+            frame_ms=frame_ms
+        )
 
     async def handle_heartbeat(self):
         """处理心跳消息"""

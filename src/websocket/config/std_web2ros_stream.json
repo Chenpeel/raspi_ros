@@ -18,7 +18,9 @@
             "walking"
         ],
         "loop": false,
-        "speed_ms": 33
+        "speed_ms": 33,
+        "playback_rate": 1.0,
+        "frame_ms": 16.7
     },
     "xbox_controller": {
         "left_stick": {

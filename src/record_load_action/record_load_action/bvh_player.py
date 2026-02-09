@@ -550,7 +550,9 @@ class BvhActionPlayer:
         }
         return frames, frame_time_ms
 
-    def play(self, action, loop: bool = False, speed_ms: Optional[int] = None) -> bool:
+    def play(self, action, loop: bool = False, speed_ms: Optional[int] = None,
+             playback_rate: Optional[float] = None,
+             frame_ms: Optional[float] = None) -> bool:
         if action in (None, '', 'null'):
             self.stop()
             return False
@@ -559,7 +561,9 @@ class BvhActionPlayer:
             self.stop()
             self._stop_event = threading.Event()
             self._thread = threading.Thread(
-                target=self._run, args=(action, loop, speed_ms), daemon=True
+                target=self._run,
+                args=(action, loop, speed_ms, playback_rate, frame_ms),
+                daemon=True
             )
             self._thread.start()
             return True
@@ -570,7 +574,9 @@ class BvhActionPlayer:
             self._thread.join(timeout=1.0)
         self._thread = None
 
-    def _run(self, action, loop: bool, speed_ms: Optional[int]) -> None:
+    def _run(self, action, loop: bool, speed_ms: Optional[int],
+             playback_rate: Optional[float],
+             frame_ms: Optional[float]) -> None:
         config, path = self._load_config()
         if not config:
             self._log('warn', 'BVH action config is empty')
@@ -596,6 +602,12 @@ class BvhActionPlayer:
                 speed_override = int(speed_ms)
             except (TypeError, ValueError):
                 speed_override = None
+        playback_rate_val = self._coerce_float(playback_rate, None)
+        if playback_rate_val is not None and playback_rate_val <= 0:
+            playback_rate_val = None
+        frame_ms_val = self._coerce_float(frame_ms, None)
+        if frame_ms_val is not None and frame_ms_val < 0:
+            frame_ms_val = None
         default_servo_type = action_data.get(
             'default_servo_type',
             config.get('default_servo_type', 'bus')
@@ -638,6 +650,12 @@ class BvhActionPlayer:
 
         self._log('info', f'BVH play start: {action_name} ({path})')
 
+        delay_override_ms = None
+        if frame_ms_val is not None:
+            delay_override_ms = frame_ms_val
+        elif playback_rate_val is not None and frame_delay_ms is not None:
+            delay_override_ms = frame_delay_ms / playback_rate_val
+
         while True:
             for frame in frames:
                 if self._stop_event.is_set():
@@ -661,9 +679,11 @@ class BvhActionPlayer:
                             continue
 
                     delay = frame_delay_ms
-                    if speed_override is not None:
+                    if delay_override_ms is not None:
+                        delay = delay_override_ms
+                    elif speed_override is not None:
                         delay = speed_override
-                    if delay > 0:
+                    if delay and delay > 0:
                         elapsed = (time.time() - start_ts) * 1000.0
                         remaining = max(0.0, delay - elapsed)
                         if remaining > 0:
