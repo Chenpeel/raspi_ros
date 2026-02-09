@@ -54,6 +54,35 @@ def generate_launch_description():
             "/dev/ttyAMA3": [8, 6, 12, 13, 14]
         }
 
+    # 读取舵机限位配置文件路径
+    limit_map_file = ''
+    if get_package_share_directory:
+        try:
+            share_dir = get_package_share_directory('servo_hardware')
+            candidate = os.path.join(
+                share_dir, 'config', 'servo_limit_map.json'
+            )
+            if os.path.exists(candidate):
+                limit_map_file = candidate
+        except Exception:
+            pass
+
+    if not limit_map_file:
+        candidate = os.path.join(
+            Path(__file__).resolve().parents[2],
+            'hardware',
+            'servo_hardware',
+            'config',
+            'servo_limit_map.json'
+        )
+        if os.path.exists(candidate):
+            limit_map_file = candidate
+
+    if limit_map_file:
+        print(f"✓ 已找到舵机限位配置: {limit_map_file}")
+    else:
+        print("⚠ 警告: 舵机限位配置文件不存在: servo_limit_map.json")
+
     # 声明Launch参数
     ws_host_arg = DeclareLaunchArgument(
         'ws_host',
@@ -140,6 +169,12 @@ def generate_launch_description():
         description='总线舵机波特率'
     )
 
+    limit_map_arg = DeclareLaunchArgument(
+        'limit_map',
+        default_value=limit_map_file,
+        description='舵机限位配置文件路径(空则使用默认)'
+    )
+
     # I2C参数
     i2c_address_arg = DeclareLaunchArgument(
         'i2c_address',
@@ -202,6 +237,7 @@ def generate_launch_description():
     debug = LaunchConfiguration('debug')
     serial_port = LaunchConfiguration('serial_port')
     baudrate = LaunchConfiguration('baudrate')
+    limit_map = LaunchConfiguration('limit_map')
     i2c_address = LaunchConfiguration('i2c_address')
     i2c_bus = LaunchConfiguration('i2c_bus')
     imu_port = LaunchConfiguration('imu_port')
@@ -274,6 +310,7 @@ def generate_launch_description():
                 {'baudrate': baudrate},
                 {'default_speed': 100},
                 {'servo_ids': servo_ids},
+                {'limit_map': limit_map},
                 {'debug': bus_servo_debug},
                 {'log_id': True}
             ],
@@ -367,6 +404,7 @@ def generate_launch_description():
         debug_aggregate_period_arg,
         debug_aggregate_max_len_arg,
         bvh_action_file_arg,
+        limit_map_arg,
         serial_port_arg,
         baudrate_arg,
         i2c_address_arg,

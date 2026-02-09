@@ -11,7 +11,10 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name + '/config',
-            ['servo_hardware/config/servo_offset_map.json']),
+            [
+                'servo_hardware/config/servo_offset_map.json',
+                'servo_hardware/config/servo_limit_map.json'
+            ]),
     ],
     install_requires=[
         'setuptools',

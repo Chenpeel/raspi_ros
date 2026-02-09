@@ -51,6 +51,7 @@ class BusServoDriver(Node):
         # 使用 [0] 作为默认值让ROS 2推断为INTEGER_ARRAY类型
         self.declare_parameter('servo_ids', [0])  # 本驱动板负责的舵机ID列表
         self.declare_parameter('offset_map', '')  # 舵机偏移量配置文件
+        self.declare_parameter('limit_map', '')  # 舵机限位配置文件
 
         # 获取参数
         self.port = self.get_parameter('port').value
@@ -61,6 +62,7 @@ class BusServoDriver(Node):
         self.log_id = self.get_parameter('log_id').value
         servo_ids_param = self.get_parameter('servo_ids').value
         offset_map_param = self.get_parameter('offset_map').value
+        limit_map_param = self.get_parameter('limit_map').value
 
         # 转换为set以提高查找效率（过滤掉默认值0）
         self.servo_ids = set(id for id in servo_ids_param if id > 0)
@@ -79,6 +81,7 @@ class BusServoDriver(Node):
 
         # 加载舵机偏移量
         self.offset_map = self._load_offset_map(offset_map_param)
+        self.limit_map = self._load_limit_map(limit_map_param)
 
         # 初始化串口
         if not self._init_serial():
@@ -137,6 +140,27 @@ class BusServoDriver(Node):
 
         return ''
 
+    def _resolve_limit_map_path(self, override_path: str) -> str:
+        if override_path and os.path.exists(override_path):
+            return override_path
+
+        if get_package_share_directory:
+            try:
+                share_dir = get_package_share_directory('servo_hardware')
+                candidate = os.path.join(
+                    share_dir, 'config', 'servo_limit_map.json'
+                )
+                if os.path.exists(candidate):
+                    return candidate
+            except Exception:
+                pass
+
+        candidate = Path(__file__).resolve().parent / 'config' / 'servo_limit_map.json'
+        if candidate.exists():
+            return str(candidate)
+
+        return ''
+
     def _load_offset_map(self, override_path: str) -> dict:
         path = self._resolve_offset_map_path(override_path)
         if not path:
@@ -176,6 +200,71 @@ class BusServoDriver(Node):
             self.get_logger().info(f'舵机偏移量为空: {path}')
 
         return offset_map
+
+    def _load_limit_map(self, override_path: str) -> dict:
+        path = self._resolve_limit_map_path(override_path)
+        if not path:
+            return {}
+
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+        except Exception as exc:
+            self.get_logger().warn(f'加载舵机限位配置失败: {exc}')
+            return {}
+
+        if isinstance(data, dict) and 'servo_limits' in data:
+            data = data.get('servo_limits') or {}
+
+        limit_map: dict[int, dict] = {}
+        if isinstance(data, dict) and 'ids' in data:
+            ids = data.get('ids') or []
+            mins = data.get('mins') or []
+            maxs = data.get('maxs') or []
+            for idx, sid in enumerate(ids):
+                try:
+                    sid_int = int(sid)
+                except (TypeError, ValueError):
+                    continue
+                min_val = mins[idx] if idx < len(mins) else None
+                max_val = maxs[idx] if idx < len(maxs) else None
+                limit_map[sid_int] = {
+                    'min': min_val,
+                    'max': max_val
+                }
+        elif isinstance(data, dict):
+            for key, value in data.items():
+                try:
+                    sid_int = int(key)
+                except (TypeError, ValueError):
+                    continue
+                if isinstance(value, dict):
+                    limit_map[sid_int] = {
+                        'min': value.get('min'),
+                        'max': value.get('max')
+                    }
+        if limit_map:
+            self.get_logger().info(
+                f'已加载舵机限位配置: {path} (数量={len(limit_map)})'
+            )
+        return limit_map
+
+    def _apply_limits(self, servo_id: int, position: int) -> int:
+        if not self.limit_map:
+            return position
+        entry = self.limit_map.get(servo_id)
+        if not isinstance(entry, dict):
+            return position
+        min_val = entry.get('min')
+        max_val = entry.get('max')
+        try:
+            if min_val is not None:
+                position = max(int(round(float(min_val))), position)
+            if max_val is not None:
+                position = min(int(round(float(max_val))), position)
+        except (TypeError, ValueError):
+            return position
+        return position
 
     def _init_serial(self) -> bool:
         """初始化/打开串口"""
@@ -698,8 +787,9 @@ class BusServoDriver(Node):
         with self.lock:
             try:
                 self.ser.write(frame)
+                frame_str = frame.decode('utf-8', errors='ignore')
                 self.get_logger().debug(
-                    f'发送成功: Port={self.port} Bytes={len(frame)} Frame={frame.decode("utf-8", errors="ignore")}'
+                    f'发送成功: Port={self.port} Bytes={len(frame)} Frame={frame_str}'
                 )
             except Exception as e:
                 self.get_logger().error(f'向总线舵机写入失败: {e}')
@@ -726,6 +816,8 @@ class BusServoDriver(Node):
             servo_id = msg.servo_id
             position = msg.position
             speed = msg.speed if msg.speed > 0 else self.default_speed
+
+            position = self._apply_limits(servo_id, position)
 
             # ID列表过滤：仅处理本节点负责的舵机ID
             if self.filter_enabled and servo_id not in self.servo_ids:

@@ -56,6 +56,7 @@ class PCA9685ServoDriver(Node):
         self.declare_parameter('max_us', 2500)
         self.declare_parameter('debug', False)
         self.declare_parameter('offset_map', '')  # 舵机偏移量配置文件
+        self.declare_parameter('limit_map', '')  # 舵机限位配置文件
 
         # 获取参数
         self.i2c_address = self.get_parameter('i2c_address').value
@@ -67,6 +68,7 @@ class PCA9685ServoDriver(Node):
         self.max_us = self.get_parameter('max_us').value
         self.debug = self.get_parameter('debug').value
         offset_map_param = self.get_parameter('offset_map').value
+        limit_map_param = self.get_parameter('limit_map').value
 
         # 检查依赖
         if not HAS_SMBUS:
@@ -82,6 +84,7 @@ class PCA9685ServoDriver(Node):
 
         # 加载舵机偏移量
         self.offset_map = self._load_offset_map(offset_map_param)
+        self.limit_map = self._load_limit_map(limit_map_param)
 
         # 初始化PCA9685
         if not self._init_device():
@@ -128,6 +131,27 @@ class PCA9685ServoDriver(Node):
 
         return ''
 
+    def _resolve_limit_map_path(self, override_path: str) -> str:
+        if override_path and os.path.exists(override_path):
+            return override_path
+
+        if get_package_share_directory:
+            try:
+                share_dir = get_package_share_directory('servo_hardware')
+                candidate = os.path.join(
+                    share_dir, 'config', 'servo_limit_map.json'
+                )
+                if os.path.exists(candidate):
+                    return candidate
+            except Exception:
+                pass
+
+        candidate = Path(__file__).resolve().parent / 'config' / 'servo_limit_map.json'
+        if candidate.exists():
+            return str(candidate)
+
+        return ''
+
     def _load_offset_map(self, override_path: str) -> dict:
         path = self._resolve_offset_map_path(override_path)
         if not path:
@@ -167,6 +191,71 @@ class PCA9685ServoDriver(Node):
             self.get_logger().info(f'舵机偏移量为空: {path}')
 
         return offset_map
+
+    def _load_limit_map(self, override_path: str) -> dict:
+        path = self._resolve_limit_map_path(override_path)
+        if not path:
+            return {}
+
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+        except Exception as exc:
+            self.get_logger().warn(f'加载舵机限位配置失败: {exc}')
+            return {}
+
+        if isinstance(data, dict) and 'servo_limits' in data:
+            data = data.get('servo_limits') or {}
+
+        limit_map: dict[int, dict] = {}
+        if isinstance(data, dict) and 'ids' in data:
+            ids = data.get('ids') or []
+            mins = data.get('mins') or []
+            maxs = data.get('maxs') or []
+            for idx, sid in enumerate(ids):
+                try:
+                    sid_int = int(sid)
+                except (TypeError, ValueError):
+                    continue
+                min_val = mins[idx] if idx < len(mins) else None
+                max_val = maxs[idx] if idx < len(maxs) else None
+                limit_map[sid_int] = {
+                    'min': min_val,
+                    'max': max_val
+                }
+        elif isinstance(data, dict):
+            for key, value in data.items():
+                try:
+                    sid_int = int(key)
+                except (TypeError, ValueError):
+                    continue
+                if isinstance(value, dict):
+                    limit_map[sid_int] = {
+                        'min': value.get('min'),
+                        'max': value.get('max')
+                    }
+        if limit_map:
+            self.get_logger().info(
+                f'已加载舵机限位配置: {path} (数量={len(limit_map)})'
+            )
+        return limit_map
+
+    def _apply_limits(self, channel: int, position: int) -> int:
+        if not self.limit_map:
+            return position
+        entry = self.limit_map.get(channel)
+        if not isinstance(entry, dict):
+            return position
+        min_val = entry.get('min')
+        max_val = entry.get('max')
+        try:
+            if min_val is not None:
+                position = max(int(round(float(min_val))), position)
+            if max_val is not None:
+                position = min(int(round(float(max_val))), position)
+        except (TypeError, ValueError):
+            return position
+        return position
 
     def _init_device(self) -> bool:
         """初始化PCA9685设备"""
@@ -320,6 +409,7 @@ class PCA9685ServoDriver(Node):
             # 提取命令参数
             channel = msg.servo_id  # 对于PCA,servo_id即通道号
             position = msg.position
+            position = self._apply_limits(channel, position)
 
             # 验证通道范围
             if not (0 <= channel <= 15):
