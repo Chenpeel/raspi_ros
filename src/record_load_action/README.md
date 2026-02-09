@@ -16,6 +16,7 @@ Key fields:
 - bvh_data: action map, recommend using bvh_file
 - joint_alias: BVH bone name to robot joint key alias
 - joint_map: robot joint key to servo ID mapping
+- servo_limits: per-servo min/max (override defaults)
 
 Directory default:
 
@@ -40,7 +41,8 @@ Example:
     "walking": { "bvh_file": "walking.bvh" }
   },
   "joint_alias": { "pelvis.L": "hip.L" },
-  "joint_map": { "hip.L": { "left_hip_joint": "3" } }
+  "joint_map": { "hip.L": { "left_hip_joint": "3" } },
+  "servo_limits": { "3": { "min": 700, "max": 2300 } }
 }
 ```
 

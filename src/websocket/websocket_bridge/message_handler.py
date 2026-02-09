@@ -109,13 +109,13 @@ class MessageHandler:
             except ValueError:
                 pass
 
+        # 尝试根据内容推断类型（舵机控制优先）
+        if self._is_servo_control(data):
+            return MessageType.SERVO_CONTROL
+
         # 基于内容推断BVH播放
         if self._is_bvh_action(data):
             return MessageType.BVH_PLAY
-
-        # 尝试根据内容推断类型
-        if self._is_servo_control(data):
-            return MessageType.SERVO_CONTROL
         if "timestamp" in data and "status" in data:
             return MessageType.HEARTBEAT
         return MessageType.UNKNOWN
@@ -140,14 +140,21 @@ class MessageHandler:
     def _is_bvh_action(self, data: Dict[str, Any]) -> bool:
         if not isinstance(data, dict):
             return False
+        action_present = "action" in data
         action = data.get("action")
-        if isinstance(action, dict) and ("bvh" in action or "name" in action):
+        if isinstance(action, dict):
+            if "bvh" in action or "name" in action:
+                return True
+            # allow empty dict as BVH intent when no servo control present
+            if action_present:
+                return True
+        if action is None and action_present:
             return True
         if isinstance(action, (str, int, float)) and str(action).strip():
             return True
         if "bvh" in data:
             return True
-        if data.get("controller_type") == "action" and action is not None:
+        if data.get("controller_type") == "action":
             return True
         return False
 
@@ -221,6 +228,13 @@ class MessageHandler:
             speed_ms = data.get("speed_ms")
 
         if action_name is None:
+            # Allow explicit stop when action/bvh key is present
+            if "action" in data or "bvh" in data:
+                return {
+                    "action": None,
+                    "loop": loop_flag,
+                    "speed_ms": speed_ms
+                }
             return None
 
         return {

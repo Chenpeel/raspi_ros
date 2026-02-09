@@ -319,6 +319,9 @@ class BvhActionPlayer:
             action_data.get('default_max', config.get('default_max')),
             None
         )
+        servo_limits = action_data.get('servo_limits') or config.get(
+            'servo_limits'
+        ) or {}
         axis_channel_map = {
             'roll': 'Xrotation',
             'pitch': 'Yrotation',
@@ -332,6 +335,19 @@ class BvhActionPlayer:
                 if not isinstance(axis_name, str) or not isinstance(channel_name, str):
                     continue
                 axis_channel_map[axis_name.strip().lower()] = channel_name.strip()
+
+        def _lookup_limits(servo_id: int) -> Tuple[Optional[float], Optional[float]]:
+            if not isinstance(servo_limits, dict):
+                return None, None
+            entry = servo_limits.get(str(servo_id))
+            if entry is None:
+                entry = servo_limits.get(servo_id)
+            if isinstance(entry, dict):
+                return (
+                    self._coerce_float(entry.get('min'), None),
+                    self._coerce_float(entry.get('max'), None)
+                )
+            return None, None
 
         joint_map = action_data.get('joint_map') or config.get('joint_map') or {}
         alias_map = action_data.get('joint_alias') or config.get('joint_alias') or {}
@@ -387,13 +403,20 @@ class BvhActionPlayer:
                         servo_id = self._coerce_int(target_id, None)
                         if servo_id is None:
                             continue
+                        limit_min, limit_max = _lookup_limits(servo_id)
+                        min_val = default_min
+                        max_val = default_max
+                        if limit_min is not None:
+                            min_val = limit_min
+                        if limit_max is not None:
+                            max_val = limit_max
                         target_descs.append({
                             'id': servo_id,
                             'channel_idx': channel_idx,
                             'scale': default_scale,
                             'bias': default_bias,
-                            'min': default_min,
-                            'max': default_max,
+                            'min': min_val,
+                            'max': max_val,
                             'servo_type': default_servo_type,
                             'speed': default_speed,
                             'sign': 1.0
@@ -420,6 +443,7 @@ class BvhActionPlayer:
                         speed_val = target.get('speed_ms', default_speed)
                         sign = target.get('sign', None)
                         invert = target.get('invert', False)
+                        target_has_limits = 'min' in target or 'max' in target
                     else:
                         target_id = target
                         channel = default_channel
@@ -431,12 +455,20 @@ class BvhActionPlayer:
                         speed_val = default_speed
                         sign = None
                         invert = False
+                        target_has_limits = False
 
                     if isinstance(target_id, str) and target_id.lower() == 'null':
                         continue
                     servo_id = self._coerce_int(target_id, None)
                     if servo_id is None:
                         continue
+
+                    limit_min, limit_max = _lookup_limits(servo_id)
+                    if not target_has_limits:
+                        if limit_min is not None:
+                            min_val = limit_min
+                        if limit_max is not None:
+                            max_val = limit_max
 
                     channel_idx = channel_index.get((bvh_joint, channel))
                     if channel_idx is None:
@@ -572,6 +604,25 @@ class BvhActionPlayer:
             action_data.get('frame_delay_ms', action_data.get('frame_time_ms')),
             None
         )
+        servo_limits = action_data.get('servo_limits') or config.get(
+            'servo_limits'
+        ) or {}
+
+        def _limit_position(servo_id: int, position: int) -> int:
+            if not isinstance(servo_limits, dict):
+                return position
+            entry = servo_limits.get(str(servo_id))
+            if entry is None:
+                entry = servo_limits.get(servo_id)
+            if not isinstance(entry, dict):
+                return position
+            min_val = self._coerce_float(entry.get('min'), None)
+            max_val = self._coerce_float(entry.get('max'), None)
+            if min_val is not None:
+                position = max(int(round(min_val)), position)
+            if max_val is not None:
+                position = min(int(round(max_val)), position)
+            return position
 
         frames = self._normalize_frames(action_data, default_speed)
         if not frames:
@@ -600,6 +651,7 @@ class BvhActionPlayer:
                             servo_type = cmd.get('servo_type', default_servo_type)
                             servo_id = int(cmd.get('id'))
                             position = int(cmd.get('position'))
+                            position = _limit_position(servo_id, position)
                             speed = int(cmd.get('speed', default_speed))
                             if speed_override is not None:
                                 speed = speed_override
@@ -625,6 +677,7 @@ class BvhActionPlayer:
                             servo_type = cmd.get('servo_type', default_servo_type)
                             servo_id = int(cmd.get('id'))
                             position = int(cmd.get('position'))
+                            position = _limit_position(servo_id, position)
                             speed = int(cmd.get('speed', default_speed))
                             if speed_override is not None:
                                 speed = speed_override

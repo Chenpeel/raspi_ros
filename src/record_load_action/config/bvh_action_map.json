@@ -21,6 +21,22 @@
     "pitch": "Yrotation",
     "yaw": "Zrotation"
   },
+  "servo_limits": {
+    "1": { "min": 500, "max": 2500 },
+    "2": { "min": 500, "max": 2500 },
+    "3": { "min": 500, "max": 2500 },
+    "4": { "min": 500, "max": 2500 },
+    "5": { "min": 500, "max": 2500 },
+    "6": { "min": 500, "max": 2500 },
+    "7": { "min": 500, "max": 2500 },
+    "8": { "min": 500, "max": 2500 },
+    "9": { "min": 500, "max": 2500 },
+    "10": { "min": 500, "max": 2500 },
+    "11": { "min": 500, "max": 2500 },
+    "12": { "min": 500, "max": 2500 },
+    "13": { "min": 500, "max": 2500 },
+    "14": { "min": 500, "max": 2500 }
+  },
   "bvh_data": {
     "backwards_rifle_walk": {
       "bvh_file": "backwards_rifle_walk.bvh",
