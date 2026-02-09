@@ -641,6 +641,8 @@ class BvhActionPlayer:
 
         if loop:
             frames = self._trim_static_tail(frames)
+        if frame_delay_ms is not None:
+            frame_delay_ms = max(frame_delay_ms, float(fixed_speed))
 
         while True:
             for frame in frames:
