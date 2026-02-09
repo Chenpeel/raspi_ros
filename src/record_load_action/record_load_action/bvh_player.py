@@ -596,18 +596,7 @@ class BvhActionPlayer:
             'default_speed_ms',
             config.get('default_speed_ms', 33)
         ))
-        speed_override = None
-        if speed_ms is not None:
-            try:
-                speed_override = int(speed_ms)
-            except (TypeError, ValueError):
-                speed_override = None
-        playback_rate_val = self._coerce_float(playback_rate, None)
-        if playback_rate_val is not None and playback_rate_val <= 0:
-            playback_rate_val = None
-        frame_ms_val = self._coerce_float(frame_ms, None)
-        if frame_ms_val is not None and frame_ms_val < 0:
-            frame_ms_val = None
+        fixed_speed = 100
         default_servo_type = action_data.get(
             'default_servo_type',
             config.get('default_servo_type', 'bus')
@@ -650,11 +639,8 @@ class BvhActionPlayer:
 
         self._log('info', f'BVH play start: {action_name} ({path})')
 
-        delay_override_ms = None
-        if frame_ms_val is not None:
-            delay_override_ms = frame_ms_val
-        elif playback_rate_val is not None and frame_delay_ms is not None:
-            delay_override_ms = frame_delay_ms / playback_rate_val
+        if loop:
+            frames = self._trim_static_tail(frames)
 
         while True:
             for frame in frames:
@@ -670,19 +656,12 @@ class BvhActionPlayer:
                             servo_id = int(cmd.get('id'))
                             position = int(cmd.get('position'))
                             position = _limit_position(servo_id, position)
-                            speed = int(cmd.get('speed', default_speed))
-                            if speed_override is not None:
-                                speed = speed_override
-                            self._publish(servo_type, servo_id, position, speed)
+                            self._publish(servo_type, servo_id, position, fixed_speed)
                         except Exception as exc:
                             self._log('warn', f'BVH publish failed: {exc}')
                             continue
 
                     delay = frame_delay_ms
-                    if delay_override_ms is not None:
-                        delay = delay_override_ms
-                    elif speed_override is not None:
-                        delay = speed_override
                     if delay and delay > 0:
                         elapsed = (time.time() - start_ts) * 1000.0
                         remaining = max(0.0, delay - elapsed)
@@ -698,18 +677,47 @@ class BvhActionPlayer:
                             servo_id = int(cmd.get('id'))
                             position = int(cmd.get('position'))
                             position = _limit_position(servo_id, position)
-                            speed = int(cmd.get('speed', default_speed))
-                            if speed_override is not None:
-                                speed = speed_override
-                            self._publish(servo_type, servo_id, position, speed)
+                            self._publish(servo_type, servo_id, position, fixed_speed)
                         except Exception as exc:
                             self._log('warn', f'BVH publish failed: {exc}')
                             continue
 
-                        if speed > 0:
-                            time.sleep(speed / 1000.0)
+                        time.sleep(fixed_speed / 1000.0)
 
             if not loop:
                 break
 
         self._log('info', f'BVH play finished: {action_name}')
+
+    @staticmethod
+    def _trim_static_tail(frames: List[List[Dict]]) -> List[List[Dict]]:
+        if not frames:
+            return frames
+
+        def _signature(frame: List[Dict]) -> Tuple[Tuple[int, int], ...]:
+            sig = []
+            for cmd in frame:
+                if not isinstance(cmd, dict):
+                    continue
+                try:
+                    sig.append((int(cmd.get('id')), int(cmd.get('position'))))
+                except (TypeError, ValueError):
+                    continue
+            return tuple(sig)
+
+        last_sig = _signature(frames[-1])
+        if not last_sig:
+            return frames
+
+        trim_count = 0
+        for frame in reversed(frames):
+            if _signature(frame) == last_sig:
+                trim_count += 1
+            else:
+                break
+
+        if trim_count <= 1:
+            return frames
+        if trim_count >= len(frames):
+            return [frames[0]]
+        return frames[:-trim_count]
