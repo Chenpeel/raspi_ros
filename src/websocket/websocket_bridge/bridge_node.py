@@ -194,6 +194,12 @@ class WebSocketROS2Bridge(Node):
         angle = max(-90.0, min(90.0, angle))
         return int(round(500 + (angle + 90.0) * (2000.0 / 180.0)))
 
+    @staticmethod
+    def _map_pulse_to_centered_angle(pulse: float) -> float:
+        """Map pulse width 500-2500us to angle in [-90, 90]."""
+        pulse = max(500.0, min(2500.0, float(pulse)))
+        return (pulse - 500.0) * (180.0 / 2000.0) - 90.0
+
     async def handle_servo_command(self, servo_cmd: dict):
         """
         处理来自WebSocket的舵机控制命令
@@ -315,11 +321,19 @@ class WebSocketROS2Bridge(Node):
             msg: ServoState消息
         """
         try:
+            angle = None
+            position = msg.position
+            if msg.servo_type == "bus":
+                angle = self._map_pulse_to_centered_angle(position)
+                position = angle
+
             # 转换为JSON字典
             state = {
                 "servo_type": msg.servo_type,
                 "servo_id": msg.servo_id,
-                "position": msg.position,
+                "position": position,
+                "angle": angle,
+                "pulse": msg.position if msg.servo_type == "bus" else None,
                 "load": msg.load,
                 "temperature": msg.temperature,
                 "error_code": msg.error_code,
@@ -340,7 +354,7 @@ class WebSocketROS2Bridge(Node):
                 self.ws_server.update_servo_state(
                     msg.servo_id,
                     msg.servo_type,
-                    msg.position
+                    position
                 )
 
                 # 广播状态到所有WebSocket客户端
