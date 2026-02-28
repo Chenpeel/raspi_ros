@@ -156,6 +156,36 @@ def generate_launch_description():
         description='BVH动作配置文件路径'
     )
 
+    isaac_bridge_enable_arg = DeclareLaunchArgument(
+        'enable_isaac_bridge',
+        default_value='true',
+        description='是否启动Isaac-ROS桥接节点'
+    )
+
+    isaac_bridge_debug_arg = DeclareLaunchArgument(
+        'isaac_bridge_debug',
+        default_value='false',
+        description='Isaac-ROS桥接节点调试模式'
+    )
+
+    isaac_command_topic_arg = DeclareLaunchArgument(
+        'isaac_command_topic',
+        default_value='/sim/servo_command',
+        description='Isaac侧舵机命令话题'
+    )
+
+    isaac_state_topic_arg = DeclareLaunchArgument(
+        'isaac_state_topic',
+        default_value='/sim/servo_state',
+        description='Isaac侧舵机状态话题'
+    )
+
+    isaac_enforce_limits_arg = DeclareLaunchArgument(
+        'isaac_enforce_limits',
+        default_value='true',
+        description='Isaac桥接是否强制位置限幅'
+    )
+
     # 串口设备参数
     serial_port_arg = DeclareLaunchArgument(
         'serial_port',
@@ -255,6 +285,11 @@ def generate_launch_description():
     debug_aggregate_period = LaunchConfiguration('debug_aggregate_period')
     debug_aggregate_max_len = LaunchConfiguration('debug_aggregate_max_len')
     bvh_action_file = LaunchConfiguration('bvh_action_file')
+    enable_isaac_bridge = LaunchConfiguration('enable_isaac_bridge')
+    isaac_bridge_debug = LaunchConfiguration('isaac_bridge_debug')
+    isaac_command_topic = LaunchConfiguration('isaac_command_topic')
+    isaac_state_topic = LaunchConfiguration('isaac_state_topic')
+    isaac_enforce_limits = LaunchConfiguration('isaac_enforce_limits')
 
     pca_debug_arg = DeclareLaunchArgument(
         'pca_debug',
@@ -284,6 +319,23 @@ def generate_launch_description():
         ],
         remappings=[
             # 如果需要重新映射话题名称，可以在这里配置
+        ]
+    )
+
+    # 1.1 Isaac-ROS桥接节点（可选）
+    isaac_bridge_node = Node(
+        package='websocket_bridge',
+        executable='isaac_bridge_node',
+        name='isaac_ros_bridge',
+        output='screen',
+        condition=IfCondition(enable_isaac_bridge),
+        parameters=[
+            {'isaac_command_topic': isaac_command_topic},
+            {'isaac_state_topic': isaac_state_topic},
+            {'servo_command_topic': '/servo/command'},
+            {'servo_state_topic': '/servo/state'},
+            {'enforce_position_limits': isaac_enforce_limits},
+            {'debug': isaac_bridge_debug},
         ]
     )
 
@@ -376,6 +428,9 @@ def generate_launch_description():
             '========================================\n',
             '  WebSocket: ws://', ws_host, ':', ws_port, '\n',
             '  设备ID: ', device_id, '\n',
+            '  Isaac桥接启用: ', enable_isaac_bridge, '\n',
+            '    命令转发: ', isaac_command_topic, ' -> /servo/command\n',
+            '    状态转发: /servo/state -> ', isaac_state_topic, '\n',
             '  总线舵机驱动板:\n',
             *servo_info_lines,  # 动态生成的舵机信息
             '  IMU传感器: ', imu_port, ' @ ', imu_baudrate, ' bps, 频率=', imu_publish_rate, 'Hz\n',
@@ -404,6 +459,11 @@ def generate_launch_description():
         debug_aggregate_period_arg,
         debug_aggregate_max_len_arg,
         bvh_action_file_arg,
+        isaac_bridge_enable_arg,
+        isaac_bridge_debug_arg,
+        isaac_command_topic_arg,
+        isaac_state_topic_arg,
+        isaac_enforce_limits_arg,
         limit_map_arg,
         serial_port_arg,
         baudrate_arg,
@@ -423,6 +483,7 @@ def generate_launch_description():
 
         # 节点
         bridge_node,
+        isaac_bridge_node,
         *bus_servo_nodes,  # 动态生成的所有总线舵机驱动节点
         imu_driver_node,   # IMU 传感器串口驱动节点
         # pca_servo_node,  # 已临时禁用 - I2C设备未连接
