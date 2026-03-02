@@ -186,6 +186,36 @@ def generate_launch_description():
         description='Isaac桥接是否强制位置限幅'
     )
 
+    enable_sim_cpp_bridge_arg = DeclareLaunchArgument(
+        'enable_sim_cpp_bridge',
+        default_value='false',
+        description='是否启动C++仿真桥接节点(sim_servo_bridge_cpp)'
+    )
+
+    sim_cpp_bridge_debug_arg = DeclareLaunchArgument(
+        'sim_cpp_bridge_debug',
+        default_value='false',
+        description='C++仿真桥接节点调试模式'
+    )
+
+    sim_joint_cmd_topic_arg = DeclareLaunchArgument(
+        'sim_joint_cmd_topic',
+        default_value='/sim/joint_cmd',
+        description='仿真侧关节命令话题(std_msgs/Float32MultiArray)'
+    )
+
+    sim_joint_state_fb_topic_arg = DeclareLaunchArgument(
+        'sim_joint_state_fb_topic',
+        default_value='/sim/joint_state_fb',
+        description='仿真侧关节反馈话题(std_msgs/Float32MultiArray)'
+    )
+
+    sim_publish_rate_hz_arg = DeclareLaunchArgument(
+        'sim_publish_rate_hz',
+        default_value='50.0',
+        description='C++仿真桥接发布频率(Hz)'
+    )
+
     # 串口设备参数
     serial_port_arg = DeclareLaunchArgument(
         'serial_port',
@@ -290,6 +320,11 @@ def generate_launch_description():
     isaac_command_topic = LaunchConfiguration('isaac_command_topic')
     isaac_state_topic = LaunchConfiguration('isaac_state_topic')
     isaac_enforce_limits = LaunchConfiguration('isaac_enforce_limits')
+    enable_sim_cpp_bridge = LaunchConfiguration('enable_sim_cpp_bridge')
+    sim_cpp_bridge_debug = LaunchConfiguration('sim_cpp_bridge_debug')
+    sim_joint_cmd_topic = LaunchConfiguration('sim_joint_cmd_topic')
+    sim_joint_state_fb_topic = LaunchConfiguration('sim_joint_state_fb_topic')
+    sim_publish_rate_hz = LaunchConfiguration('sim_publish_rate_hz')
 
     pca_debug_arg = DeclareLaunchArgument(
         'pca_debug',
@@ -336,6 +371,24 @@ def generate_launch_description():
             {'servo_state_topic': '/servo/state'},
             {'enforce_position_limits': isaac_enforce_limits},
             {'debug': isaac_bridge_debug},
+        ]
+    )
+
+    # 1.2 C++仿真桥接节点（可选）
+    sim_cpp_bridge_node = Node(
+        package='sim_servo_bridge_cpp',
+        executable='sim_servo_bridge_node',
+        name='sim_servo_bridge',
+        output='screen',
+        condition=IfCondition(enable_sim_cpp_bridge),
+        parameters=[
+            {'joint_cmd_topic': sim_joint_cmd_topic},
+            {'joint_state_fb_topic': sim_joint_state_fb_topic},
+            {'servo_cmd_topic': '/servo/command'},
+            {'servo_state_topic': '/servo/state'},
+            {'publish_rate_hz': sim_publish_rate_hz},
+            {'speed': 100},
+            {'debug': sim_cpp_bridge_debug},
         ]
     )
 
@@ -431,6 +484,10 @@ def generate_launch_description():
             '  Isaac桥接启用: ', enable_isaac_bridge, '\n',
             '    命令转发: ', isaac_command_topic, ' -> /servo/command\n',
             '    状态转发: /servo/state -> ', isaac_state_topic, '\n',
+            '  C++仿真桥启用: ', enable_sim_cpp_bridge, '\n',
+            '    命令转发: ', sim_joint_cmd_topic, ' -> /servo/command\n',
+            '    状态转发: /servo/state -> ', sim_joint_state_fb_topic, '\n',
+            '  联调建议: enable_sim_cpp_bridge:=true 时设置 enable_isaac_bridge:=false\n',
             '  总线舵机驱动板:\n',
             *servo_info_lines,  # 动态生成的舵机信息
             '  IMU传感器: ', imu_port, ' @ ', imu_baudrate, ' bps, 频率=', imu_publish_rate, 'Hz\n',
@@ -464,6 +521,11 @@ def generate_launch_description():
         isaac_command_topic_arg,
         isaac_state_topic_arg,
         isaac_enforce_limits_arg,
+        enable_sim_cpp_bridge_arg,
+        sim_cpp_bridge_debug_arg,
+        sim_joint_cmd_topic_arg,
+        sim_joint_state_fb_topic_arg,
+        sim_publish_rate_hz_arg,
         limit_map_arg,
         serial_port_arg,
         baudrate_arg,
@@ -484,6 +546,7 @@ def generate_launch_description():
         # 节点
         bridge_node,
         isaac_bridge_node,
+        sim_cpp_bridge_node,
         *bus_servo_nodes,  # 动态生成的所有总线舵机驱动节点
         imu_driver_node,   # IMU 传感器串口驱动节点
         # pca_servo_node,  # 已临时禁用 - I2C设备未连接
