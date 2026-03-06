@@ -30,9 +30,20 @@ class BvhActionPlayer:
     def _log(self, level: str, message: str) -> None:
         if self._logger is None:
             return
-        log_fn = getattr(self._logger, level, None)
-        if log_fn:
-            log_fn(message)
+        normalized = (level or 'info').strip().lower()
+        try:
+            # rclpy logger 在同一调用点切换 severity 会抛异常，因此这里显式分支。
+            if normalized in ('warn', 'warning'):
+                self._logger.warning(message)
+            elif normalized == 'error':
+                self._logger.error(message)
+            elif normalized == 'debug':
+                self._logger.debug(message)
+            else:
+                self._logger.info(message)
+        except Exception:
+            # 日志失败不应中断 BVH 播放线程
+            return
 
     def _resolve_config_path(self, override_path: str) -> str:
         if override_path and os.path.exists(override_path):
