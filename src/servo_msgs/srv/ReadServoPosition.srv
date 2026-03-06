@@ -1,0 +1,9 @@
+uint16 servo_id
+string protocol
+---
+bool success
+uint16 position
+string protocol
+uint8 error_code
+string message
+builtin_interfaces/Time stamp
