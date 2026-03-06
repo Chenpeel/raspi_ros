@@ -1,5 +1,7 @@
 import argparse
+import copy
 import json
+import os
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -29,6 +31,39 @@ def _coerce_int(value, default: int) -> int:
         return default
 
 
+def _is_direct_action_payload(payload: Dict) -> bool:
+    if not isinstance(payload, dict):
+        return False
+    keys = (
+        'frames',
+        'ids',
+        'positions',
+        'bvh_file',
+        'bvh_path',
+        'file',
+        'path'
+    )
+    return any(key in payload for key in keys)
+
+
+def _merge_action_payload(payload: Dict, action_name: str, action_data: Dict) -> Dict:
+    if not isinstance(payload, dict):
+        return action_data
+    if _is_direct_action_payload(payload):
+        return action_data
+    if isinstance(payload.get(action_name), dict):
+        payload[action_name] = action_data
+        return payload
+
+    nested_data = payload.get('bvh_data')
+    if isinstance(nested_data, dict):
+        nested_data[action_name] = action_data
+        payload['bvh_data'] = nested_data
+        return payload
+
+    return action_data
+
+
 def convert_bvh_config(config_path: str,
                        output_path: Optional[str] = None,
                        in_place: bool = False,
@@ -42,19 +77,22 @@ def convert_bvh_config(config_path: str,
         raise FileNotFoundError('BVH action config not found')
 
     config = _load_json(resolved_path)
-    bvh_data = config.get('bvh_data') or {}
-    if not isinstance(bvh_data, dict):
-        raise ValueError('bvh_data must be a dict')
-
-    action_names = list(bvh_data.keys())
+    action_names = player.list_action_names(config)
     if only_actions:
         action_names = [name for name in action_names if name in only_actions]
 
     converted: List[str] = []
     skipped: List[str] = []
+    converted_action_data: Dict[str, Dict] = {}
+    action_file_updates: Dict[str, Dict] = {}
+    resolved_abs_path = os.path.abspath(resolved_path)
 
     for action_name in action_names:
-        action_data = bvh_data.get(action_name)
+        action_data, action_data_path = player._resolve_action_data(
+            action_name,
+            config,
+            resolved_path
+        )
         if not isinstance(action_data, dict):
             skipped.append(action_name)
             continue
@@ -85,23 +123,68 @@ def convert_bvh_config(config_path: str,
             skipped.append(action_name)
             continue
 
-        action_data['frames'] = frames
+        updated_action_data = copy.deepcopy(action_data)
+        updated_action_data['frames'] = frames
         if frame_delay_ms is not None:
-            action_data['frame_delay_ms'] = frame_delay_ms
+            updated_action_data['frame_delay_ms'] = frame_delay_ms
 
         if drop_bvh_file:
             for key in ('bvh_file', 'bvh_path', 'file', 'path'):
-                if key in action_data:
-                    del action_data[key]
+                if key in updated_action_data:
+                    del updated_action_data[key]
+
+        converted_action_data[action_name] = updated_action_data
+        action_path = action_data_path or resolved_path
+        action_path_abs = os.path.abspath(action_path)
+        if in_place and action_path_abs != resolved_abs_path:
+            payload = action_file_updates.get(action_path)
+            if payload is None:
+                payload = _load_json(action_path)
+            action_file_updates[action_path] = _merge_action_payload(
+                payload,
+                action_name,
+                updated_action_data
+            )
 
         converted.append(action_name)
 
     if in_place:
         output_path = resolved_path
-    elif not output_path:
-        output_path = _default_output_path(resolved_path)
+        inline_updates: Dict[str, Dict] = {}
+        for action_name, action_data in converted_action_data.items():
+            action_data_path = player._resolve_action_file_path(
+                action_name,
+                config,
+                resolved_path
+            )
+            action_path = action_data_path or resolved_path
+            if os.path.abspath(action_path) == resolved_abs_path:
+                inline_updates[action_name] = action_data
 
-    _write_json(output_path, config)
+        if inline_updates:
+            bvh_data = config.get('bvh_data')
+            if bvh_data is None:
+                bvh_data = {}
+                config['bvh_data'] = bvh_data
+            if not isinstance(bvh_data, dict):
+                raise ValueError('bvh_data must be a dict when writing in-place')
+            bvh_data.update(inline_updates)
+
+        _write_json(output_path, config)
+        for file_path, payload in action_file_updates.items():
+            _write_json(file_path, payload)
+        return output_path, converted, skipped
+
+    output_config = copy.deepcopy(config)
+    output_bvh_data = output_config.get('bvh_data')
+    if not isinstance(output_bvh_data, dict):
+        output_bvh_data = {}
+    output_bvh_data.update(converted_action_data)
+    output_config['bvh_data'] = output_bvh_data
+
+    if not output_path:
+        output_path = _default_output_path(resolved_path)
+    _write_json(output_path, output_config)
     return output_path, converted, skipped
 
 
