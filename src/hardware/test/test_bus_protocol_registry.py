@@ -61,3 +61,18 @@ def test_load_manual_protocol_map(tmp_path: Path):
     )
     data = load_manual_protocol_map(str(path))
     assert data == {21: "lx", 35: "zl"}
+
+
+def test_registry_save_cache_with_relative_file(tmp_path: Path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    registry = ProtocolRegistry(
+        cache_file="bus_protocol_cache.json",
+        manual_map=None,
+        lx_ranges="21-34",
+        zl_ranges="35-43",
+    )
+    registry.set_protocol(42, "zl", source="probe")
+    registry.save_cache()
+
+    saved = json.loads((tmp_path / "bus_protocol_cache.json").read_text(encoding="utf-8"))
+    assert saved["mappings"]["42"]["protocol"] == "zl"
