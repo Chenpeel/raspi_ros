@@ -34,3 +34,50 @@ def test_lx_decode_position_response():
     checksum = LXBusServoProtocol.compute_checksum([sid, length, cmd, *params])
     raw = bytes([0x55, 0x55, sid, length, cmd, *params, checksum])
     assert proto.decode_position_response(raw, expected_servo_id=1) == 500
+
+
+def test_lx_encode_move_command_matches_doc_example():
+    proto = LXBusServoProtocol()
+    # 文档示例：55 55 01 07 01 F4 01 E8 03 16
+    frame = proto.encode_move_command(servo_id=1, position=500, speed=1000)
+    assert frame == bytes([0x55, 0x55, 0x01, 0x07, 0x01, 0xF4, 0x01, 0xE8, 0x03, 0x16])
+
+
+def test_lx_decode_signed_position_response():
+    proto = LXBusServoProtocol()
+    sid = 0x01
+    length = 0x05
+    cmd = LXBusServoProtocol.CMD_POS_READ
+    # 返回位置 -10，对应 0xFFF6，低字节在前
+    params = [0xF6, 0xFF]
+    checksum = LXBusServoProtocol.compute_checksum([sid, length, cmd, *params])
+    raw = bytes([0x55, 0x55, sid, length, cmd, *params, checksum])
+    assert proto.decode_pos_response(raw, expected_servo_id=1) == -10
+
+
+def test_lx_encode_angle_limit_write():
+    proto = LXBusServoProtocol()
+    frame = proto.encode_angle_limit_write(servo_id=1, min_pos=200, max_pos=800)
+    # 55 55 01 07 14 C8 00 20 03 crc
+    assert frame[:9] == bytes([0x55, 0x55, 0x01, 0x07, 0x14, 0xC8, 0x00, 0x20, 0x03])
+    assert frame[-1] == LXBusServoProtocol.compute_checksum(frame[2:-1])
+
+
+def test_lx_encode_or_motor_mode_write_with_negative_speed():
+    proto = LXBusServoProtocol()
+    frame = proto.encode_or_motor_mode_write(
+        servo_id=1,
+        mode=1,
+        drive_mode=1,
+        speed=-1000,
+    )
+    # -1000 的16位补码是 0xFC18，低字节在前
+    assert frame[:9] == bytes([0x55, 0x55, 0x01, 0x07, 0x1D, 0x01, 0x01, 0x18, 0xFC])
+    assert frame[-1] == LXBusServoProtocol.compute_checksum(frame[2:-1])
+
+
+def test_lx_decode_dis_read_response():
+    proto = LXBusServoProtocol()
+    # 文档示例：55 55 01 07 30 31 24 01 00 71
+    raw = bytes([0x55, 0x55, 0x01, 0x07, 0x30, 0x31, 0x24, 0x01, 0x00, 0x71])
+    assert proto.decode_dis_response(raw, expected_servo_id=1) == 74801
