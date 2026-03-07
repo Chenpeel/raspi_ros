@@ -18,6 +18,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ServoState.msg"
   "msg/ServoStatus.msg"
   "srv/ReadServoPosition.srv"
+  "srv/ExecuteBusCommand.srv"
   DEPENDENCIES std_msgs builtin_interfaces
 )
 

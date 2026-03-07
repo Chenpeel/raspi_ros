@@ -17,6 +17,19 @@ def test_zl_decode_read_response():
     assert proto.decode_position_response(raw, expected_servo_id=8) is None
 
 
+def test_zl_encode_full_commands_sample():
+    proto = ZLBusServoProtocol()
+    assert proto.encode_version_read(servo_id=1) == b"#001PVER!"
+    assert proto.encode_id_write(servo_id=1, new_id=10) == b"#001PID010!"
+    assert proto.encode_mode_write(servo_id=1, mode=3) == b"#001PMOD3!"
+
+
+def test_zl_decode_temp_voltage_response():
+    proto = ZLBusServoProtocol()
+    raw = b"abc#001T28.1V7.4!xyz"
+    assert proto.decode_temp_voltage_response(raw, expected_servo_id=1) == (28.1, 7.4)
+
+
 def test_lx_encode_read_command():
     proto = LXBusServoProtocol()
     frame = proto.encode_read_position_command(servo_id=1)

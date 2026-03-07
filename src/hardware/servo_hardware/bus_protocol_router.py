@@ -5,7 +5,8 @@
 2. 按 ID -> 端口 -> 协议 路由到 /bus_port_driver_x/command_{zl|lx}；
 3. 聚合 /bus_port_driver_x/state 到 /servo/state；
 4. 提供全局读角度服务 /servo/read_position；
-5. 启动时与运行时按需探测未知协议并写入缓存文件。
+5. 提供全局通用指令服务 /servo/execute_command；
+6. 启动时与运行时按需探测未知协议并写入缓存文件。
 """
 
 import json
@@ -20,7 +21,7 @@ from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from servo_msgs.msg import ServoCommand, ServoState
-from servo_msgs.srv import ReadServoPosition
+from servo_msgs.srv import ExecuteBusCommand, ReadServoPosition
 
 from .bus_protocol_registry import (
     ProtocolRegistry,
@@ -121,6 +122,12 @@ class BusProtocolRouter(Node):
             self._handle_read_position,
             callback_group=self.inbound_cb_group,
         )
+        self.execute_command_srv = self.create_service(
+            ExecuteBusCommand,
+            "/servo/execute_command",
+            self._handle_execute_command,
+            callback_group=self.inbound_cb_group,
+        )
         self.state_pub = self.create_publisher(
             ServoState,
             "/servo/state",
@@ -130,13 +137,15 @@ class BusProtocolRouter(Node):
         # 端口级发布器/订阅器/服务客户端
         self.route_publishers: Dict[Tuple[str, str], object] = {}
         self.read_clients: Dict[str, object] = {}
+        self.execute_clients: Dict[str, object] = {}
 
         for port, _ in self.port_items:
             node_name = self.port_to_node_name[port]
             topic_zl = f"/{node_name}/command_zl"
             topic_lx = f"/{node_name}/command_lx"
             state_topic = f"/{node_name}/state"
-            service_name = f"/{node_name}/read_position"
+            read_service_name = f"/{node_name}/read_position"
+            execute_service_name = f"/{node_name}/execute_command"
 
             self.route_publishers[(port, "zl")] = self.create_publisher(
                 ServoCommand,
@@ -157,7 +166,12 @@ class BusProtocolRouter(Node):
             )
             self.read_clients[port] = self.create_client(
                 ReadServoPosition,
-                service_name,
+                read_service_name,
+                callback_group=self.client_cb_group,
+            )
+            self.execute_clients[port] = self.create_client(
+                ExecuteBusCommand,
+                execute_service_name,
                 callback_group=self.client_cb_group,
             )
 
@@ -397,6 +411,56 @@ class BusProtocolRouter(Node):
             )
             return None
 
+    def _call_execute_command(
+        self,
+        port: str,
+        servo_id: int,
+        protocol: str,
+        command: str,
+        params: List[int],
+        timeout_sec: float,
+        use_spin: bool = False,
+    ) -> Optional[ExecuteBusCommand.Response]:
+        client = self.execute_clients.get(port)
+        if client is None:
+            return None
+        if not client.wait_for_service(timeout_sec=max(0.1, self.probe_wait_service_sec)):
+            self.get_logger().warn(f"端口{port}服务未就绪(/execute_command)")
+            return None
+
+        req = ExecuteBusCommand.Request()
+        req.servo_id = int(servo_id)
+        req.protocol = str(protocol)
+        req.command = str(command)
+        req.params = [int(x) for x in list(params or [])]
+        future = client.call_async(req)
+        wait_timeout = max(0.05, float(timeout_sec))
+
+        if use_spin:
+            rclpy.spin_until_future_complete(
+                self,
+                future,
+                timeout_sec=wait_timeout,
+            )
+        else:
+            done_event = threading.Event()
+
+            def _mark_done(_future):
+                done_event.set()
+
+            future.add_done_callback(_mark_done)
+            done_event.wait(timeout=wait_timeout)
+
+        if not future.done():
+            return None
+        try:
+            return future.result()
+        except Exception as exc:
+            self.get_logger().warn(
+                f"端口{port}执行失败(id={servo_id}, protocol={protocol}, command={command}): {exc}"
+            )
+            return None
+
     def _resolve_protocol_order(self, requested: str, servo_id: int) -> List[str]:
         requested = str(requested or "").strip().lower()
         if requested in ("zl", "lx"):
@@ -407,6 +471,25 @@ class BusProtocolRouter(Node):
             other = "zl" if protocol == "lx" else "lx"
             return [protocol, other]
         return ["lx", "zl"]
+
+    @staticmethod
+    def _build_execute_error(
+        response: ExecuteBusCommand.Response,
+        protocol: str,
+        code: int,
+        message: str,
+        stamp_msg,
+    ):
+        response.success = False
+        response.protocol = str(protocol or "")
+        response.error_code = int(max(1, min(255, int(code))))
+        response.message = str(message or "error")
+        response.value = 0
+        response.values = []
+        response.raw_hex = ""
+        response.result_json = "null"
+        response.stamp = stamp_msg
+        return response
 
     def _handle_read_position(
         self,
@@ -458,6 +541,76 @@ class BusProtocolRouter(Node):
         response.message = last_message or "read failed"
         response.stamp = self.get_clock().now().to_msg()
         return response
+
+    def _handle_execute_command(
+        self,
+        request: ExecuteBusCommand.Request,
+        response: ExecuteBusCommand.Response,
+    ):
+        servo_id = int(request.servo_id)
+        requested = str(request.protocol or "").strip().lower()
+        command = str(request.command or "").strip()
+        params = [int(x) for x in list(request.params or [])]
+
+        stamp_msg = self.get_clock().now().to_msg()
+        if not command:
+            return self._build_execute_error(
+                response=response,
+                protocol=requested,
+                code=2,
+                message="command is required",
+                stamp_msg=stamp_msg,
+            )
+
+        port = self.id_to_port.get(servo_id)
+        if port is None:
+            return self._build_execute_error(
+                response=response,
+                protocol=requested,
+                code=2,
+                message=f"id {servo_id} not found in bus map",
+                stamp_msg=stamp_msg,
+            )
+
+        protocols = self._resolve_protocol_order(requested, servo_id)
+        last_message = ""
+
+        for protocol in protocols:
+            resp = self._call_execute_command(
+                port=port,
+                servo_id=servo_id,
+                protocol=protocol,
+                command=command,
+                params=params,
+                timeout_sec=self.read_service_timeout_sec,
+                use_spin=False,
+            )
+            if resp is None:
+                last_message = f"timeout protocol={protocol}"
+                continue
+            if not bool(resp.success):
+                last_message = str(resp.message)
+                continue
+
+            self._update_registry(servo_id=servo_id, protocol=protocol, source="execute_service")
+            response.success = bool(resp.success)
+            response.protocol = str(protocol)
+            response.error_code = int(resp.error_code)
+            response.message = str(resp.message)
+            response.value = int(resp.value)
+            response.values = [int(x) for x in list(resp.values or [])]
+            response.raw_hex = str(resp.raw_hex)
+            response.result_json = str(resp.result_json)
+            response.stamp = self.get_clock().now().to_msg()
+            return response
+
+        return self._build_execute_error(
+            response=response,
+            protocol=requested,
+            code=1,
+            message=last_message or "execute failed",
+            stamp_msg=self.get_clock().now().to_msg(),
+        )
 
 
 def main(args=None):

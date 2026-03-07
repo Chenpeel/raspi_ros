@@ -553,6 +553,7 @@ def generate_launch_description():
             '  联调建议: enable_sim_cpp_bridge:=true 时设置 enable_isaac_bridge:=false\n',
             '  总线协议路由: /servo/command -> bus_protocol_router -> /bus_port_driver_x/command_{zl,lx}\n',
             '  全局读角度服务: /servo/read_position\n',
+            '  全局通用指令服务: /servo/execute_command\n',
             '  协议缓存文件: ', protocol_cache_file, '\n',
             '  总线舵机驱动板:\n',
             *servo_info_lines,  # 动态生成的舵机信息
