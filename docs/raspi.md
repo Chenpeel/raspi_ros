@@ -230,16 +230,16 @@ docker system prune -a --volumes
 
 ### WebSocket端口
 
-默认端口：`9102`
+默认端口：`9105`
 
 由于使用`network_mode: host`，容器直接使用宿主机网络：
 
 ```bash
 # 在宿主机上验证端口
-sudo netstat -tuln | grep 9102
+sudo netstat -tuln | grep 9105
 
 # 从其他设备测试连接
-wscat -c ws://树莓派IP:9102
+wscat -c ws://树莓派IP:9105
 ```
 
 ### 防火墙配置
@@ -248,10 +248,10 @@ wscat -c ws://树莓派IP:9102
 
 ```bash
 # 使用ufw
-sudo ufw allow 9102/tcp
+sudo ufw allow 9105/tcp
 
 # 或使用iptables
-sudo iptables -A INPUT -p tcp --dport 9102 -j ACCEPT
+sudo iptables -A INPUT -p tcp --dport 9105 -j ACCEPT
 ```
 
 ## 故障排查
@@ -303,7 +303,7 @@ Connection refused
 docker compose ps
 
 # 2. 检查端口监听
-docker compose exec ros2_servo netstat -tuln | grep 9102
+docker compose exec ros2_servo netstat -tuln | grep 9105
 
 # 3. 检查防火墙
 sudo ufw status
@@ -470,7 +470,7 @@ htop  # 需要安装: sudo apt install htop
 
 ---
 
-**更新时间**: 2025-12-15
+**更新时间**: 2026-03-07
 **维护者**: chenpeel
 **Docker镜像**: ROS 2 Jazzy (ros:jazzy-ros-base)
 **树莓派**: 5B (ARM64)

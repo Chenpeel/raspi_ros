@@ -7,8 +7,9 @@
 - ✅ **WebSocket远程控制**: 通过WebSocket接口（9105端口）接收Web客户端命令
 - ✅ **多串口并发**: 支持4个独立串口同时控制14个舵机
 - ✅ **智能ID路由**: 基于Set的O(1)算法，零延迟增加
+- ✅ **协议自动识别**: 支持众灵/幻尔总线舵机，未知ID按需探测并缓存
 - ✅ **双舵机类型**: 支持总线舵机和PCA9685 PWM舵机
-- ✅ **话题统一**: 使用remapping统一所有驱动节点到 `/servo/command` 和 `/servo/state`
+- ✅ **话题统一**: 通过 `bus_protocol_router` 统一入口 `/servo/command` 与出口 `/servo/state`
 - ✅ **仿真集成桥接**: 支持 `/sim/servo_command` 与 `/sim/servo_state` 双向转发
 - ✅ **Docker部署**: 支持开发和生产两种模式
 - ✅ **实时反馈**: 舵机状态实时反馈到Web客户端
@@ -162,7 +163,6 @@ ros2 launch websocket_bridge full_system.launch.py \
   device_id:=robot \
   enable_isaac_bridge:=true \
   debug:=true \
-  serial_port:=/dev/ttyAMA0 \
   baudrate:=115200
 ```
 
@@ -233,7 +233,7 @@ ros2 topic echo /servo/state
 
 # 发送测试命令
 ros2 topic pub /servo/command servo_msgs/msg/ServoCommand \
-  "{servo_type: 'bus', servo_id: 1, position: 2048, speed: 100}"
+  "{servo_type: 'bus', servo_id: 1, position: 1500, speed: 100}"
 ```
 
 
@@ -389,7 +389,7 @@ websocat ws://192.168.31.35:9105
 {"type":"register","name":"test-client"}
 
 # 发送舵机命令
-{"type":"servo_control","servo_type":"bus","servo_id":1,"position":2048,"speed":100}
+{"type":"servo_control","servo_type":"bus","servo_id":1,"position":1500,"speed":100}
 ```
 
 ### 测试舵机硬件
@@ -476,21 +476,9 @@ ros/
 │       │   ├── std_ros2web_stream.json
 │       │   └── bus_servo_map.json  # 舵机ID映射配置
 │       ├── launch/
-│       │   ├── full_system.launch.py        # 完整系统（多串口）
-│       │   └── websocket_bus_servo.launch.py # multi模式封装（复用full_system链路）
+│       │   ├── full_system.launch.py
+│       │   └── websocket_bus_servo.launch.py
 │       └── package.xml
-│
-├── .claude/                     # Claude开发文档
-│   ├── actual-4serial-config-final.md
-│   ├── multi-serial-port-expansion-guide.md
-│   └── websocket-servo-no-response-diagnosis.md
-│
-├── .TODOs/                      # 项目管理文档
-│   ├── progress_tracker.md      # 进度跟踪
-│   ├── technical_details.md     # 技术实现细节
-│   ├── struct.md                # 项目结构说明
-│   └── coding_standards.md      # 编码规范
-│
 ├── scripts/
 │   ├── init.sh                  # 初始化脚本
 │   ├── test_bus_servo.sh        # 总线舵机测试
@@ -498,7 +486,6 @@ ros/
 │
 ├── docker-compose.yaml          # Docker配置
 ├── Dockerfile                   # Docker镜像
-├── CLAUDE.md                    # Claude开发指南
 └── README.md                    # 本文档
 ```
 
@@ -551,8 +538,6 @@ ros2 launch websocket_bridge full_system.launch.py debug:=true
 ros2 topic pub --once /servo/command servo_msgs/msg/ServoCommand \
   '{servo_type: "bus", servo_id: 7, position: 90, speed: 100}'
 ```
-
-**详细诊断文档**: 查看 `.claude/websocket-servo-no-response-diagnosis.md`
 
 ### Q3: I2C设备未找到
 
@@ -636,8 +621,6 @@ colcon build
 
 **总延迟**: 103-2015ms（与单串口系统相同）
 
-**详细分析**: 查看 `.claude/actual-4serial-config-final.md`
-
 ---
 
 ## 性能优化
@@ -661,7 +644,7 @@ export RCUTILS_CONSOLE_OUTPUT_FORMAT="[{severity}]: {message}"
 self.heartbeat_interval = 5.0
 ```
 
-修改 `bus_servo.py`:
+修改 `bus_port_driver.py`:
 
 ```python
 # 增加串口读取超时
@@ -674,7 +657,7 @@ self.serial.timeout = 0.01  # 减少到10ms
 
 ### 添加新的舵机驱动
 
-1. 在 `src/servo_hardware/` 创建新驱动类
+1. 在 `src/hardware/servo_hardware/` 创建新驱动类
 2. 继承基类并实现接口:
    ```python
    class MyServoDriver:
@@ -696,31 +679,13 @@ self.serial.timeout = 0.01  # 减少到10ms
 
 ---
 
-## 更多文档
-
-### 项目管理文档（`.TODOs/`）
-- `progress_tracker.md`: 开发进度跟踪
-- `technical_details.md`: 技术实现细节（包含多串口架构详解）
-- `struct.md`: 项目结构说明
-- `coding_standards.md`: 编码规范
-
-### Claude开发文档（`.claude/`）
-- `actual-4serial-config-final.md`: 4串口系统配置总结
-- `multi-serial-port-expansion-guide.md`: 多串口扩展指南
-- `websocket-servo-no-response-diagnosis.md`: WebSocket舵机无响应诊断
-
-### 开发指南
-- `CLAUDE.md`: Claude Code 开发指南
-
----
-
 ## 贡献指南
 
 **开发规范**:
 - 代码遵循PEP 8风格
 - 所有注释和文档使用简体中文
 - 提交前运行测试脚本
-- 更新相关文档（README、.TODOs、.claude）
+- 更新相关文档
 
 **提交规范**:
 ```bash
