@@ -116,6 +116,12 @@ def generate_launch_description():
         description='未知ID在线探测失败后重试最小间隔(秒)'
     )
 
+    runtime_probe_interval_sec_arg = DeclareLaunchArgument(
+        'runtime_probe_interval_sec',
+        default_value='0.05',
+        description='后台在线探测任务轮询周期(秒)'
+    )
+
     read_service_timeout_sec_arg = DeclareLaunchArgument(
         'read_service_timeout_sec',
         default_value='0.35',
@@ -164,6 +170,7 @@ def generate_launch_description():
             'probe_timeout_sec': LaunchConfiguration('probe_timeout_sec'),
             'probe_on_unknown_command': LaunchConfiguration('probe_on_unknown_command'),
             'probe_retry_interval_sec': LaunchConfiguration('probe_retry_interval_sec'),
+            'runtime_probe_interval_sec': LaunchConfiguration('runtime_probe_interval_sec'),
             'read_service_timeout_sec': LaunchConfiguration('read_service_timeout_sec'),
             # multi 模式保持轻量，不自动启 Isaac/仿真桥
             'enable_isaac_bridge': 'false',
@@ -199,6 +206,7 @@ def generate_launch_description():
         probe_timeout_sec_arg,
         probe_on_unknown_command_arg,
         probe_retry_interval_sec_arg,
+        runtime_probe_interval_sec_arg,
         read_service_timeout_sec_arg,
         imu_debug_arg,
         instances_file_arg,

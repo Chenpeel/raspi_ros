@@ -26,16 +26,26 @@ from launch_ros.actions import Node
 def generate_launch_description():
     """生成Launch描述"""
 
-    # 读取舵机映射配置
+    # 读取舵机映射配置（优先源码路径，确保与开发现场配置一致）
     pkg_share = get_package_share_directory('websocket_bridge')
-    config_file = os.path.join(pkg_share, 'config', 'bus_servo_map.json')
-
-    # 如果配置文件不存在，尝试从源码路径读取
-    if not os.path.exists(config_file):
-        # 开发环境下的路径
-        config_file = os.path.join(
-            Path(__file__).parent.parent, 'config', 'bus_servo_map.json'
-        )
+    workspace_source_config_file = '/root/ros_ws/src/websocket/config/bus_servo_map.json'
+    cwd_source_config_file = os.path.join(
+        Path.cwd(), 'src', 'websocket', 'config', 'bus_servo_map.json'
+    )
+    source_config_file = os.path.join(
+        Path(__file__).resolve().parent.parent, 'config', 'bus_servo_map.json'
+    )
+    installed_config_file = os.path.join(pkg_share, 'config', 'bus_servo_map.json')
+    config_candidates = [
+        workspace_source_config_file,
+        cwd_source_config_file,
+        source_config_file,
+        installed_config_file,
+    ]
+    config_file = next(
+        (path for path in config_candidates if os.path.exists(path)),
+        source_config_file,
+    )
 
     # 读取配置
     servo_map = {}
@@ -146,6 +156,12 @@ def generate_launch_description():
         description='未知ID在线探测失败后重试最小间隔(秒)'
     )
 
+    runtime_probe_interval_sec_arg = DeclareLaunchArgument(
+        'runtime_probe_interval_sec',
+        default_value='0.05',
+        description='后台在线探测任务轮询周期(秒)'
+    )
+
     read_service_timeout_sec_arg = DeclareLaunchArgument(
         'read_service_timeout_sec',
         default_value='0.35',
@@ -248,13 +264,6 @@ def generate_launch_description():
         description='C++仿真桥接发布频率(Hz)'
     )
 
-    # 串口设备参数
-    serial_port_arg = DeclareLaunchArgument(
-        'serial_port',
-        default_value='/dev/ttyAMA0',
-        description='总线舵机串口设备'
-    )
-
     baudrate_arg = DeclareLaunchArgument(
         'baudrate',
         default_value='115200',
@@ -341,6 +350,7 @@ def generate_launch_description():
     probe_timeout_sec = LaunchConfiguration('probe_timeout_sec')
     probe_on_unknown_command = LaunchConfiguration('probe_on_unknown_command')
     probe_retry_interval_sec = LaunchConfiguration('probe_retry_interval_sec')
+    runtime_probe_interval_sec = LaunchConfiguration('runtime_probe_interval_sec')
     read_service_timeout_sec = LaunchConfiguration('read_service_timeout_sec')
     heartbeat_debug = LaunchConfiguration('heartbeat_debug')
     ws_debug = LaunchConfiguration('ws_debug')
@@ -476,6 +486,7 @@ def generate_launch_description():
             {'probe_timeout_sec': probe_timeout_sec},
             {'probe_on_unknown_command': probe_on_unknown_command},
             {'probe_retry_interval_sec': probe_retry_interval_sec},
+            {'runtime_probe_interval_sec': runtime_probe_interval_sec},
             {'read_service_timeout_sec': read_service_timeout_sec},
             {'probe_wait_service_sec': 6.0},
             {'debug': bus_servo_debug},
@@ -573,6 +584,7 @@ def generate_launch_description():
         probe_timeout_sec_arg,
         probe_on_unknown_command_arg,
         probe_retry_interval_sec_arg,
+        runtime_probe_interval_sec_arg,
         read_service_timeout_sec_arg,
         heartbeat_debug_arg,
         ws_debug_arg,
@@ -590,7 +602,6 @@ def generate_launch_description():
         sim_joint_cmd_topic_arg,
         sim_joint_state_fb_topic_arg,
         sim_publish_rate_hz_arg,
-        serial_port_arg,
         baudrate_arg,
         i2c_address_arg,
         i2c_bus_arg,

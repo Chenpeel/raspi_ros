@@ -10,10 +10,14 @@
 
 import json
 import os
+import threading
 import time
-from typing import Dict, List, Optional, Tuple
+from collections import deque
+from typing import Deque, Dict, List, Optional, Set, Tuple
 
 import rclpy
+from rclpy.callback_groups import ReentrantCallbackGroup
+from rclpy.executors import MultiThreadedExecutor
 from rclpy.node import Node
 from servo_msgs.msg import ServoCommand, ServoState
 from servo_msgs.srv import ReadServoPosition
@@ -50,6 +54,7 @@ class BusProtocolRouter(Node):
         self.declare_parameter("probe_retry_interval_sec", 3.0)
         self.declare_parameter("read_service_timeout_sec", 0.35)
         self.declare_parameter("probe_wait_service_sec", 6.0)
+        self.declare_parameter("runtime_probe_interval_sec", 0.05)
         self.declare_parameter("debug", False)
 
         self.bus_map_file = str(self.get_parameter("bus_map_file").value).strip()
@@ -71,8 +76,15 @@ class BusProtocolRouter(Node):
             self.get_parameter("read_service_timeout_sec").value
         )
         self.probe_wait_service_sec = float(self.get_parameter("probe_wait_service_sec").value)
+        self.runtime_probe_interval_sec = float(
+            self.get_parameter("runtime_probe_interval_sec").value
+        )
         self.debug = _to_bool(self.get_parameter("debug").value)
         self.last_probe_attempt: Dict[int, float] = {}
+        self.registry_lock = threading.Lock()
+        self.probe_lock = threading.Lock()
+        self.runtime_probe_queue: Deque[int] = deque()
+        self.runtime_probe_pending: Set[int] = set()
 
         self.port_items = self._load_bus_map(self.bus_map_file)
         self.id_to_port: Dict[int, str] = {}
@@ -90,17 +102,24 @@ class BusProtocolRouter(Node):
             zl_ranges=self.zl_id_ranges,
         )
 
+        # 多回调组用于避免服务转发与命令订阅相互阻塞
+        self.inbound_cb_group = ReentrantCallbackGroup()
+        self.client_cb_group = ReentrantCallbackGroup()
+        self.probe_cb_group = ReentrantCallbackGroup()
+
         # 全局入口和出口
         self.command_sub = self.create_subscription(
             ServoCommand,
             "/servo/command",
             self._on_command,
             10,
+            callback_group=self.inbound_cb_group,
         )
         self.read_position_srv = self.create_service(
             ReadServoPosition,
             "/servo/read_position",
             self._handle_read_position,
+            callback_group=self.inbound_cb_group,
         )
         self.state_pub = self.create_publisher(
             ServoState,
@@ -134,11 +153,19 @@ class BusProtocolRouter(Node):
                 state_topic,
                 self._on_state,
                 10,
+                callback_group=self.inbound_cb_group,
             )
             self.read_clients[port] = self.create_client(
                 ReadServoPosition,
                 service_name,
+                callback_group=self.client_cb_group,
             )
+
+        self.runtime_probe_timer = self.create_timer(
+            max(0.02, self.runtime_probe_interval_sec),
+            self._process_runtime_probe_queue,
+            callback_group=self.probe_cb_group,
+        )
 
         self.get_logger().info(
             "bus_protocol_router 启动完成: "
@@ -191,11 +218,9 @@ class BusProtocolRouter(Node):
             self.get_logger().warn(f"未找到ID={servo_id}的端口映射，忽略命令")
             return
 
-        protocol, source = self.registry.get_protocol(servo_id)
+        protocol, source = self._get_protocol(servo_id)
         if protocol is None:
-            protocol = self._probe_unknown_for_command(servo_id)
-            source = "probe"
-        if protocol is None:
+            self._schedule_runtime_probe(servo_id)
             self.get_logger().warn(f"ID={servo_id}协议未知，命令未转发")
             return
 
@@ -216,28 +241,56 @@ class BusProtocolRouter(Node):
         publisher.publish(msg)
         return True
 
-    def _probe_unknown_for_command(self, servo_id: int) -> Optional[str]:
-        if not self.probe_on_unknown_command:
-            return None
-        now = time.monotonic()
-        last = self.last_probe_attempt.get(int(servo_id), 0.0)
-        if now - last < max(0.1, self.probe_retry_interval_sec):
-            return None
-        self.last_probe_attempt[int(servo_id)] = now
+    def _get_protocol(self, servo_id: int) -> Tuple[Optional[str], str]:
+        with self.registry_lock:
+            return self.registry.get_protocol(servo_id)
 
-        protocol = self._probe_servo_id(servo_id)
-        if protocol is None:
-            return None
-        self._update_registry(servo_id=servo_id, protocol=protocol, source="probe")
-        self.get_logger().info(f"ID={servo_id}运行时探测成功: {protocol}")
-        return protocol
+    def _schedule_runtime_probe(self, servo_id: int) -> bool:
+        if not self.probe_on_unknown_command:
+            return False
+
+        sid = int(servo_id)
+        now = time.monotonic()
+        min_interval = max(0.1, self.probe_retry_interval_sec)
+
+        with self.probe_lock:
+            last = self.last_probe_attempt.get(sid, 0.0)
+            if now - last < min_interval:
+                return False
+            if sid in self.runtime_probe_pending:
+                return False
+
+            self.last_probe_attempt[sid] = now
+            self.runtime_probe_pending.add(sid)
+            self.runtime_probe_queue.append(sid)
+            return True
+
+    def _process_runtime_probe_queue(self):
+        with self.probe_lock:
+            if not self.runtime_probe_queue:
+                return
+            servo_id = self.runtime_probe_queue.popleft()
+
+        try:
+            protocol = self._probe_servo_id(servo_id, use_spin=False)
+            if protocol is None:
+                if self.debug:
+                    self.get_logger().debug(f"ID={servo_id}运行时探测失败")
+                return
+
+            self._update_registry(servo_id=servo_id, protocol=protocol, source="probe")
+            self.get_logger().info(f"ID={servo_id}运行时探测成功: {protocol}")
+        finally:
+            with self.probe_lock:
+                self.runtime_probe_pending.discard(servo_id)
 
     def _update_registry(self, servo_id: int, protocol: str, source: str):
-        self.registry.set_protocol(servo_id, protocol, source=source)
-        try:
-            self.registry.save_cache()
-        except Exception as exc:
-            self.get_logger().warn(f"写入协议缓存失败: {exc}")
+        with self.registry_lock:
+            self.registry.set_protocol(servo_id, protocol, source=source)
+            try:
+                self.registry.save_cache()
+            except Exception as exc:
+                self.get_logger().warn(f"写入协议缓存失败: {exc}")
 
     def run_startup_probe(self):
         """启动时探测未知协议ID，并落盘缓存。"""
@@ -245,7 +298,8 @@ class BusProtocolRouter(Node):
             return
 
         servo_ids = sorted(self.id_to_port.keys())
-        unknown_ids = self.registry.unresolved_ids(servo_ids)
+        with self.registry_lock:
+            unknown_ids = self.registry.unresolved_ids(servo_ids)
         if not unknown_ids:
             self.get_logger().info("协议探测跳过：当前无未知ID")
             return
@@ -253,19 +307,21 @@ class BusProtocolRouter(Node):
         self.get_logger().info(f"开始协议探测，未知ID列表: {unknown_ids}")
         updated = 0
         for servo_id in unknown_ids:
-            protocol = self._probe_servo_id(servo_id)
+            protocol = self._probe_servo_id(servo_id, use_spin=True)
             if protocol is None:
                 self.get_logger().warn(f"ID={servo_id}探测失败")
                 continue
-            self.registry.set_protocol(servo_id, protocol, source="probe")
+            with self.registry_lock:
+                self.registry.set_protocol(servo_id, protocol, source="probe")
             updated += 1
             self.get_logger().info(f"ID={servo_id}探测成功: {protocol}")
 
         if updated > 0:
-            try:
-                self.registry.save_cache()
-            except Exception as exc:
-                self.get_logger().warn(f"写入协议缓存失败: {exc}")
+            with self.registry_lock:
+                try:
+                    self.registry.save_cache()
+                except Exception as exc:
+                    self.get_logger().warn(f"写入协议缓存失败: {exc}")
             self.get_logger().info(
                 f"协议探测完成，新增缓存{updated}条 -> {self.protocol_cache_file}"
             )
@@ -276,6 +332,7 @@ class BusProtocolRouter(Node):
         self,
         servo_id: int,
         order: Optional[List[str]] = None,
+        use_spin: bool = False,
     ) -> Optional[str]:
         port = self.id_to_port.get(int(servo_id))
         if port is None:
@@ -287,6 +344,7 @@ class BusProtocolRouter(Node):
                 servo_id=servo_id,
                 protocol=protocol,
                 timeout_sec=self.probe_timeout_sec,
+                use_spin=use_spin,
             )
             if resp is None:
                 continue
@@ -300,6 +358,7 @@ class BusProtocolRouter(Node):
         servo_id: int,
         protocol: str,
         timeout_sec: float,
+        use_spin: bool = False,
     ) -> Optional[ReadServoPosition.Response]:
         client = self.read_clients.get(port)
         if client is None:
@@ -312,21 +371,38 @@ class BusProtocolRouter(Node):
         req.servo_id = int(servo_id)
         req.protocol = str(protocol)
         future = client.call_async(req)
-        rclpy.spin_until_future_complete(
-            self,
-            future,
-            timeout_sec=max(0.05, float(timeout_sec)),
-        )
+        wait_timeout = max(0.05, float(timeout_sec))
+        if use_spin:
+            rclpy.spin_until_future_complete(
+                self,
+                future,
+                timeout_sec=wait_timeout,
+            )
+        else:
+            done_event = threading.Event()
+
+            def _mark_done(_future):
+                done_event.set()
+
+            future.add_done_callback(_mark_done)
+            done_event.wait(timeout=wait_timeout)
+
         if not future.done():
             return None
-        return future.result()
+        try:
+            return future.result()
+        except Exception as exc:
+            self.get_logger().warn(
+                f"端口{port}读取失败(id={servo_id}, protocol={protocol}): {exc}"
+            )
+            return None
 
     def _resolve_protocol_order(self, requested: str, servo_id: int) -> List[str]:
         requested = str(requested or "").strip().lower()
         if requested in ("zl", "lx"):
             return [requested]
 
-        protocol, _ = self.registry.get_protocol(servo_id)
+        protocol, _ = self._get_protocol(servo_id)
         if protocol in ("zl", "lx"):
             other = "zl" if protocol == "lx" else "lx"
             return [protocol, other]
@@ -357,6 +433,7 @@ class BusProtocolRouter(Node):
                 servo_id=servo_id,
                 protocol=protocol,
                 timeout_sec=self.read_service_timeout_sec,
+                use_spin=False,
             )
             if resp is None:
                 last_message = f"timeout protocol={protocol}"
@@ -386,12 +463,15 @@ class BusProtocolRouter(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = BusProtocolRouter()
+    executor = MultiThreadedExecutor(num_threads=4)
+    executor.add_node(node)
     try:
         node.run_startup_probe()
-        rclpy.spin(node)
+        executor.spin()
     except KeyboardInterrupt:
         pass
     finally:
+        executor.shutdown()
         node.destroy_node()
         rclpy.shutdown()
 
