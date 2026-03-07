@@ -18,11 +18,11 @@
 ```
 Web客户端 → WebSocket(9105) → bridge_node → /servo/command
     ↓
-4个bus_servo_driver实例（并行订阅，ID过滤）
-    ├─ ttyAMA0 → 舵机ID: 1, 2            (2个)
-    ├─ ttyAMA1 → 舵机ID: 3, 7, 9, 10, 11 (5个)
-    ├─ ttyAMA2 → 舵机ID: 4, 5            (2个)
-    └─ ttyAMA3 → 舵机ID: 6, 8, 12, 13, 14 (5个)
+bus_protocol_router（协议识别 + ID路由）
+    ├─ bus_port_driver_0 → ttyAMA0 → 舵机ID: 1, 2            (2个)
+    ├─ bus_port_driver_1 → ttyAMA1 → 舵机ID: 3, 7, 9, 10, 11 (5个)
+    ├─ bus_port_driver_2 → ttyAMA2 → 舵机ID: 4, 5            (2个)
+    └─ bus_port_driver_3 → ttyAMA3 → 舵机ID: 6, 8, 12, 13, 14 (5个)
     ↓
 14个总线舵机硬件
 ```
@@ -185,7 +185,14 @@ ros2 launch websocket_bridge full_system.launch.py
 ros2 run websocket_bridge bridge_node
 
 # 2. 启动总线舵机驱动
-ros2 run servo_hardware bus_servo_driver
+ros2 run servo_hardware bus_port_driver --ros-args \
+  -p port:=/dev/ttyAMA0 \
+  -p zl_servo_ids:="[1,2]" \
+  -p lx_servo_ids:="[1,2]"
+
+# 2.1 启动总线协议路由
+ros2 run servo_hardware bus_protocol_router --ros-args \
+  -p bus_map_file:=/root/ros_ws/src/websocket/config/bus_servo_map.json
 
 # 3. 启动PCA舵机驱动
 ros2 run servo_hardware pca_servo_driver
@@ -270,16 +277,16 @@ ls -l /dev/ttyAMA*
 
 | 串口设备     | 舵机ID           | 数量 | 节点名称           |
 | ------------ | ---------------- | ---- | ------------------ |
-| /dev/ttyAMA0 | 1, 2             | 2个  | bus_servo_driver_0 |
-| /dev/ttyAMA1 | 3, 7, 9, 10, 11  | 5个  | bus_servo_driver_1 |
-| /dev/ttyAMA2 | 4, 5             | 2个  | bus_servo_driver_2 |
-| /dev/ttyAMA3 | 6, 8, 12, 13, 14 | 5个  | bus_servo_driver_3 |
+| /dev/ttyAMA0 | 1, 2             | 2个  | bus_port_driver_0 |
+| /dev/ttyAMA1 | 3, 7, 9, 10, 11  | 5个  | bus_port_driver_1 |
+| /dev/ttyAMA2 | 4, 5             | 2个  | bus_port_driver_2 |
+| /dev/ttyAMA3 | 6, 8, 12, 13, 14 | 5个  | bus_port_driver_3 |
 
 **总计**: 14个总线舵机
 
 **注意**:
 - Web客户端只需发送舵机ID，系统自动路由到正确的串口
-- ID映射配置在 `full_system.launch.py` 中的 `servo_ids` 参数
+- ID映射配置在 `src/websocket/config/bus_servo_map.json`
 - 支持非连续ID分配（如[3, 7, 9, 10, 11]）
 
 ### I2C配置
@@ -322,22 +329,23 @@ ros2 launch websocket_bridge full_system.launch.py debug:=true
 
 ```bash
 # 1. 查看所有驱动节点
-ros2 node list | grep bus_servo_driver
+ros2 node list | rg "bus_protocol_router|bus_port_driver"
 # 应该看到:
-# /bus_servo_driver_0
-# /bus_servo_driver_1
-# /bus_servo_driver_2
-# /bus_servo_driver_3
+# /bus_protocol_router
+# /bus_port_driver_0
+# /bus_port_driver_1
+# /bus_port_driver_2
+# /bus_port_driver_3
 
-# 2. 检查节点参数（验证servo_ids配置）
-ros2 param get bus_servo_driver_1 servo_ids
+# 2. 检查节点参数（验证ID配置）
+ros2 param get bus_port_driver_1 zl_servo_ids
 # 应该返回: Integer values are: [3, 7, 9, 10, 11]
 
-ros2 param get bus_servo_driver_0 servo_ids
+ros2 param get bus_port_driver_0 lx_servo_ids
 # 应该返回: Integer values are: [1, 2]
 
 # 3. 查看节点信息
-ros2 node info /bus_servo_driver_1
+ros2 node info /bus_protocol_router
 # 查看订阅的话题和参数
 
 # 4. 测试特定ID路由
@@ -351,8 +359,8 @@ ros2 topic pub --once /servo/command servo_msgs/msg/ServoCommand \
 
 # 5. 观察调试日志（debug模式）
 # 应该看到类似:
-# [bus_servo_driver_0] [DEBUG] 忽略ID=7的命令（不在本驱动板的舵机列表中）
-# [bus_servo_driver_1] [INFO] [Send] ID=7 PULSE=1500 T=100ms Frame=#007P1500T0100!
+# [bus_protocol_router] [INFO] [route] id=7 -> port=/dev/ttyAMA1 protocol=lx source=cache
+# [bus_port_driver_1] [INFO] [Send/lx] ID=7 POS=500 SPEED=100
 ```
 
 ### 查看日志
@@ -454,7 +462,8 @@ ros/
 │   ├── servo_hardware/          # 舵机硬件驱动
 │   │   ├── bus_servo.py         # 总线舵机驱动（支持ID过滤）
 │   │   ├── pca_servo.py         # PCA9685驱动
-│   │   ├── bus_servo_driver     # 总线舵机节点
+│   │   ├── bus_port_driver      # 串口驱动节点（按端口）
+│   │   ├── bus_protocol_router  # 协议识别与统一路由
 │   │   ├── pca_servo_driver     # PCA舵机节点
 │   │   └── package.xml
 │   │
@@ -468,7 +477,7 @@ ros/
 │       │   └── bus_servo_map.json  # 舵机ID映射配置
 │       ├── launch/
 │       │   ├── full_system.launch.py        # 完整系统（多串口）
-│       │   └── websocket_bus_servo.launch.py # 简化版（单串口）
+│       │   └── websocket_bus_servo.launch.py # multi模式封装（复用full_system链路）
 │       └── package.xml
 │
 ├── .claude/                     # Claude开发文档
@@ -516,7 +525,7 @@ ros2 launch websocket_bridge full_system.launch.py ws_port:=9106
 
 **可能原因**:
 1. 串口权限问题
-2. 舵机ID未包含在任何驱动节点的servo_ids列表中
+2. 舵机ID未包含在 `bus_servo_map.json` 任一端口映射中
 3. 话题命名空间不匹配
 4. 串口设备未正确映射
 
@@ -527,12 +536,12 @@ ros2 launch websocket_bridge full_system.launch.py ws_port:=9106
 ls -l /dev/ttyAMA*
 
 # 2. 验证节点参数配置
-ros2 param get bus_servo_driver_1 servo_ids
+ros2 param get bus_port_driver_1 zl_servo_ids
 # 确认ID是否在列表中
 
 # 3. 检查话题映射
 ros2 topic info /servo/command
-# 应该看到多个订阅者（4个bus_servo_driver）
+# 应该看到 bus_protocol_router 为订阅者
 
 # 4. 启用调试模式观察ID路由
 ros2 launch websocket_bridge full_system.launch.py debug:=true
@@ -602,21 +611,9 @@ colcon build
    }
    ```
 
-2. **修改Launch文件**:
-   编辑 `src/websocket/launch/full_system.launch.py`:
-   ```python
-   # 例如：将舵机ID=15添加到ttyAMA3
-   bus_servo_node_3 = Node(
-       package='servo_hardware',
-       executable='bus_servo_driver',
-       name='bus_servo_driver_3',
-       parameters=[
-           {'port': '/dev/ttyAMA3'},
-           {'servo_ids': [6, 8, 12, 13, 14, 15]},  # 添加ID=15
-           # ...
-       ]
-   )
-   ```
+2. **无需修改Launch文件节点定义**:
+   `full_system.launch.py` 会自动读取 `bus_servo_map.json` 并动态创建
+   `bus_port_driver_x`，同时由 `bus_protocol_router` 统一路由。
 
 3. **重新编译并测试**:
    ```bash

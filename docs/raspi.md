@@ -77,8 +77,11 @@ docker compose exec ros2_servo bash
 # 编译
 colcon build
 
-# 运行测试
-ros2 run servo_hardware bus_servo_driver
+# 运行单驱动链路测试（单串口）
+ros2 run servo_hardware bus_port_driver --ros-args \
+  -p port:=/dev/ttyAMA0 \
+  -p zl_servo_ids:="[1,2]" \
+  -p lx_servo_ids:="[1,2]"
 
 # 启动完整系统
 ros2 launch websocket_bridge full_system.launch.py
@@ -334,7 +337,7 @@ colcon build --packages-select websocket_bridge servo_hardware
 
 # 3. 测试
 source install/setup.bash
-ros2 run servo_hardware bus_servo_driver
+ros2 launch websocket_bridge full_system.launch.py
 
 # 4. 如果需要重启容器
 exit
