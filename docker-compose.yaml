@@ -1,103 +1,80 @@
+x-ros2-common-env: &ros2_common_env
+  ROS_DOMAIN_ID: "0"
+  ROS_LOCALHOST_ONLY: "0"
+  PYTHONUNBUFFERED: "1"
+  TZ: Asia/Shanghai
+
+x-ros2-common: &ros2_common
+  build:
+    context: .
+    dockerfile: Dockerfile
+  # 自动适配当前主机架构（不指定 platform 让 Docker 自动检测）
+  # platform: "linux/amd64"  # 如需强制指定架构，取消此行注释并设置目标架构
+  privileged: true
+  network_mode: host
+  # 设备映射（串口和I2C）
+  # 仅映射存在的设备（即使设备不存在也不会报错）
+  devices:
+    # USB串口（适用于所有平台）
+    - /dev/ttyUSB0:/dev/ttyUSB0
+    # 树莓派特定串口（在非树莓派平台不存在也不会报错）
+    - /dev/ttyAMA0:/dev/ttyAMA0
+    - /dev/ttyAMA1:/dev/ttyAMA1
+    - /dev/ttyAMA2:/dev/ttyAMA2
+    - /dev/ttyAMA3:/dev/ttyAMA3
+    - /dev/ttyAMA4:/dev/ttyAMA4
+    # I2C总线（适用于树莓派和具有I2C接口的系统）
+    - /dev/i2c-1:/dev/i2c-1
+  volumes:
+    - ./src:/root/ros_ws/src:rw
+    - ./build:/root/ros_ws/build:rw
+    - ./install:/root/ros_ws/install:rw
+    - ./log:/root/ros_ws/log:rw
+    - ./scripts:/root/ros_ws/scripts:rw
+  environment:
+    <<: *ros2_common_env
+  working_dir: /root/ros_ws
+  stdin_open: true
+  tty: true
+
 services:
-    ros2_servo:
-        build:
-            context: .
-            dockerfile: Dockerfile
-        container_name: ros2_servo_control
+  # 手动调试容器（不会在 dev/production 默认启动）
+  ros2_servo:
+    <<: *ros2_common
+    container_name: ros2_servo_control
+    command: /bin/bash
+    restart: unless-stopped
+    profiles:
+      - manual
 
-        # 自动适配当前主机架构（不指定 platform 让 Docker 自动检测）
-        # platform: "linux/amd64"  # 如需强制指定架构，取消此行注释并设置目标架构
+  # 本地开发模式服务（启动脚本自动构建并启动系统）
+  ros2_servo_dev:
+    <<: *ros2_common
+    container_name: ros2_dev
+    # 开发环境默认只映射 USB 串口；如需树莓派板载串口可删除本覆盖配置
+    devices:
+      - /dev/ttyUSB0:/dev/ttyUSB0
+    environment:
+      <<: *ros2_common_env
+      DEVELOPMENT_MODE: "1"
+      LAUNCH_DEBUG: "true"
+      LAUNCH_IMU_DEBUG: "false"
+    command: bash /root/ros_ws/scripts/init.sh
+    restart: unless-stopped
+    profiles:
+      - dev
 
-        # 特权模式，访问硬件设备
-        privileged: true
-
-        # 网络模式：host（与宿主机共享网络）
-        network_mode: host
-
-        # 设备映射（串口和I2C）
-        # 仅映射存在的设备（即使设备不存在也不会报错）
-        devices:
-            # USB串口（适用于所有平台）
-            - /dev/ttyUSB0:/dev/ttyUSB0 # USB串口
-            # 树莓派特定串口（在非树莓派平台不存在也不会报错）
-            - /dev/ttyAMA0:/dev/ttyAMA0 # 树莓派硬件串口
-            - /dev/ttyAMA1:/dev/ttyAMA1 # 树莓派第二硬件串口
-            - /dev/ttyAMA2:/dev/ttyAMA2 # 树莓派第三硬件串口
-            - /dev/ttyAMA3:/dev/ttyAMA3 # 树莓派第四硬件串口
-            - /dev/ttyAMA4:/dev/ttyAMA4 # 树莓派第五硬件串口
-            # I2C总线（适用于树莓派和具有I2C接口的系统）
-            - /dev/i2c-1:/dev/i2c-1 # I2C总线
-
-        # 卷挂载
-        volumes:
-            - ./src:/root/ros_ws/src:rw
-            - ./build:/root/ros_ws/build:rw
-            - ./install:/root/ros_ws/install:rw
-            - ./log:/root/ros_ws/log:rw
-            - ./scripts:/root/ros_ws/scripts:rw
-
-        # 环境变量
-        environment:
-            - ROS_DOMAIN_ID=0
-            - ROS_LOCALHOST_ONLY=0
-            - PYTHONUNBUFFERED=1
-            - TZ=Asia/Shanghai
-
-        # 工作目录
-        working_dir: /root/ros_ws
-
-        # 启动命令（开发模式：进入bash）
-        command: /bin/bash
-
-        # 保持容器运行
-        stdin_open: true
-        tty: true
-
-        # 重启策略
-        restart: unless-stopped
-
-    # 可选：本地开发模式服务
-    ros2_servo_dev:
-        extends: ros2_servo
-        container_name: ros2_dev
-        devices:
-            - /dev/ttyUSB0:/dev/ttyUSB0
-
-        # 开发模式环境变量
-        environment:
-            - ROS_DOMAIN_ID=0
-            - ROS_LOCALHOST_ONLY=0
-            - PYTHONUNBUFFERED=1
-            - TZ=Asia/Shanghai
-            - DEVELOPMENT_MODE=1
-            - LAUNCH_DEBUG=true
-            - LAUNCH_IMU_DEBUG=false
-
-        # 开发模式：自动启动
-        command: bash /root/ros_ws/scripts/init.sh
-
-        # 开发模式 profile（只有指定时才启动）
-        profiles:
-            - dev
-
-    # 生产模式服务
-    ros2_servo_prod:
-        extends: ros2_servo
-        container_name: ros2
-
-        # 生产模式：使用 init.sh（每次启动都构建，确保代码最新）
-        command: bash /root/ros_ws/scripts/init.sh
-
-        # 生产模式：总是重启
-        restart: always
-
-        # 健康检查（启动时间较长，因为需要构建）
-        healthcheck:
-            test: ["CMD", "ros2", "node", "list"]
-            interval: 30s
-            timeout: 10s
-            retries: 3
-            start_period: 120s # 增加到120秒，等待构建完成
-
-        profiles:
-            - production
+  # 生产模式服务
+  ros2_servo_prod:
+    <<: *ros2_common
+    container_name: ros2
+    command: bash /root/ros_ws/scripts/init.sh
+    restart: always
+    healthcheck:
+      test: ["CMD", "ros2", "node", "list"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    profiles:
+      - production

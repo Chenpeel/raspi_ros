@@ -11,7 +11,7 @@
 - ✅ **双舵机类型**: 支持总线舵机和PCA9685 PWM舵机
 - ✅ **话题统一**: 通过 `bus_protocol_router` 统一入口 `/servo/command` 与出口 `/servo/state`
 - ✅ **仿真集成桥接**: 支持 `/sim/servo_command` 与 `/sim/servo_state` 双向转发
-- ✅ **Docker部署**: 支持开发和生产两种模式
+- ✅ **Docker部署**: 支持开发/生产/手动调试三种模式
 - ✅ **实时反馈**: 舵机状态实时反馈到Web客户端
 
 ## 多串口系统架构
@@ -110,19 +110,22 @@ bus_protocol_router（协议识别 + ID路由）
 ```bash
 # 1. 构建镜像
 cd ~/work/repo/jiyuan/ros
-docker-compose build
+docker compose build
 
-# 2. 启动开发容器
-docker-compose up -d ros2_servo
+# 2. （升级后推荐）先清理旧容器，避免端口冲突
+docker compose --profile dev --profile production --profile manual down --remove-orphans
 
-# 3. 进入容器
-docker exec -it ros2_servo_control bash
+# 3. 启动开发容器
+docker compose --profile dev up -d ros2_servo_dev
 
-# 4. 编译
+# 4. 进入容器
+docker compose exec ros2_servo_dev bash
+
+# 5. 编译
 source /opt/ros/jazzy/setup.bash
 colcon build
 
-# 5. 运行
+# 6. 运行
 bash scripts/init.sh
 ```
 
@@ -408,40 +411,27 @@ bash scripts/test_pca_servo.sh
 
 ### docker-compose.yaml
 
-```yaml
-services:
-  ros2_servo:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: ros2_servo_control
-    privileged: true
-    network_mode: host  # 端口自动映射 (9105)
+使用 profile 控制不同运行模式：
 
-    devices:
-      # 多串口设备映射
-      - /dev/ttyAMA0:/dev/ttyAMA0   # 串口0 (舵机ID: 1, 2)
-      - /dev/ttyAMA1:/dev/ttyAMA1   # 串口1 (舵机ID: 3, 7, 9, 10, 11)
-      - /dev/ttyAMA2:/dev/ttyAMA2   # 串口2 (舵机ID: 4, 5)
-      - /dev/ttyAMA3:/dev/ttyAMA3   # 串口3 (舵机ID: 6, 8, 12, 13, 14)
-      - /dev/i2c-1:/dev/i2c-1       # I2C总线 (PCA9685)
+```bash
+# 开发模式（自动启动 init.sh）
+docker compose --profile dev up -d ros2_servo_dev
 
-    volumes:
-      - ./src:/root/ros_ws/src:rw
-      - ./install:/root/ros_ws/install:rw
+# 生产模式（自动重启 + 健康检查）
+docker compose --profile production up -d ros2_servo_prod
 
-    environment:
-      - ROS_DOMAIN_ID=0
-      - PYTHONUNBUFFERED=1
+# 手动调试容器（只进入 bash）
+docker compose --profile manual up -d ros2_servo
 
-    command: /bin/bash
+# 如果是从旧版本升级，先清理 orphan 容器
+docker compose --profile dev --profile production --profile manual down --remove-orphans
 ```
 
 ### 生产模式部署
 
 ```bash
 # 使用生产配置启动
-docker-compose --profile production up -d ros2_servo_prod
+docker compose --profile production up -d ros2_servo_prod
 
 # 生产模式会自动运行full_system.launch.py
 ```
@@ -500,7 +490,9 @@ ros/
 **解决**:
 ```bash
 # 查看占用9105端口的进程
-lsof -i :9105
+ss -ltnp | grep ':9105'
+# 如系统已安装 lsof，也可用：
+# lsof -nP -iTCP:9105 -sTCP:LISTEN
 
 # 杀死进程或修改端口配置
 ros2 launch websocket_bridge full_system.launch.py ws_port:=9106
@@ -565,7 +557,7 @@ ls -l /dev/i2c-1
 sudo rm -rf install build
 
 # 重新进入容器编译
-docker exec -it ros2_servo_control bash
+docker compose exec ros2_servo_dev bash
 colcon build
 ```
 
@@ -575,7 +567,7 @@ colcon build
 
 **解决**:
 1. 检查ROS2服务是否运行: `ros2 node list`
-2. 检查端口是否监听: `netstat -tulpn | grep 9105`
+2. 检查端口是否监听: `ss -ltnp | grep ':9105'`
 3. 检查防火墙: `sudo ufw status`
 4. 检查前端配置: `WS_SERVO_URL`是否正确
 
