@@ -134,6 +134,24 @@ def generate_launch_description():
         description='单次协议探测超时(秒)'
     )
 
+    probe_on_unknown_command_arg = DeclareLaunchArgument(
+        'probe_on_unknown_command',
+        default_value='true',
+        description='未知ID收到命令时是否触发在线探测'
+    )
+
+    probe_retry_interval_sec_arg = DeclareLaunchArgument(
+        'probe_retry_interval_sec',
+        default_value='3.0',
+        description='未知ID在线探测失败后重试最小间隔(秒)'
+    )
+
+    read_service_timeout_sec_arg = DeclareLaunchArgument(
+        'read_service_timeout_sec',
+        default_value='0.35',
+        description='全局读角度服务超时(秒)'
+    )
+
     heartbeat_debug_arg = DeclareLaunchArgument(
         'heartbeat_debug',
         default_value='false',
@@ -321,6 +339,9 @@ def generate_launch_description():
     zl_id_ranges = LaunchConfiguration('zl_id_ranges')
     probe_on_startup = LaunchConfiguration('probe_on_startup')
     probe_timeout_sec = LaunchConfiguration('probe_timeout_sec')
+    probe_on_unknown_command = LaunchConfiguration('probe_on_unknown_command')
+    probe_retry_interval_sec = LaunchConfiguration('probe_retry_interval_sec')
+    read_service_timeout_sec = LaunchConfiguration('read_service_timeout_sec')
     heartbeat_debug = LaunchConfiguration('heartbeat_debug')
     ws_debug = LaunchConfiguration('ws_debug')
     debug_aggregate = LaunchConfiguration('debug_aggregate')
@@ -453,6 +474,9 @@ def generate_launch_description():
             {'zl_id_ranges': zl_id_ranges},
             {'probe_on_startup': probe_on_startup},
             {'probe_timeout_sec': probe_timeout_sec},
+            {'probe_on_unknown_command': probe_on_unknown_command},
+            {'probe_retry_interval_sec': probe_retry_interval_sec},
+            {'read_service_timeout_sec': read_service_timeout_sec},
             {'probe_wait_service_sec': 6.0},
             {'debug': bus_servo_debug},
         ],
@@ -517,6 +541,7 @@ def generate_launch_description():
             '    状态转发: /servo/state -> ', sim_joint_state_fb_topic, '\n',
             '  联调建议: enable_sim_cpp_bridge:=true 时设置 enable_isaac_bridge:=false\n',
             '  总线协议路由: /servo/command -> bus_protocol_router -> /bus_port_driver_x/command_{zl,lx}\n',
+            '  全局读角度服务: /servo/read_position\n',
             '  协议缓存文件: ', protocol_cache_file, '\n',
             '  总线舵机驱动板:\n',
             *servo_info_lines,  # 动态生成的舵机信息
@@ -546,6 +571,9 @@ def generate_launch_description():
         zl_id_ranges_arg,
         probe_on_startup_arg,
         probe_timeout_sec_arg,
+        probe_on_unknown_command_arg,
+        probe_retry_interval_sec_arg,
+        read_service_timeout_sec_arg,
         heartbeat_debug_arg,
         ws_debug_arg,
         debug_aggregate_arg,

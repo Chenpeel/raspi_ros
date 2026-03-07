@@ -4,11 +4,13 @@
 1. 订阅 /servo/command；
 2. 按 ID -> 端口 -> 协议 路由到 /bus_port_driver_x/command_{zl|lx}；
 3. 聚合 /bus_port_driver_x/state 到 /servo/state；
-4. 启动时对未知协议 ID 执行探测并写入缓存文件。
+4. 提供全局读角度服务 /servo/read_position；
+5. 启动时与运行时按需探测未知协议并写入缓存文件。
 """
 
 import json
 import os
+import time
 from typing import Dict, List, Optional, Tuple
 
 import rclpy
@@ -43,7 +45,10 @@ class BusProtocolRouter(Node):
         self.declare_parameter("lx_id_ranges", "21-34")
         self.declare_parameter("zl_id_ranges", "35-43")
         self.declare_parameter("probe_on_startup", True)
+        self.declare_parameter("probe_on_unknown_command", True)
         self.declare_parameter("probe_timeout_sec", 0.2)
+        self.declare_parameter("probe_retry_interval_sec", 3.0)
+        self.declare_parameter("read_service_timeout_sec", 0.35)
         self.declare_parameter("probe_wait_service_sec", 6.0)
         self.declare_parameter("debug", False)
 
@@ -55,9 +60,19 @@ class BusProtocolRouter(Node):
         self.lx_id_ranges = self.get_parameter("lx_id_ranges").value
         self.zl_id_ranges = self.get_parameter("zl_id_ranges").value
         self.probe_on_startup = _to_bool(self.get_parameter("probe_on_startup").value)
+        self.probe_on_unknown_command = _to_bool(
+            self.get_parameter("probe_on_unknown_command").value
+        )
         self.probe_timeout_sec = float(self.get_parameter("probe_timeout_sec").value)
+        self.probe_retry_interval_sec = float(
+            self.get_parameter("probe_retry_interval_sec").value
+        )
+        self.read_service_timeout_sec = float(
+            self.get_parameter("read_service_timeout_sec").value
+        )
         self.probe_wait_service_sec = float(self.get_parameter("probe_wait_service_sec").value)
         self.debug = _to_bool(self.get_parameter("debug").value)
+        self.last_probe_attempt: Dict[int, float] = {}
 
         self.port_items = self._load_bus_map(self.bus_map_file)
         self.id_to_port: Dict[int, str] = {}
@@ -81,6 +96,11 @@ class BusProtocolRouter(Node):
             "/servo/command",
             self._on_command,
             10,
+        )
+        self.read_position_srv = self.create_service(
+            ReadServoPosition,
+            "/servo/read_position",
+            self._handle_read_position,
         )
         self.state_pub = self.create_publisher(
             ServoState,
@@ -173,21 +193,51 @@ class BusProtocolRouter(Node):
 
         protocol, source = self.registry.get_protocol(servo_id)
         if protocol is None:
-            self.get_logger().warn(f"ID={servo_id}协议未知，命令暂不转发（等待探测）")
+            protocol = self._probe_unknown_for_command(servo_id)
+            source = "probe"
+        if protocol is None:
+            self.get_logger().warn(f"ID={servo_id}协议未知，命令未转发")
             return
 
-        publisher = self.route_publishers.get((port, protocol))
-        if publisher is None:
-            self.get_logger().error(
-                f"未找到路由发布器: port={port}, protocol={protocol}, id={servo_id}"
-            )
+        if not self._publish_to_route(port=port, protocol=protocol, msg=msg):
             return
-
-        publisher.publish(msg)
         if self.debug:
             self.get_logger().info(
                 f"[route] id={servo_id} -> port={port} protocol={protocol} source={source}"
             )
+
+    def _publish_to_route(self, port: str, protocol: str, msg: ServoCommand) -> bool:
+        publisher = self.route_publishers.get((port, protocol))
+        if publisher is None:
+            self.get_logger().error(
+                f"未找到路由发布器: port={port}, protocol={protocol}, id={msg.servo_id}"
+            )
+            return False
+        publisher.publish(msg)
+        return True
+
+    def _probe_unknown_for_command(self, servo_id: int) -> Optional[str]:
+        if not self.probe_on_unknown_command:
+            return None
+        now = time.monotonic()
+        last = self.last_probe_attempt.get(int(servo_id), 0.0)
+        if now - last < max(0.1, self.probe_retry_interval_sec):
+            return None
+        self.last_probe_attempt[int(servo_id)] = now
+
+        protocol = self._probe_servo_id(servo_id)
+        if protocol is None:
+            return None
+        self._update_registry(servo_id=servo_id, protocol=protocol, source="probe")
+        self.get_logger().info(f"ID={servo_id}运行时探测成功: {protocol}")
+        return protocol
+
+    def _update_registry(self, servo_id: int, protocol: str, source: str):
+        self.registry.set_protocol(servo_id, protocol, source=source)
+        try:
+            self.registry.save_cache()
+        except Exception as exc:
+            self.get_logger().warn(f"写入协议缓存失败: {exc}")
 
     def run_startup_probe(self):
         """启动时探测未知协议ID，并落盘缓存。"""
@@ -212,47 +262,125 @@ class BusProtocolRouter(Node):
             self.get_logger().info(f"ID={servo_id}探测成功: {protocol}")
 
         if updated > 0:
-            self.registry.save_cache()
+            try:
+                self.registry.save_cache()
+            except Exception as exc:
+                self.get_logger().warn(f"写入协议缓存失败: {exc}")
             self.get_logger().info(
                 f"协议探测完成，新增缓存{updated}条 -> {self.protocol_cache_file}"
             )
         else:
             self.get_logger().warn("协议探测完成，但没有新结果")
 
-    def _probe_servo_id(self, servo_id: int) -> Optional[str]:
+    def _probe_servo_id(
+        self,
+        servo_id: int,
+        order: Optional[List[str]] = None,
+    ) -> Optional[str]:
         port = self.id_to_port.get(int(servo_id))
         if port is None:
             return None
-        client = self.read_clients.get(port)
-        if client is None:
-            return None
-
-        if not client.wait_for_service(timeout_sec=max(0.1, self.probe_wait_service_sec)):
-            self.get_logger().warn(
-                f"探测失败: 端口{port}服务未就绪(/read_position)"
+        candidates = order or ["lx", "zl"]
+        for protocol in candidates:
+            resp = self._call_read_position(
+                port=port,
+                servo_id=servo_id,
+                protocol=protocol,
+                timeout_sec=self.probe_timeout_sec,
             )
-            return None
-
-        # 未知ID统一优先 lx 后 zl
-        for protocol in ("lx", "zl"):
-            req = ReadServoPosition.Request()
-            req.servo_id = int(servo_id)
-            req.protocol = protocol
-
-            future = client.call_async(req)
-            rclpy.spin_until_future_complete(
-                self,
-                future,
-                timeout_sec=max(0.05, self.probe_timeout_sec),
-            )
-            if not future.done():
-                continue
-            resp = future.result()
             if resp is None:
                 continue
             if bool(resp.success):
                 return protocol
         return None
+
+    def _call_read_position(
+        self,
+        port: str,
+        servo_id: int,
+        protocol: str,
+        timeout_sec: float,
+    ) -> Optional[ReadServoPosition.Response]:
+        client = self.read_clients.get(port)
+        if client is None:
+            return None
+        if not client.wait_for_service(timeout_sec=max(0.1, self.probe_wait_service_sec)):
+            self.get_logger().warn(f"端口{port}服务未就绪(/read_position)")
+            return None
+
+        req = ReadServoPosition.Request()
+        req.servo_id = int(servo_id)
+        req.protocol = str(protocol)
+        future = client.call_async(req)
+        rclpy.spin_until_future_complete(
+            self,
+            future,
+            timeout_sec=max(0.05, float(timeout_sec)),
+        )
+        if not future.done():
+            return None
+        return future.result()
+
+    def _resolve_protocol_order(self, requested: str, servo_id: int) -> List[str]:
+        requested = str(requested or "").strip().lower()
+        if requested in ("zl", "lx"):
+            return [requested]
+
+        protocol, _ = self.registry.get_protocol(servo_id)
+        if protocol in ("zl", "lx"):
+            other = "zl" if protocol == "lx" else "lx"
+            return [protocol, other]
+        return ["lx", "zl"]
+
+    def _handle_read_position(
+        self,
+        request: ReadServoPosition.Request,
+        response: ReadServoPosition.Response,
+    ):
+        servo_id = int(request.servo_id)
+        requested = str(request.protocol or "").strip().lower()
+        port = self.id_to_port.get(servo_id)
+        if port is None:
+            response.success = False
+            response.position = 0
+            response.protocol = ""
+            response.error_code = 2
+            response.message = f"id {servo_id} not found in bus map"
+            response.stamp = self.get_clock().now().to_msg()
+            return response
+
+        protocols = self._resolve_protocol_order(requested, servo_id)
+        last_message = ""
+        for protocol in protocols:
+            resp = self._call_read_position(
+                port=port,
+                servo_id=servo_id,
+                protocol=protocol,
+                timeout_sec=self.read_service_timeout_sec,
+            )
+            if resp is None:
+                last_message = f"timeout protocol={protocol}"
+                continue
+            if not bool(resp.success):
+                last_message = str(resp.message)
+                continue
+
+            self._update_registry(servo_id=servo_id, protocol=protocol, source="read_service")
+            response.success = True
+            response.position = int(resp.position)
+            response.protocol = protocol
+            response.error_code = 0
+            response.message = "ok"
+            response.stamp = self.get_clock().now().to_msg()
+            return response
+
+        response.success = False
+        response.position = 0
+        response.protocol = ""
+        response.error_code = 1
+        response.message = last_message or "read failed"
+        response.stamp = self.get_clock().now().to_msg()
+        return response
 
 
 def main(args=None):

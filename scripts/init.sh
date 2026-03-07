@@ -152,6 +152,15 @@ LAUNCH_WS_DEBUG=${LAUNCH_WS_DEBUG:-false}
 LAUNCH_DEBUG_AGGREGATE=${LAUNCH_DEBUG_AGGREGATE:-true}
 LAUNCH_DEBUG_AGGREGATE_PERIOD=${LAUNCH_DEBUG_AGGREGATE_PERIOD:-1.0}
 LAUNCH_DEBUG_AGGREGATE_MAX_LEN=${LAUNCH_DEBUG_AGGREGATE_MAX_LEN:-120}
+LAUNCH_PROTOCOL_CACHE_FILE=${LAUNCH_PROTOCOL_CACHE_FILE:-/root/ros_ws/src/websocket/config/bus_protocol_cache.json}
+LAUNCH_MANUAL_PROTOCOL_MAP_FILE=${LAUNCH_MANUAL_PROTOCOL_MAP_FILE:-}
+LAUNCH_LX_ID_RANGES=${LAUNCH_LX_ID_RANGES:-21-34}
+LAUNCH_ZL_ID_RANGES=${LAUNCH_ZL_ID_RANGES:-35-43}
+LAUNCH_PROBE_ON_STARTUP=${LAUNCH_PROBE_ON_STARTUP:-true}
+LAUNCH_PROBE_TIMEOUT_SEC=${LAUNCH_PROBE_TIMEOUT_SEC:-0.2}
+LAUNCH_PROBE_ON_UNKNOWN_COMMAND=${LAUNCH_PROBE_ON_UNKNOWN_COMMAND:-true}
+LAUNCH_PROBE_RETRY_INTERVAL_SEC=${LAUNCH_PROBE_RETRY_INTERVAL_SEC:-3.0}
+LAUNCH_READ_SERVICE_TIMEOUT_SEC=${LAUNCH_READ_SERVICE_TIMEOUT_SEC:-0.35}
 PARALLEL_INSTANCES_FILE=${PARALLEL_INSTANCES_FILE:-/root/ros_ws/src/parallel_3dof_controller/config/parallel_3dof_instances.yaml}
 
 if [ "$LAUNCH_MODE" = "multi" ]; then
@@ -166,7 +175,16 @@ if [ "$LAUNCH_MODE" = "multi" ]; then
         ws_debug:="$LAUNCH_WS_DEBUG" \
         debug_aggregate:="$LAUNCH_DEBUG_AGGREGATE" \
         debug_aggregate_period:="$LAUNCH_DEBUG_AGGREGATE_PERIOD" \
-        debug_aggregate_max_len:="$LAUNCH_DEBUG_AGGREGATE_MAX_LEN"
+        debug_aggregate_max_len:="$LAUNCH_DEBUG_AGGREGATE_MAX_LEN" \
+        protocol_cache_file:="$LAUNCH_PROTOCOL_CACHE_FILE" \
+        manual_protocol_map_file:="$LAUNCH_MANUAL_PROTOCOL_MAP_FILE" \
+        lx_id_ranges:="$LAUNCH_LX_ID_RANGES" \
+        zl_id_ranges:="$LAUNCH_ZL_ID_RANGES" \
+        probe_on_startup:="$LAUNCH_PROBE_ON_STARTUP" \
+        probe_timeout_sec:="$LAUNCH_PROBE_TIMEOUT_SEC" \
+        probe_on_unknown_command:="$LAUNCH_PROBE_ON_UNKNOWN_COMMAND" \
+        probe_retry_interval_sec:="$LAUNCH_PROBE_RETRY_INTERVAL_SEC" \
+        read_service_timeout_sec:="$LAUNCH_READ_SERVICE_TIMEOUT_SEC"
 else
     log_info "Launch mode: full_system"
     exec ros2 launch websocket_bridge full_system.launch.py \
@@ -179,5 +197,14 @@ else
         ws_debug:="$LAUNCH_WS_DEBUG" \
         debug_aggregate:="$LAUNCH_DEBUG_AGGREGATE" \
         debug_aggregate_period:="$LAUNCH_DEBUG_AGGREGATE_PERIOD" \
-        debug_aggregate_max_len:="$LAUNCH_DEBUG_AGGREGATE_MAX_LEN"
+        debug_aggregate_max_len:="$LAUNCH_DEBUG_AGGREGATE_MAX_LEN" \
+        protocol_cache_file:="$LAUNCH_PROTOCOL_CACHE_FILE" \
+        manual_protocol_map_file:="$LAUNCH_MANUAL_PROTOCOL_MAP_FILE" \
+        lx_id_ranges:="$LAUNCH_LX_ID_RANGES" \
+        zl_id_ranges:="$LAUNCH_ZL_ID_RANGES" \
+        probe_on_startup:="$LAUNCH_PROBE_ON_STARTUP" \
+        probe_timeout_sec:="$LAUNCH_PROBE_TIMEOUT_SEC" \
+        probe_on_unknown_command:="$LAUNCH_PROBE_ON_UNKNOWN_COMMAND" \
+        probe_retry_interval_sec:="$LAUNCH_PROBE_RETRY_INTERVAL_SEC" \
+        read_service_timeout_sec:="$LAUNCH_READ_SERVICE_TIMEOUT_SEC"
 fi
