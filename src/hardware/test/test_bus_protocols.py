@@ -94,3 +94,25 @@ def test_lx_decode_dis_read_response():
     # 文档示例：55 55 01 07 30 31 24 01 00 71
     raw = bytes([0x55, 0x55, 0x01, 0x07, 0x30, 0x31, 0x24, 0x01, 0x00, 0x71])
     assert proto.decode_dis_response(raw, expected_servo_id=1) == 74801
+
+
+def test_lx_encode_torque_switch_standard():
+    proto = LXBusServoProtocol()
+    frame_restore = proto.encode_torque_restore(servo_id=1)
+    frame_release = proto.encode_torque_release(servo_id=1)
+    # 标准扭力开关: 0x1F
+    assert frame_restore[:6] == bytes([0x55, 0x55, 0x01, 0x04, 0x1F, 0x01])
+    assert frame_release[:6] == bytes([0x55, 0x55, 0x01, 0x04, 0x1F, 0x00])
+    assert frame_restore[-1] == LXBusServoProtocol.compute_checksum(frame_restore[2:-1])
+    assert frame_release[-1] == LXBusServoProtocol.compute_checksum(frame_release[2:-1])
+
+
+def test_lx_encode_torque_switch_compat():
+    proto = LXBusServoProtocol()
+    frame_restore = proto.encode_torque_restore_compat(servo_id=1)
+    frame_release = proto.encode_torque_release_compat(servo_id=1)
+    # 兼容扭力开关: 0x1E
+    assert frame_restore[:6] == bytes([0x55, 0x55, 0x01, 0x04, 0x1E, 0x01])
+    assert frame_release[:6] == bytes([0x55, 0x55, 0x01, 0x04, 0x1E, 0x00])
+    assert frame_restore[-1] == LXBusServoProtocol.compute_checksum(frame_restore[2:-1])
+    assert frame_release[-1] == LXBusServoProtocol.compute_checksum(frame_release[2:-1])

@@ -26,6 +26,9 @@ class LXBusServoProtocol(BusServoProtocol):
     CMD_TEMP_MAX_LIMIT_WRITE = 0x18
     CMD_OR_MOTOR_MODE_WRITE = 0x1D
     CMD_LOAD_OR_UNLOAD_WRITE = 0x1F
+    # 兼容部分历史固件: 扭力开关使用 0x1E（与标准 OR_MOTOR_MODE_READ 冲突）
+    # 仅用于写指令兜底，不用于读回包解析。
+    CMD_TORQUE_SWITCH_COMPAT_WRITE = 0x1E
     CMD_LED_CTRL_WRITE = 0x21
     CMD_LED_ERROR_WRITE = 0x23
 
@@ -212,6 +215,22 @@ class LXBusServoProtocol(BusServoProtocol):
     def encode_load_or_unload_write(self, servo_id: int, load: int) -> bytes:
         load = 1 if int(load) else 0
         return self._build_packet(servo_id, self.CMD_LOAD_OR_UNLOAD_WRITE, [load])
+
+    def encode_torque_restore(self, servo_id: int) -> bytes:
+        return self.encode_load_or_unload_write(servo_id=servo_id, load=1)
+
+    def encode_torque_release(self, servo_id: int) -> bytes:
+        return self.encode_load_or_unload_write(servo_id=servo_id, load=0)
+
+    def encode_torque_switch_compat_write(self, servo_id: int, load: int) -> bytes:
+        load = 1 if int(load) else 0
+        return self._build_packet(servo_id, self.CMD_TORQUE_SWITCH_COMPAT_WRITE, [load])
+
+    def encode_torque_restore_compat(self, servo_id: int) -> bytes:
+        return self.encode_torque_switch_compat_write(servo_id=servo_id, load=1)
+
+    def encode_torque_release_compat(self, servo_id: int) -> bytes:
+        return self.encode_torque_switch_compat_write(servo_id=servo_id, load=0)
 
     def encode_led_ctrl_write(self, servo_id: int, led_off: int) -> bytes:
         led_off = 1 if int(led_off) else 0

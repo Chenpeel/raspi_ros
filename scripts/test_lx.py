@@ -35,6 +35,7 @@ FRAME_HEADER = bytes([0x55, 0x55])
 CMD_MOVE_TIME_WRITE = 0x01
 CMD_ID_READ = 0x0E
 CMD_OR_MOTOR_MODE_WRITE = 0x1D
+CMD_TORQUE_SWITCH_COMPAT_WRITE = 0x1E
 CMD_POS_READ = 0x1C
 CMD_LOAD_OR_UNLOAD_WRITE = 0x1F
 
@@ -328,6 +329,15 @@ def do_load(client: LXSerialClient, args: argparse.Namespace) -> int:
     return 0
 
 
+def do_load_compat(client: LXSerialClient, args: argparse.Namespace) -> int:
+    """历史固件兼容扭力开关（0x1E）。"""
+    load = 1 if int(args.enable) else 0
+    pkt = build_packet(args.id, CMD_TORQUE_SWITCH_COMPAT_WRITE, [load])
+    client.send(pkt)
+    print(f"已发送 torque_switch_compat_write: id={args.id}, load={load}")
+    return 0
+
+
 def do_mode_servo(client: LXSerialClient, args: argparse.Namespace) -> int:
     # mode=0: servo mode, drive_mode=0, speed=0
     sp_l, sp_h = split_i16(0)
@@ -382,7 +392,10 @@ def do_demo(client: LXSerialClient, args: argparse.Namespace) -> int:
     time_ms = clamp(args.time_ms, 0, 30000)
 
     print("步骤1: 上电(扭力使能)")
-    do_load(client, argparse.Namespace(id=args.id, enable=1))
+    if args.use_compat_torque:
+        do_load_compat(client, argparse.Namespace(id=args.id, enable=1))
+    else:
+        do_load(client, argparse.Namespace(id=args.id, enable=1))
     time.sleep(0.08)
 
     print("步骤2: 切回舵机模式")
@@ -492,6 +505,14 @@ def build_parser() -> argparse.ArgumentParser:
         required=True,
         help="1=上电(有扭力), 0=卸载(无扭力)",
     )
+    p_load_compat = sub.add_parser("load-compat", help="扭力开关兼容指令（0x1E）")
+    p_load_compat.add_argument(
+        "--enable",
+        type=int,
+        choices=[0, 1],
+        required=True,
+        help="1=上电(有扭力), 0=卸载(无扭力)",
+    )
 
     sub.add_parser("mode-servo", help="切到舵机模式")
 
@@ -524,6 +545,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_demo.add_argument("--pos-a", type=int, default=120, help="点位 A，默认 120")
     p_demo.add_argument("--pos-b", type=int, default=880, help="点位 B，默认 880")
     p_demo.add_argument("--time-ms", type=int, default=600, help="单次运动时间(ms)")
+    p_demo.add_argument(
+        "--use-compat-torque",
+        action="store_true",
+        help="demo 第一步改用兼容扭力命令(0x1E)",
+    )
     p_demo.add_argument("--verify", action="store_true", help="每次 move 后读取一次位置")
     p_demo.add_argument(
         "--verify-delay",
@@ -576,6 +602,8 @@ def main() -> int:
                 return do_move(client, args)
             if args.command == "load":
                 return do_load(client, args)
+            if args.command == "load-compat":
+                return do_load_compat(client, args)
             if args.command == "mode-servo":
                 return do_mode_servo(client, args)
             if args.command == "mode-motor":

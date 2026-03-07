@@ -148,6 +148,11 @@ class BusPortDriver(Node):
                     "decode": "decode_or_motor_mode_response",
                 },
                 "load_or_unload_write": {"encode": "encode_load_or_unload_write"},
+                "torque_restore": {"encode": "encode_torque_restore"},
+                "torque_release": {"encode": "encode_torque_release"},
+                "torque_switch_compat_write": {"encode": "encode_torque_switch_compat_write"},
+                "torque_restore_compat": {"encode": "encode_torque_restore_compat"},
+                "torque_release_compat": {"encode": "encode_torque_release_compat"},
                 "load_or_unload_read": {
                     "encode": "encode_load_or_unload_read",
                     "decode": "decode_load_or_unload_response",
@@ -211,6 +216,11 @@ class BusPortDriver(Node):
                 "position_read": "pos_read",
                 "load_write": "load_or_unload_write",
                 "load_read": "load_or_unload_read",
+                "restore_torque": "torque_restore",
+                "release_torque": "torque_release",
+                "restore_torque_compat": "torque_restore_compat",
+                "release_torque_compat": "torque_release_compat",
+                "torque_switch_compat": "torque_switch_compat_write",
             },
             "zl": {
                 "move": "move_command",
@@ -287,6 +297,29 @@ class BusPortDriver(Node):
         unit = max(0, min(1000, int(unit)))
         return int(round(500 + unit * 2000.0 / 1000.0))
 
+    def _normalize_move_target(self, protocol: str, position: int) -> tuple[int, int]:
+        pos = int(position)
+        if protocol == "lx":
+            # LX 优先按协议原生单位(0~1000)解释，避免 500~1000 被误判为脉宽。
+            if 0 <= pos <= 1000:
+                return pos, self._lx_unit_to_pulse(pos)
+            if 500 <= pos <= 2500:
+                pulse = pos
+                return self._pulse_to_lx_unit(pulse), pulse
+            if 0 <= pos <= 180:
+                pulse = int(round(500 + (pos / 180.0) * 2000.0))
+                return self._pulse_to_lx_unit(pulse), pulse
+
+            clamped_unit = max(0, min(1000, pos))
+            if self.debug:
+                self.get_logger().warn(
+                    f"LX非常规位置值: {pos}，将按LX单位限幅到[0,1000]"
+                )
+            return clamped_unit, self._lx_unit_to_pulse(clamped_unit)
+
+        pulse = self._position_to_pulse(pos)
+        return pulse, pulse
+
     def _publish_state(self, servo_id: int, pulse: int, error_code: int):
         msg = ServoState()
         msg.servo_type = "bus"
@@ -319,13 +352,8 @@ class BusPortDriver(Node):
                 )
             return
 
-        pulse = self._position_to_pulse(position)
+        proto_pos, pulse = self._normalize_move_target(protocol, position)
         speed = max(0, min(30000, int(speed)))
-
-        if protocol == "zl":
-            proto_pos = pulse
-        else:
-            proto_pos = self._pulse_to_lx_unit(pulse)
 
         frame = self.protocols[protocol].encode_move_command(
             servo_id=servo_id,
