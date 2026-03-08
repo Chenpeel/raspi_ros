@@ -334,7 +334,7 @@ class WebSocketHandler:
         """获取支持的命令列表"""
         return {
             "servo_control": [
-                "{b: -1, c: servo_id, p: angle_0_180, s: speed}",  # 总线舵机
+                "{b: -1, c: servo_id, p: angle_-90_90, s: speed}",  # 总线舵机
                 "{b: 0, c: channel_0_15, p: pwm_value}",  # PCA 舵机
                 "{servo_type: 'bus', servo_id: 1, position: 90, speed: 100}",
                 "{servo_type: 'pca', servo_id: 0, position: 90}",

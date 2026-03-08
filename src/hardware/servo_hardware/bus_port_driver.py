@@ -289,33 +289,67 @@ class BusPortDriver(Node):
 
     @staticmethod
     def _pulse_to_lx_unit(pulse: int) -> int:
+        """将统一脉宽(500~2500)映射到 LX 受控区间(125~875)。"""
         pulse = max(500, min(2500, int(pulse)))
-        return int(round((pulse - 500) * 1000.0 / 2000.0))
+        return int(round(125 + (pulse - 500) * 750.0 / 2000.0))
 
     @staticmethod
     def _lx_unit_to_pulse(unit: int) -> int:
-        unit = max(0, min(1000, int(unit)))
-        return int(round(500 + unit * 2000.0 / 1000.0))
+        """将 LX 受控区间(125~875)映射回统一脉宽(500~2500)。"""
+        unit = max(125, min(875, int(unit)))
+        return int(round(500 + (unit - 125) * 2000.0 / 750.0))
+
+    @staticmethod
+    def _pulse_to_zl_position(pulse: int) -> int:
+        """将统一脉宽(500~2500)映射到 ZL 受控区间(833~2167)。"""
+        pulse = max(500, min(2500, int(pulse)))
+        return int(round(833 + (pulse - 500) * 1334.0 / 2000.0))
+
+    @staticmethod
+    def _zl_position_to_pulse(position: int) -> int:
+        """将 ZL 受控区间(833~2167)映射回统一脉宽(500~2500)。"""
+        position = max(833, min(2167, int(position)))
+        return int(round(500 + (position - 833) * 2000.0 / 1334.0))
 
     def _normalize_move_target(self, protocol: str, position: int) -> tuple[int, int]:
         pos = int(position)
         if protocol == "lx":
-            # LX 优先按协议原生单位(0~1000)解释，避免 500~1000 被误判为脉宽。
-            if 0 <= pos <= 1000:
-                return pos, self._lx_unit_to_pulse(pos)
+            # 统一入口: 前端中心角[-90,90]经桥接后为脉宽500~2500。
             if 500 <= pos <= 2500:
                 pulse = pos
                 return self._pulse_to_lx_unit(pulse), pulse
             if 0 <= pos <= 180:
                 pulse = int(round(500 + (pos / 180.0) * 2000.0))
                 return self._pulse_to_lx_unit(pulse), pulse
+            if 125 <= pos <= 875:
+                unit = pos
+                return unit, self._lx_unit_to_pulse(unit)
 
-            clamped_unit = max(0, min(1000, pos))
+            clamped_unit = max(125, min(875, pos))
             if self.debug:
                 self.get_logger().warn(
-                    f"LX非常规位置值: {pos}，将按LX单位限幅到[0,1000]"
+                    f"LX非常规位置值: {pos}，将按LX单位限幅到[125,875]"
                 )
             return clamped_unit, self._lx_unit_to_pulse(clamped_unit)
+
+        if protocol == "zl":
+            # 统一入口: 前端中心角[-90,90]经桥接后为脉宽500~2500。
+            if 500 <= pos <= 2500:
+                pulse = pos
+                return self._pulse_to_zl_position(pulse), pulse
+            if 0 <= pos <= 180:
+                pulse = int(round(500 + (pos / 180.0) * 2000.0))
+                return self._pulse_to_zl_position(pulse), pulse
+            if 833 <= pos <= 2167:
+                zl_pos = pos
+                return zl_pos, self._zl_position_to_pulse(zl_pos)
+
+            clamped_zl = max(833, min(2167, pos))
+            if self.debug:
+                self.get_logger().warn(
+                    f"ZL非常规位置值: {pos}，将按ZL位置限幅到[833,2167]"
+                )
+            return clamped_zl, self._zl_position_to_pulse(clamped_zl)
 
         pulse = self._position_to_pulse(pos)
         return pulse, pulse
@@ -529,7 +563,10 @@ class BusPortDriver(Node):
     def _maybe_publish_read_state(self, protocol: str, command_name: str, servo_id: int, decoded: Any):
         pulse = None
         if command_name in ("read_position_command", "position_read") and isinstance(decoded, int):
-            pulse = int(decoded)
+            if protocol == "lx":
+                pulse = self._lx_unit_to_pulse(int(decoded))
+            elif protocol == "zl":
+                pulse = self._zl_position_to_pulse(int(decoded))
         elif command_name == "pos_read" and isinstance(decoded, int):
             if 0 <= int(decoded) <= 1000:
                 pulse = self._lx_unit_to_pulse(int(decoded))
@@ -596,7 +633,7 @@ class BusPortDriver(Node):
             if pos is None:
                 continue
 
-            pulse = int(pos) if proto_name == "zl" else self._lx_unit_to_pulse(pos)
+            pulse = self._zl_position_to_pulse(pos) if proto_name == "zl" else self._lx_unit_to_pulse(pos)
             self._publish_state(servo_id=servo_id, pulse=pulse, error_code=0)
 
             response.success = True
