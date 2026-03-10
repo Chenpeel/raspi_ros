@@ -9,7 +9,7 @@
 
 ## 快速开始
 
-### 1. 安装Docker（如果未安装）
+### 1. 安装Docker
 
 ```bash
 # 安装Docker
@@ -31,13 +31,13 @@ docker --version
 docker compose version
 ```
 
-### 2. 克隆项目（如果还没有）
+### 2. 克隆项目
 
 ```bash
 # 在树莓派上克隆项目
 cd ~
-git clone <你的仓库URL> ros_project
-cd ros_project
+git clone https://gitee.com/miuseik/new_human_ros.git ros
+cd ros
 ```
 
 ### 3. 启动开发环境
@@ -67,7 +67,7 @@ ros2 launch websocket_bridge full_system.launch.py
 
 ## 使用方式
 
-### 开发模式（推荐）
+### 开发模式
 
 > 可选（从旧版本迁移时执行）：`docker compose --profile dev --profile production --profile manual down --remove-orphans`
 

@@ -20,15 +20,16 @@
 Web客户端 → WebSocket(9105) → bridge_node → /servo/command
     ↓
 bus_protocol_router（协议识别 + ID路由）
-    ├─ bus_port_driver_0 → ttyAMA0 → 舵机ID: 1, 2            (2个)
-    ├─ bus_port_driver_1 → ttyAMA1 → 舵机ID: 3, 7, 9, 10, 11 (5个)
-    ├─ bus_port_driver_2 → ttyAMA2 → 舵机ID: 4, 5            (2个)
-    └─ bus_port_driver_3 → ttyAMA3 → 舵机ID: 6, 8, 12, 13, 14 (5个)
+    ├─ bus_port_driver_0 → ttyAMA0
+    ├─ bus_port_driver_1 → ttyAMA1
+    ├─ bus_port_driver_2 → ttyAMA2
+    └─ bus_port_driver_3 → ttyAMA3 
     ↓
-14个总线舵机硬件
+多个个总线舵机硬件
 ```
 
 **性能指标**:
+
 - 并发性能: 4倍提升（4个舵机可同时运动）
 - 总带宽: 460800 bps（4×115200）
 - ID路由延迟: <0.0001ms（可完全忽略）
@@ -90,6 +91,8 @@ bus_protocol_router（协议识别 + ID路由）
   "timestamp": 1765872354
 }
 ```
+
+
 
 ---
 
@@ -277,15 +280,6 @@ ls -l /dev/ttyAMA*
 #### 3. 舵机ID映射
 
 根据 `src/websocket/config/bus_servo_map.json` 配置实际ID映射：
-
-| 串口设备     | 舵机ID           | 数量 | 节点名称           |
-| ------------ | ---------------- | ---- | ------------------ |
-| /dev/ttyAMA0 | 1, 2             | 2个  | bus_port_driver_0 |
-| /dev/ttyAMA1 | 3, 7, 9, 10, 11  | 5个  | bus_port_driver_1 |
-| /dev/ttyAMA2 | 4, 5             | 2个  | bus_port_driver_2 |
-| /dev/ttyAMA3 | 6, 8, 12, 13, 14 | 5个  | bus_port_driver_3 |
-
-**总计**: 14个总线舵机
 
 **注意**:
 - Web客户端只需发送舵机ID，系统自动路由到正确的串口
@@ -655,7 +649,7 @@ self.serial.timeout = 0.01  # 减少到10ms
    class MyServoDriver:
        def set_position(self, servo_id, position, speed):
            pass
-
+   
        def get_position(self, servo_id):
            pass
    ```
@@ -699,3 +693,4 @@ BSD-2.0
 ## 维护者
 
 chenpeel <chenpeel@foxmail.com>
+
