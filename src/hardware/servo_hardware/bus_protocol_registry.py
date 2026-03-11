@@ -144,7 +144,9 @@ class ProtocolRegistry:
     def save_cache(self):
         if not self.cache_file:
             return
-        os.makedirs(os.path.dirname(self.cache_file), exist_ok=True)
+        cache_dir = os.path.dirname(self.cache_file)
+        if cache_dir:
+            os.makedirs(cache_dir, exist_ok=True)
         payload = {
             "version": 1,
             "updated_at": _now_iso(),

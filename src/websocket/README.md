@@ -33,7 +33,7 @@ class YourNode(Node):
         # 创建WebSocket服务器
         self.ws_server = WebSocketBridgeServer(
             host='0.0.0.0',
-            port=9102,
+            port=9105,
             device_id='robot_01'
         )
 
@@ -55,7 +55,7 @@ class YourNode(Node):
 
 ```bash
 cd src/websocket
-python -m websocket_bridge.ws_server --host 0.0.0.0 --port 9102 --debug
+python -m websocket_bridge.ws_server --host 0.0.0.0 --port 9105 --debug
 ```
 
 ### 4. Isaac-ROS 桥接节点

@@ -1,0 +1,14 @@
+uint16 servo_id
+string protocol
+string command
+int32[] params
+---
+bool success
+string protocol
+uint8 error_code
+string message
+int64 value
+int64[] values
+string raw_hex
+string result_json
+builtin_interfaces/Time stamp

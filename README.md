@@ -7,10 +7,11 @@
 - ✅ **WebSocket远程控制**: 通过WebSocket接口（9105端口）接收Web客户端命令
 - ✅ **多串口并发**: 支持4个独立串口同时控制14个舵机
 - ✅ **智能ID路由**: 基于Set的O(1)算法，零延迟增加
+- ✅ **协议自动识别**: 支持众灵/幻尔总线舵机，未知ID按需探测并缓存
 - ✅ **双舵机类型**: 支持总线舵机和PCA9685 PWM舵机
-- ✅ **话题统一**: 使用remapping统一所有驱动节点到 `/servo/command` 和 `/servo/state`
+- ✅ **话题统一**: 通过 `bus_protocol_router` 统一入口 `/servo/command` 与出口 `/servo/state`
 - ✅ **仿真集成桥接**: 支持 `/sim/servo_command` 与 `/sim/servo_state` 双向转发
-- ✅ **Docker部署**: 支持开发和生产两种模式
+- ✅ **Docker部署**: 支持开发/生产/手动调试三种模式
 - ✅ **实时反馈**: 舵机状态实时反馈到Web客户端
 
 ## 多串口系统架构
@@ -18,16 +19,17 @@
 ```
 Web客户端 → WebSocket(9105) → bridge_node → /servo/command
     ↓
-4个bus_servo_driver实例（并行订阅，ID过滤）
-    ├─ ttyAMA0 → 舵机ID: 1, 2            (2个)
-    ├─ ttyAMA1 → 舵机ID: 3, 7, 9, 10, 11 (5个)
-    ├─ ttyAMA2 → 舵机ID: 4, 5            (2个)
-    └─ ttyAMA3 → 舵机ID: 6, 8, 12, 13, 14 (5个)
+bus_protocol_router（协议识别 + ID路由）
+    ├─ bus_port_driver_0 → ttyAMA0
+    ├─ bus_port_driver_1 → ttyAMA1
+    ├─ bus_port_driver_2 → ttyAMA2
+    └─ bus_port_driver_3 → ttyAMA3 
     ↓
-14个总线舵机硬件
+多个个总线舵机硬件
 ```
 
 **性能指标**:
+
 - 并发性能: 4倍提升（4个舵机可同时运动）
 - 总带宽: 460800 bps（4×115200）
 - ID路由延迟: <0.0001ms（可完全忽略）
@@ -90,6 +92,8 @@ Web客户端 → WebSocket(9105) → bridge_node → /servo/command
 }
 ```
 
+
+
 ---
 
 ## 安装和编译
@@ -109,19 +113,22 @@ Web客户端 → WebSocket(9105) → bridge_node → /servo/command
 ```bash
 # 1. 构建镜像
 cd ~/work/repo/jiyuan/ros
-docker-compose build
+docker compose build
 
-# 2. 启动开发容器
-docker-compose up -d ros2_servo
+# 2. （升级后推荐）先清理旧容器，避免端口冲突
+docker compose --profile dev --profile production --profile manual down --remove-orphans
 
-# 3. 进入容器
-docker exec -it ros2_servo_control bash
+# 3. 启动开发容器
+docker compose --profile dev up -d ros2_servo_dev
 
-# 4. 编译
+# 4. 进入容器
+docker compose exec ros2_servo_dev bash
+
+# 5. 编译
 source /opt/ros/jazzy/setup.bash
 colcon build
 
-# 5. 运行
+# 6. 运行
 bash scripts/init.sh
 ```
 
@@ -162,7 +169,6 @@ ros2 launch websocket_bridge full_system.launch.py \
   device_id:=robot \
   enable_isaac_bridge:=true \
   debug:=true \
-  serial_port:=/dev/ttyAMA0 \
   baudrate:=115200
 ```
 
@@ -185,7 +191,14 @@ ros2 launch websocket_bridge full_system.launch.py
 ros2 run websocket_bridge bridge_node
 
 # 2. 启动总线舵机驱动
-ros2 run servo_hardware bus_servo_driver
+ros2 run servo_hardware bus_port_driver --ros-args \
+  -p port:=/dev/ttyAMA0 \
+  -p zl_servo_ids:="[1,2]" \
+  -p lx_servo_ids:="[1,2]"
+
+# 2.1 启动总线协议路由
+ros2 run servo_hardware bus_protocol_router --ros-args \
+  -p bus_map_file:=/root/ros_ws/src/websocket/config/bus_servo_map.json
 
 # 3. 启动PCA舵机驱动
 ros2 run servo_hardware pca_servo_driver
@@ -226,7 +239,7 @@ ros2 topic echo /servo/state
 
 # 发送测试命令
 ros2 topic pub /servo/command servo_msgs/msg/ServoCommand \
-  "{servo_type: 'bus', servo_id: 1, position: 2048, speed: 100}"
+  "{servo_type: 'bus', servo_id: 1, position: 1500, speed: 100}"
 ```
 
 
@@ -268,18 +281,9 @@ ls -l /dev/ttyAMA*
 
 根据 `src/websocket/config/bus_servo_map.json` 配置实际ID映射：
 
-| 串口设备     | 舵机ID           | 数量 | 节点名称           |
-| ------------ | ---------------- | ---- | ------------------ |
-| /dev/ttyAMA0 | 1, 2             | 2个  | bus_servo_driver_0 |
-| /dev/ttyAMA1 | 3, 7, 9, 10, 11  | 5个  | bus_servo_driver_1 |
-| /dev/ttyAMA2 | 4, 5             | 2个  | bus_servo_driver_2 |
-| /dev/ttyAMA3 | 6, 8, 12, 13, 14 | 5个  | bus_servo_driver_3 |
-
-**总计**: 14个总线舵机
-
 **注意**:
 - Web客户端只需发送舵机ID，系统自动路由到正确的串口
-- ID映射配置在 `full_system.launch.py` 中的 `servo_ids` 参数
+- ID映射配置在 `src/websocket/config/bus_servo_map.json`
 - 支持非连续ID分配（如[3, 7, 9, 10, 11]）
 
 ### I2C配置
@@ -322,22 +326,23 @@ ros2 launch websocket_bridge full_system.launch.py debug:=true
 
 ```bash
 # 1. 查看所有驱动节点
-ros2 node list | grep bus_servo_driver
+ros2 node list | rg "bus_protocol_router|bus_port_driver"
 # 应该看到:
-# /bus_servo_driver_0
-# /bus_servo_driver_1
-# /bus_servo_driver_2
-# /bus_servo_driver_3
+# /bus_protocol_router
+# /bus_port_driver_0
+# /bus_port_driver_1
+# /bus_port_driver_2
+# /bus_port_driver_3
 
-# 2. 检查节点参数（验证servo_ids配置）
-ros2 param get bus_servo_driver_1 servo_ids
+# 2. 检查节点参数（验证ID配置）
+ros2 param get bus_port_driver_1 zl_servo_ids
 # 应该返回: Integer values are: [3, 7, 9, 10, 11]
 
-ros2 param get bus_servo_driver_0 servo_ids
+ros2 param get bus_port_driver_0 lx_servo_ids
 # 应该返回: Integer values are: [1, 2]
 
 # 3. 查看节点信息
-ros2 node info /bus_servo_driver_1
+ros2 node info /bus_protocol_router
 # 查看订阅的话题和参数
 
 # 4. 测试特定ID路由
@@ -351,8 +356,8 @@ ros2 topic pub --once /servo/command servo_msgs/msg/ServoCommand \
 
 # 5. 观察调试日志（debug模式）
 # 应该看到类似:
-# [bus_servo_driver_0] [DEBUG] 忽略ID=7的命令（不在本驱动板的舵机列表中）
-# [bus_servo_driver_1] [INFO] [Send] ID=7 PULSE=1500 T=100ms Frame=#007P1500T0100!
+# [bus_protocol_router] [INFO] [route] id=7 -> port=/dev/ttyAMA1 protocol=lx source=cache
+# [bus_port_driver_1] [INFO] [Send/lx] ID=7 POS=500 SPEED=100
 ```
 
 ### 查看日志
@@ -381,7 +386,7 @@ websocat ws://192.168.31.35:9105
 {"type":"register","name":"test-client"}
 
 # 发送舵机命令
-{"type":"servo_control","servo_type":"bus","servo_id":1,"position":2048,"speed":100}
+{"type":"servo_control","servo_type":"bus","servo_id":1,"position":1500,"speed":100}
 ```
 
 ### 测试舵机硬件
@@ -400,40 +405,27 @@ bash scripts/test_pca_servo.sh
 
 ### docker-compose.yaml
 
-```yaml
-services:
-  ros2_servo:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: ros2_servo_control
-    privileged: true
-    network_mode: host  # 端口自动映射 (9105)
+使用 profile 控制不同运行模式：
 
-    devices:
-      # 多串口设备映射
-      - /dev/ttyAMA0:/dev/ttyAMA0   # 串口0 (舵机ID: 1, 2)
-      - /dev/ttyAMA1:/dev/ttyAMA1   # 串口1 (舵机ID: 3, 7, 9, 10, 11)
-      - /dev/ttyAMA2:/dev/ttyAMA2   # 串口2 (舵机ID: 4, 5)
-      - /dev/ttyAMA3:/dev/ttyAMA3   # 串口3 (舵机ID: 6, 8, 12, 13, 14)
-      - /dev/i2c-1:/dev/i2c-1       # I2C总线 (PCA9685)
+```bash
+# 开发模式（自动启动 init.sh）
+docker compose --profile dev up -d ros2_servo_dev
 
-    volumes:
-      - ./src:/root/ros_ws/src:rw
-      - ./install:/root/ros_ws/install:rw
+# 生产模式（自动重启 + 健康检查）
+docker compose --profile production up -d ros2_servo_prod
 
-    environment:
-      - ROS_DOMAIN_ID=0
-      - PYTHONUNBUFFERED=1
+# 手动调试容器（只进入 bash）
+docker compose --profile manual up -d ros2_servo
 
-    command: /bin/bash
+# 如果是从旧版本升级，先清理 orphan 容器
+docker compose --profile dev --profile production --profile manual down --remove-orphans
 ```
 
 ### 生产模式部署
 
 ```bash
 # 使用生产配置启动
-docker-compose --profile production up -d ros2_servo_prod
+docker compose --profile production up -d ros2_servo_prod
 
 # 生产模式会自动运行full_system.launch.py
 ```
@@ -454,7 +446,8 @@ ros/
 │   ├── servo_hardware/          # 舵机硬件驱动
 │   │   ├── bus_servo.py         # 总线舵机驱动（支持ID过滤）
 │   │   ├── pca_servo.py         # PCA9685驱动
-│   │   ├── bus_servo_driver     # 总线舵机节点
+│   │   ├── bus_port_driver      # 串口驱动节点（按端口）
+│   │   ├── bus_protocol_router  # 协议识别与统一路由
 │   │   ├── pca_servo_driver     # PCA舵机节点
 │   │   └── package.xml
 │   │
@@ -467,21 +460,9 @@ ros/
 │       │   ├── std_ros2web_stream.json
 │       │   └── bus_servo_map.json  # 舵机ID映射配置
 │       ├── launch/
-│       │   ├── full_system.launch.py        # 完整系统（多串口）
-│       │   └── websocket_bus_servo.launch.py # 简化版（单串口）
+│       │   ├── full_system.launch.py
+│       │   └── websocket_bus_servo.launch.py
 │       └── package.xml
-│
-├── .claude/                     # Claude开发文档
-│   ├── actual-4serial-config-final.md
-│   ├── multi-serial-port-expansion-guide.md
-│   └── websocket-servo-no-response-diagnosis.md
-│
-├── .TODOs/                      # 项目管理文档
-│   ├── progress_tracker.md      # 进度跟踪
-│   ├── technical_details.md     # 技术实现细节
-│   ├── struct.md                # 项目结构说明
-│   └── coding_standards.md      # 编码规范
-│
 ├── scripts/
 │   ├── init.sh                  # 初始化脚本
 │   ├── test_bus_servo.sh        # 总线舵机测试
@@ -489,7 +470,6 @@ ros/
 │
 ├── docker-compose.yaml          # Docker配置
 ├── Dockerfile                   # Docker镜像
-├── CLAUDE.md                    # Claude开发指南
 └── README.md                    # 本文档
 ```
 
@@ -504,7 +484,9 @@ ros/
 **解决**:
 ```bash
 # 查看占用9105端口的进程
-lsof -i :9105
+ss -ltnp | grep ':9105'
+# 如系统已安装 lsof，也可用：
+# lsof -nP -iTCP:9105 -sTCP:LISTEN
 
 # 杀死进程或修改端口配置
 ros2 launch websocket_bridge full_system.launch.py ws_port:=9106
@@ -516,7 +498,7 @@ ros2 launch websocket_bridge full_system.launch.py ws_port:=9106
 
 **可能原因**:
 1. 串口权限问题
-2. 舵机ID未包含在任何驱动节点的servo_ids列表中
+2. 舵机ID未包含在 `bus_servo_map.json` 任一端口映射中
 3. 话题命名空间不匹配
 4. 串口设备未正确映射
 
@@ -527,12 +509,12 @@ ros2 launch websocket_bridge full_system.launch.py ws_port:=9106
 ls -l /dev/ttyAMA*
 
 # 2. 验证节点参数配置
-ros2 param get bus_servo_driver_1 servo_ids
+ros2 param get bus_port_driver_1 zl_servo_ids
 # 确认ID是否在列表中
 
 # 3. 检查话题映射
 ros2 topic info /servo/command
-# 应该看到多个订阅者（4个bus_servo_driver）
+# 应该看到 bus_protocol_router 为订阅者
 
 # 4. 启用调试模式观察ID路由
 ros2 launch websocket_bridge full_system.launch.py debug:=true
@@ -542,8 +524,6 @@ ros2 launch websocket_bridge full_system.launch.py debug:=true
 ros2 topic pub --once /servo/command servo_msgs/msg/ServoCommand \
   '{servo_type: "bus", servo_id: 7, position: 90, speed: 100}'
 ```
-
-**详细诊断文档**: 查看 `.claude/websocket-servo-no-response-diagnosis.md`
 
 ### Q3: I2C设备未找到
 
@@ -571,7 +551,7 @@ ls -l /dev/i2c-1
 sudo rm -rf install build
 
 # 重新进入容器编译
-docker exec -it ros2_servo_control bash
+docker compose exec ros2_servo_dev bash
 colcon build
 ```
 
@@ -581,7 +561,7 @@ colcon build
 
 **解决**:
 1. 检查ROS2服务是否运行: `ros2 node list`
-2. 检查端口是否监听: `netstat -tulpn | grep 9105`
+2. 检查端口是否监听: `ss -ltnp | grep ':9105'`
 3. 检查防火墙: `sudo ufw status`
 4. 检查前端配置: `WS_SERVO_URL`是否正确
 
@@ -602,21 +582,9 @@ colcon build
    }
    ```
 
-2. **修改Launch文件**:
-   编辑 `src/websocket/launch/full_system.launch.py`:
-   ```python
-   # 例如：将舵机ID=15添加到ttyAMA3
-   bus_servo_node_3 = Node(
-       package='servo_hardware',
-       executable='bus_servo_driver',
-       name='bus_servo_driver_3',
-       parameters=[
-           {'port': '/dev/ttyAMA3'},
-           {'servo_ids': [6, 8, 12, 13, 14, 15]},  # 添加ID=15
-           # ...
-       ]
-   )
-   ```
+2. **无需修改Launch文件节点定义**:
+   `full_system.launch.py` 会自动读取 `bus_servo_map.json` 并动态创建
+   `bus_port_driver_x`，同时由 `bus_protocol_router` 统一路由。
 
 3. **重新编译并测试**:
    ```bash
@@ -638,8 +606,6 @@ colcon build
 - **舵机运动: 100-2000ms (96.5-99%)**
 
 **总延迟**: 103-2015ms（与单串口系统相同）
-
-**详细分析**: 查看 `.claude/actual-4serial-config-final.md`
 
 ---
 
@@ -664,7 +630,7 @@ export RCUTILS_CONSOLE_OUTPUT_FORMAT="[{severity}]: {message}"
 self.heartbeat_interval = 5.0
 ```
 
-修改 `bus_servo.py`:
+修改 `bus_port_driver.py`:
 
 ```python
 # 增加串口读取超时
@@ -677,13 +643,13 @@ self.serial.timeout = 0.01  # 减少到10ms
 
 ### 添加新的舵机驱动
 
-1. 在 `src/servo_hardware/` 创建新驱动类
+1. 在 `src/hardware/servo_hardware/` 创建新驱动类
 2. 继承基类并实现接口:
    ```python
    class MyServoDriver:
        def set_position(self, servo_id, position, speed):
            pass
-
+   
        def get_position(self, servo_id):
            pass
    ```
@@ -699,31 +665,13 @@ self.serial.timeout = 0.01  # 减少到10ms
 
 ---
 
-## 更多文档
-
-### 项目管理文档（`.TODOs/`）
-- `progress_tracker.md`: 开发进度跟踪
-- `technical_details.md`: 技术实现细节（包含多串口架构详解）
-- `struct.md`: 项目结构说明
-- `coding_standards.md`: 编码规范
-
-### Claude开发文档（`.claude/`）
-- `actual-4serial-config-final.md`: 4串口系统配置总结
-- `multi-serial-port-expansion-guide.md`: 多串口扩展指南
-- `websocket-servo-no-response-diagnosis.md`: WebSocket舵机无响应诊断
-
-### 开发指南
-- `CLAUDE.md`: Claude Code 开发指南
-
----
-
 ## 贡献指南
 
 **开发规范**:
 - 代码遵循PEP 8风格
 - 所有注释和文档使用简体中文
 - 提交前运行测试脚本
-- 更新相关文档（README、.TODOs、.claude）
+- 更新相关文档
 
 **提交规范**:
 ```bash
@@ -745,3 +693,4 @@ BSD-2.0
 ## 维护者
 
 chenpeel <chenpeel@foxmail.com>
+

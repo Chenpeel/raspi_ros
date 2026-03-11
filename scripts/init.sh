@@ -160,6 +160,7 @@ LAUNCH_PROBE_ON_STARTUP=${LAUNCH_PROBE_ON_STARTUP:-true}
 LAUNCH_PROBE_TIMEOUT_SEC=${LAUNCH_PROBE_TIMEOUT_SEC:-0.2}
 LAUNCH_PROBE_ON_UNKNOWN_COMMAND=${LAUNCH_PROBE_ON_UNKNOWN_COMMAND:-true}
 LAUNCH_PROBE_RETRY_INTERVAL_SEC=${LAUNCH_PROBE_RETRY_INTERVAL_SEC:-3.0}
+LAUNCH_RUNTIME_PROBE_INTERVAL_SEC=${LAUNCH_RUNTIME_PROBE_INTERVAL_SEC:-0.05}
 LAUNCH_READ_SERVICE_TIMEOUT_SEC=${LAUNCH_READ_SERVICE_TIMEOUT_SEC:-0.35}
 PARALLEL_INSTANCES_FILE=${PARALLEL_INSTANCES_FILE:-/root/ros_ws/src/parallel_3dof_controller/config/parallel_3dof_instances.yaml}
 
@@ -184,6 +185,7 @@ if [ "$LAUNCH_MODE" = "multi" ]; then
         "probe_timeout_sec:=$LAUNCH_PROBE_TIMEOUT_SEC"
         "probe_on_unknown_command:=$LAUNCH_PROBE_ON_UNKNOWN_COMMAND"
         "probe_retry_interval_sec:=$LAUNCH_PROBE_RETRY_INTERVAL_SEC"
+        "runtime_probe_interval_sec:=$LAUNCH_RUNTIME_PROBE_INTERVAL_SEC"
         "read_service_timeout_sec:=$LAUNCH_READ_SERVICE_TIMEOUT_SEC"
     )
 else
@@ -207,6 +209,7 @@ else
         "probe_timeout_sec:=$LAUNCH_PROBE_TIMEOUT_SEC"
         "probe_on_unknown_command:=$LAUNCH_PROBE_ON_UNKNOWN_COMMAND"
         "probe_retry_interval_sec:=$LAUNCH_PROBE_RETRY_INTERVAL_SEC"
+        "runtime_probe_interval_sec:=$LAUNCH_RUNTIME_PROBE_INTERVAL_SEC"
         "read_service_timeout_sec:=$LAUNCH_READ_SERVICE_TIMEOUT_SEC"
     )
 fi

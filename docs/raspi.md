@@ -9,7 +9,7 @@
 
 ## 快速开始
 
-### 1. 安装Docker（如果未安装）
+### 1. 安装Docker
 
 ```bash
 # 安装Docker
@@ -31,13 +31,13 @@ docker --version
 docker compose version
 ```
 
-### 2. 克隆项目（如果还没有）
+### 2. 克隆项目
 
 ```bash
 # 在树莓派上克隆项目
 cd ~
-git clone <你的仓库URL> ros_project
-cd ros_project
+git clone https://gitee.com/miuseik/new_human_ros.git ros
+cd ros
 ```
 
 ### 3. 启动开发环境
@@ -45,10 +45,14 @@ cd ros_project
 ```bash
 # 构建镜像并启动容器（首次运行需要几分钟）
 docker compose build
-docker compose up -d
+
+# 迁移到 profile 版本后建议先清理旧容器
+docker compose --profile dev --profile production --profile manual down --remove-orphans
+
+docker compose --profile dev up -d ros2_servo_dev
 
 # 进入容器
-docker compose exec ros2_servo bash
+docker compose exec ros2_servo_dev bash
 
 # 在容器内：编译项目
 cd /root/ros_ws
@@ -63,13 +67,15 @@ ros2 launch websocket_bridge full_system.launch.py
 
 ## 使用方式
 
-### 开发模式（推荐）
+### 开发模式
+
+> 可选（从旧版本迁移时执行）：`docker compose --profile dev --profile production --profile manual down --remove-orphans`
 
 **启动容器**：
 ```bash
 # 启动并进入容器
-docker compose up -d
-docker compose exec ros2_servo bash
+docker compose --profile dev up -d ros2_servo_dev
+docker compose exec ros2_servo_dev bash
 ```
 
 **在容器内开发**：
@@ -77,8 +83,11 @@ docker compose exec ros2_servo bash
 # 编译
 colcon build
 
-# 运行测试
-ros2 run servo_hardware bus_servo_driver
+# 运行单驱动链路测试（单串口）
+ros2 run servo_hardware bus_port_driver --ros-args \
+  -p port:=/dev/ttyAMA0 \
+  -p zl_servo_ids:="[1,2]" \
+  -p lx_servo_ids:="[1,2]"
 
 # 启动完整系统
 ros2 launch websocket_bridge full_system.launch.py
@@ -89,7 +98,7 @@ ros2 launch websocket_bridge full_system.launch.py
 exit  # 容器会继续运行
 
 # 停止容器
-docker compose down
+docker compose --profile dev down
 ```
 
 ### 生产模式（自动启动）
@@ -161,19 +170,19 @@ sudo udevadm trigger
 docker compose ps
 
 # 查看容器日志
-docker compose logs -f ros2_servo
+docker compose logs -f ros2_servo_dev
 
 # 进入运行中的容器
-docker compose exec ros2_servo bash
+docker compose exec ros2_servo_dev bash
 
 # 重启容器
-docker compose restart ros2_servo
+docker compose restart ros2_servo_dev
 
 # 停止容器
-docker compose down
+docker compose --profile dev down
 
 # 停止并删除卷
-docker compose down -v
+docker compose --profile dev down -v
 ```
 
 ### 镜像管理
@@ -227,16 +236,16 @@ docker system prune -a --volumes
 
 ### WebSocket端口
 
-默认端口：`9102`
+默认端口：`9105`
 
 由于使用`network_mode: host`，容器直接使用宿主机网络：
 
 ```bash
 # 在宿主机上验证端口
-sudo netstat -tuln | grep 9102
+ss -ltnp | grep ':9105'
 
 # 从其他设备测试连接
-wscat -c ws://树莓派IP:9102
+wscat -c ws://树莓派IP:9105
 ```
 
 ### 防火墙配置
@@ -245,10 +254,10 @@ wscat -c ws://树莓派IP:9102
 
 ```bash
 # 使用ufw
-sudo ufw allow 9102/tcp
+sudo ufw allow 9105/tcp
 
 # 或使用iptables
-sudo iptables -A INPUT -p tcp --dport 9102 -j ACCEPT
+sudo iptables -A INPUT -p tcp --dport 9105 -j ACCEPT
 ```
 
 ## 故障排查
@@ -266,8 +275,8 @@ Permission denied: '/dev/ttyUSB0'
 sudo chmod 666 /dev/ttyUSB0
 
 # 方法2：添加用户到dialout组（容器内）
-docker compose exec ros2_servo usermod -a -G dialout root
-docker compose restart ros2_servo
+docker compose exec ros2_servo_dev usermod -a -G dialout root
+docker compose restart ros2_servo_dev
 ```
 
 ### 问题2：I2C设备找不到
@@ -300,13 +309,13 @@ Connection refused
 docker compose ps
 
 # 2. 检查端口监听
-docker compose exec ros2_servo netstat -tuln | grep 9102
+docker compose exec ros2_servo_dev ss -ltnp | grep ':9105'
 
 # 3. 检查防火墙
 sudo ufw status
 
 # 4. 查看容器日志
-docker compose logs -f ros2_servo
+docker compose logs -f ros2_servo_dev
 ```
 
 ### 问题4：Python版本问题
@@ -328,24 +337,24 @@ python3 --version  # 应该是3.12.x
 # 文件会自动同步到容器
 
 # 2. 进入容器编译
-docker compose exec ros2_servo bash
+docker compose exec ros2_servo_dev bash
 cd /root/ros_ws
 colcon build --packages-select websocket_bridge servo_hardware
 
 # 3. 测试
 source install/setup.bash
-ros2 run servo_hardware bus_servo_driver
+ros2 launch websocket_bridge full_system.launch.py
 
 # 4. 如果需要重启容器
 exit
-docker compose restart ros2_servo
+docker compose restart ros2_servo_dev
 ```
 
 ### Git工作流
 
 ```bash
 # 在容器内使用git
-docker compose exec ros2_servo bash
+docker compose exec ros2_servo_dev bash
 
 git config --global user.name "Your Name"
 git config --global user.email "your.email@example.com"
@@ -377,7 +386,7 @@ colcon build --parallel-workers 2  # 树莓派4B推荐2
 ```bash
 # 限制容器内存（修改docker-compose.yaml）
 services:
-  ros2_servo:
+  ros2_servo_dev:
     mem_limit: 2g
     mem_reservation: 1g
 ```
@@ -405,7 +414,7 @@ After=docker.service
 Type=oneshot
 RemainAfterExit=yes
 WorkingDirectory=/home/pi/ros_project
-ExecStart=/usr/bin/docker compose --profile production up -d
+ExecStart=/usr/bin/docker compose --profile production up -d ros2_servo_prod
 ExecStop=/usr/bin/docker compose --profile production down
 Restart=always
 
@@ -437,7 +446,7 @@ tar -xzf ros2_backup_20251215.tar.gz
 
 # 重新构建和启动
 docker compose build
-docker compose up -d
+docker compose --profile dev up -d ros2_servo_dev
 ```
 
 ## 监控和日志
@@ -446,20 +455,20 @@ docker compose up -d
 
 ```bash
 # 实时日志
-docker compose logs -f ros2_servo
+docker compose logs -f ros2_servo_dev
 
 # 最近100行日志
-docker compose logs --tail=100 ros2_servo
+docker compose logs --tail=100 ros2_servo_dev
 
 # 保存日志到文件
-docker compose logs ros2_servo > servo_logs.txt
+docker compose logs ros2_servo_dev > servo_logs.txt
 ```
 
 ### 资源监控
 
 ```bash
 # 查看容器资源使用
-docker stats ros2_servo_control
+docker stats ros2_dev
 
 # 查看系统资源
 htop  # 需要安装: sudo apt install htop
@@ -467,7 +476,7 @@ htop  # 需要安装: sudo apt install htop
 
 ---
 
-**更新时间**: 2025-12-15
+**更新时间**: 2026-03-07
 **维护者**: chenpeel
 **Docker镜像**: ROS 2 Jazzy (ros:jazzy-ros-base)
 **树莓派**: 5B (ARM64)

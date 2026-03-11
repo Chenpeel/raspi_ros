@@ -224,14 +224,12 @@ class WebSocketROS2Bridge(Node):
                 raise ValueError(f"非法 position: {raw_position}")
 
             if servo_type == "bus":
-                # 支持中心角 [-90, 90]，映射到 500-2500us
-                if position_val < -90.0:
-                    position = self._map_centered_angle_to_pulse(-90.0)
-                elif position_val > 90.0:
-                    # 超出中心角范围时保持兼容（0-180角度或直接脉宽）
-                    position = self._coerce_uint16(position_val, 0)
-                else:
-                    position = self._map_centered_angle_to_pulse(position_val)
+                # 仅接受中心角 [-90, 90]，超出范围直接拒绝发送。
+                if position_val < -90.0 or position_val > 90.0:
+                    raise ValueError(
+                        f"bus position 超出范围[-90, 90]: {position_val}"
+                    )
+                position = self._map_centered_angle_to_pulse(position_val)
             else:
                 # PCA 舵机只接受非负值
                 position = self._coerce_uint16(position_val, 0)
