@@ -25,13 +25,25 @@ class BvhActionPlayer:
         self._stop_event = threading.Event()
         self._lock = threading.Lock()
         self._bvh_cache: Dict[str, Dict] = {}
+        self._action_file_cache: Dict[str, Dict] = {}
 
     def _log(self, level: str, message: str) -> None:
         if self._logger is None:
             return
-        log_fn = getattr(self._logger, level, None)
-        if log_fn:
-            log_fn(message)
+        normalized = (level or 'info').strip().lower()
+        try:
+            # rclpy logger 在同一调用点切换 severity 会抛异常，因此这里显式分支。
+            if normalized in ('warn', 'warning'):
+                self._logger.warning(message)
+            elif normalized == 'error':
+                self._logger.error(message)
+            elif normalized == 'debug':
+                self._logger.debug(message)
+            else:
+                self._logger.info(message)
+        except Exception:
+            # 日志失败不应中断 BVH 播放线程
+            return
 
     def _resolve_config_path(self, override_path: str) -> str:
         if override_path and os.path.exists(override_path):
@@ -71,6 +83,187 @@ class BvhActionPlayer:
         except Exception as exc:
             self._log('warn', f'Failed to load BVH action config: {exc}')
             return {}, path
+
+    @staticmethod
+    def _resolve_action_data_dir(config: Dict, config_path: str) -> str:
+        data_dir = (
+            config.get('bvh_action_data_dir') or
+            config.get('bvh_data_dir') or
+            config.get('bvh_dir') or
+            ''
+        )
+        if not isinstance(data_dir, str):
+            return ''
+        data_dir = data_dir.strip()
+        if not data_dir:
+            return ''
+        if os.path.isabs(data_dir):
+            return data_dir
+
+        base_dir = os.path.dirname(config_path) if config_path else ''
+        if base_dir:
+            return os.path.join(base_dir, data_dir)
+        return data_dir
+
+    @staticmethod
+    def list_action_names(config: Dict) -> List[str]:
+        names: List[str] = []
+
+        def _append_name(name) -> None:
+            if not isinstance(name, str):
+                return
+            normalized = name.strip()
+            if not normalized or normalized.lower() == 'null':
+                return
+            if normalized not in names:
+                names.append(normalized)
+
+        bvh_data = config.get('bvh_data') or {}
+        if isinstance(bvh_data, dict):
+            for action_name in bvh_data.keys():
+                _append_name(action_name)
+
+        action_files = (
+            config.get('bvh_action_files') or
+            config.get('bvh_action_file_map') or
+            {}
+        )
+        if isinstance(action_files, dict):
+            for map_key, map_value in action_files.items():
+                if isinstance(map_key, str):
+                    if map_key.endswith('.bvh'):
+                        _append_name(Path(map_key).stem)
+                    else:
+                        _append_name(map_key)
+                if isinstance(map_value, dict):
+                    _append_name(map_value.get('action'))
+
+        for action_name in config.get('bvh_list') or []:
+            _append_name(action_name)
+
+        return names
+
+    @staticmethod
+    def _extract_action_file_ref(mapping_entry) -> str:
+        if isinstance(mapping_entry, str):
+            return mapping_entry.strip()
+        if not isinstance(mapping_entry, dict):
+            return ''
+        for key in ('json', 'action_json', 'action_file', 'file', 'path'):
+            value = mapping_entry.get(key)
+            if isinstance(value, str) and value.strip():
+                return value.strip()
+        return ''
+
+    def _resolve_action_file_path(self, action_name: str, config: Dict,
+                                  config_path: str) -> str:
+        action_files = (
+            config.get('bvh_action_files') or
+            config.get('bvh_action_file_map') or
+            {}
+        )
+        file_ref = ''
+        if isinstance(action_files, dict):
+            lookup_keys = (
+                action_name,
+                f'{action_name}.bvh',
+                f'{action_name}.BVH'
+            )
+            for map_key in lookup_keys:
+                file_ref = self._extract_action_file_ref(action_files.get(map_key))
+                if file_ref:
+                    break
+
+        base_dir = os.path.dirname(config_path) if config_path else ''
+        action_data_dir = self._resolve_action_data_dir(config, config_path)
+
+        def _resolve_ref(path_ref: str) -> str:
+            if not path_ref:
+                return ''
+            if os.path.isabs(path_ref):
+                return path_ref
+
+            candidates: List[str] = []
+            if action_data_dir:
+                candidates.append(os.path.join(action_data_dir, path_ref))
+            if base_dir:
+                candidates.append(os.path.join(base_dir, path_ref))
+            if not candidates:
+                candidates.append(path_ref)
+
+            for candidate in candidates:
+                if os.path.exists(candidate):
+                    return candidate
+            return candidates[0]
+
+        if file_ref:
+            return _resolve_ref(file_ref)
+
+        if action_data_dir:
+            candidate = os.path.join(action_data_dir, f'{action_name}.json')
+            if os.path.exists(candidate):
+                return candidate
+
+        if base_dir:
+            candidate = os.path.join(base_dir, f'{action_name}.json')
+            if os.path.exists(candidate):
+                return candidate
+
+        return ''
+
+    def _load_action_data_file(self, action_name: str,
+                               action_file_path: str) -> Optional[Dict]:
+        if not action_file_path:
+            return None
+
+        cache_key = f'{action_name}:{action_file_path}'
+        cached = self._action_file_cache.get(cache_key)
+        if cached:
+            return cached
+
+        try:
+            with open(action_file_path, 'r', encoding='utf-8') as f:
+                payload = json.load(f)
+        except Exception as exc:
+            self._log('warn', f'Failed to load BVH action file: {action_file_path}, {exc}')
+            return None
+
+        action_data = None
+        if isinstance(payload, dict):
+            direct_keys = ('frames', 'ids', 'positions', 'bvh_file', 'bvh_path', 'file', 'path')
+            if any(key in payload for key in direct_keys):
+                action_data = payload
+            elif isinstance(payload.get(action_name), dict):
+                action_data = payload.get(action_name)
+            else:
+                nested_data = payload.get('bvh_data') or {}
+                if isinstance(nested_data, dict) and isinstance(nested_data.get(action_name), dict):
+                    action_data = nested_data.get(action_name)
+
+        if not isinstance(action_data, dict):
+            self._log('warn', f'Invalid BVH action payload in: {action_file_path}')
+            return None
+
+        self._action_file_cache[cache_key] = action_data
+        return action_data
+
+    def _resolve_action_data(self, action_name: str, config: Dict,
+                             config_path: str) -> Tuple[Optional[Dict], str]:
+        bvh_data = config.get('bvh_data') or {}
+        if isinstance(bvh_data, dict):
+            inline_data = bvh_data.get(action_name)
+            if isinstance(inline_data, dict):
+                return inline_data, config_path
+
+        action_file_path = self._resolve_action_file_path(action_name, config, config_path)
+        if not action_file_path:
+            return None, ''
+
+        action_data = self._load_action_data_file(action_name, action_file_path)
+        if not action_data:
+            return None, action_file_path
+
+        return action_data, action_file_path
 
     @staticmethod
     def _resolve_action_name(action, config: Dict) -> Optional[str]:
@@ -587,7 +780,11 @@ class BvhActionPlayer:
             self._log('warn', f'BVH action not resolved: {action}')
             return
 
-        action_data = (config.get('bvh_data') or {}).get(action_name)
+        action_data, action_data_path = self._resolve_action_data(
+            action_name,
+            config,
+            path
+        )
         if not action_data:
             self._log('warn', f'BVH action not found: {action_name}')
             return
@@ -628,7 +825,12 @@ class BvhActionPlayer:
         frames = self._normalize_frames(action_data, default_speed)
         if not frames:
             frames, parsed_delay = self._load_bvh_frames(
-                action_name, action_data, config, path, default_speed, default_servo_type
+                action_name,
+                action_data,
+                config,
+                path,
+                default_speed,
+                default_servo_type
             )
             if parsed_delay is not None and frame_delay_ms is None:
                 frame_delay_ms = parsed_delay
@@ -637,7 +839,7 @@ class BvhActionPlayer:
             self._log('warn', f'BVH action has no frames: {action_name}')
             return
 
-        self._log('info', f'BVH play start: {action_name} ({path})')
+        self._log('info', f'BVH play start: {action_name} ({action_data_path or path})')
 
         if loop:
             frames = self._trim_static_tail(frames)

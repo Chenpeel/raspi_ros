@@ -6,6 +6,7 @@ This package stores action resources and playback helpers (BVH now, more modes l
 
 - config/bvh_action_map.json: BVH action config
 - config/bvh/*.bvh: BVH files
+- config/bvh/*.json: per-action frame data (for example `walking.json`)
 - config/bvh/name.json: BVH skeleton bones list
 
 ## BVH Config (bvh_action_map.json)
@@ -13,7 +14,8 @@ This package stores action resources and playback helpers (BVH now, more modes l
 Key fields:
 - bvh_list: action list (index or name triggers)
 - bvh_dir: BVH directory (relative to this config)
-- bvh_data: action map, recommend using bvh_file
+- bvh_action_files: action file map, supports `action_name -> action.json` and `name.bvh -> name.json`
+- bvh_data: inline action map (legacy fallback, still supported)
 - joint_alias: BVH bone name to robot joint key alias
 - joint_map: robot joint key to servo ID mapping
 - servo_limits: per-servo min/max (override defaults)
@@ -37,8 +39,8 @@ Example:
 {
   "bvh_dir": "bvh",
   "bvh_list": [null, "walking"],
-  "bvh_data": {
-    "walking": { "bvh_file": "walking.bvh" }
+  "bvh_action_files": {
+    "walking.bvh": "walking.json"
   },
   "joint_alias": { "pelvis.L": "hip.L" },
   "joint_map": { "hip.L": { "left_hip_joint": "3" } },
@@ -46,11 +48,22 @@ Example:
 }
 ```
 
+Action file (`config/bvh/walking.json`) example:
+
+```json
+{
+  "bvh_file": "walking.bvh",
+  "frame_delay_ms": 33.0,
+  "frames": [
+    [{ "id": 1, "position": 1500, "speed": 33, "servo_type": "bus" }]
+  ]
+}
+```
+
 ## Static Conversion (optional)
 
 Runtime playback parses BVH directly in `record_load_action/bvh_player.py`.
-If you want offline conversion to pre-baked frame data, this package is the
-right place to add a converter script later.
+Use `bvh_static_convert` when you want offline conversion to pre-baked frames.
 
 Use the built-in converter:
 
@@ -63,6 +76,11 @@ Or write to a new file (default):
 ```
 ros2 run record_load_action bvh_static_convert
 ```
+
+Notes:
+- `--in-place` updates source files directly.
+- For decoupled config, action files in `config/bvh/*.json` are updated in-place.
+- Without `--in-place`, output is a merged JSON file with converted `bvh_data`.
 
 Optional flags:
 

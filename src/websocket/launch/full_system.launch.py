@@ -3,7 +3,8 @@
 
 启动组件:
 1. WebSocket桥接节点 (bridge_node)
-2. 总线舵机驱动 (bus_servo_driver) - 从 bus_servo_map.json 动态加载
+2. 总线舵机串口驱动 (bus_port_driver) - 从 bus_servo_map.json 动态加载
+3. 总线协议路由 (bus_protocol_router) - 协议识别/缓存/路由
 3. PCA9685舵机驱动 (pca_servo_driver)
 
 数据流:
@@ -54,34 +55,11 @@ def generate_launch_description():
             "/dev/ttyAMA3": [8, 6, 12, 13, 14]
         }
 
-    # 读取舵机限位配置文件路径
-    limit_map_file = ''
-    if get_package_share_directory:
-        try:
-            share_dir = get_package_share_directory('servo_hardware')
-            candidate = os.path.join(
-                share_dir, 'config', 'servo_limit_map.json'
-            )
-            if os.path.exists(candidate):
-                limit_map_file = candidate
-        except Exception:
-            pass
-
-    if not limit_map_file:
-        candidate = os.path.join(
-            Path(__file__).resolve().parents[2],
-            'hardware',
-            'servo_hardware',
-            'config',
-            'servo_limit_map.json'
-        )
-        if os.path.exists(candidate):
-            limit_map_file = candidate
-
-    if limit_map_file:
-        print(f"✓ 已找到舵机限位配置: {limit_map_file}")
-    else:
-        print("⚠ 警告: 舵机限位配置文件不存在: servo_limit_map.json")
+    # 协议缓存默认路径（与舵机映射配置同目录，便于持久化）
+    protocol_cache_default = os.path.join(
+        os.path.dirname(config_file),
+        'bus_protocol_cache.json'
+    )
 
     # 声明Launch参数
     ws_host_arg = DeclareLaunchArgument(
@@ -118,6 +96,60 @@ def generate_launch_description():
         'bus_servo_debug',
         default_value='true',
         description='总线舵机驱动调试模式'
+    )
+
+    protocol_cache_file_arg = DeclareLaunchArgument(
+        'protocol_cache_file',
+        default_value=protocol_cache_default,
+        description='总线协议探测缓存文件路径'
+    )
+
+    manual_protocol_map_file_arg = DeclareLaunchArgument(
+        'manual_protocol_map_file',
+        default_value='',
+        description='手动协议映射文件(可选，优先级高于缓存/范围)'
+    )
+
+    lx_id_ranges_arg = DeclareLaunchArgument(
+        'lx_id_ranges',
+        default_value='21-34',
+        description='幻尔协议ID范围(逗号分隔，如21-34,60-64)'
+    )
+
+    zl_id_ranges_arg = DeclareLaunchArgument(
+        'zl_id_ranges',
+        default_value='35-43',
+        description='众灵协议ID范围(逗号分隔，如35-43)'
+    )
+
+    probe_on_startup_arg = DeclareLaunchArgument(
+        'probe_on_startup',
+        default_value='true',
+        description='是否在启动时探测未知ID协议'
+    )
+
+    probe_timeout_sec_arg = DeclareLaunchArgument(
+        'probe_timeout_sec',
+        default_value='0.2',
+        description='单次协议探测超时(秒)'
+    )
+
+    probe_on_unknown_command_arg = DeclareLaunchArgument(
+        'probe_on_unknown_command',
+        default_value='true',
+        description='未知ID收到命令时是否触发在线探测'
+    )
+
+    probe_retry_interval_sec_arg = DeclareLaunchArgument(
+        'probe_retry_interval_sec',
+        default_value='3.0',
+        description='未知ID在线探测失败后重试最小间隔(秒)'
+    )
+
+    read_service_timeout_sec_arg = DeclareLaunchArgument(
+        'read_service_timeout_sec',
+        default_value='0.35',
+        description='全局读角度服务超时(秒)'
     )
 
     heartbeat_debug_arg = DeclareLaunchArgument(
@@ -229,12 +261,6 @@ def generate_launch_description():
         description='总线舵机波特率'
     )
 
-    limit_map_arg = DeclareLaunchArgument(
-        'limit_map',
-        default_value=limit_map_file,
-        description='舵机限位配置文件路径(空则使用默认)'
-    )
-
     # I2C参数
     i2c_address_arg = DeclareLaunchArgument(
         'i2c_address',
@@ -295,9 +321,7 @@ def generate_launch_description():
     ws_port = LaunchConfiguration('ws_port')
     device_id = LaunchConfiguration('device_id')
     debug = LaunchConfiguration('debug')
-    serial_port = LaunchConfiguration('serial_port')
     baudrate = LaunchConfiguration('baudrate')
-    limit_map = LaunchConfiguration('limit_map')
     i2c_address = LaunchConfiguration('i2c_address')
     i2c_bus = LaunchConfiguration('i2c_bus')
     imu_port = LaunchConfiguration('imu_port')
@@ -309,6 +333,15 @@ def generate_launch_description():
     imu_enable = LaunchConfiguration('imu_enable')
     bridge_debug = LaunchConfiguration('bridge_debug')
     bus_servo_debug = LaunchConfiguration('bus_servo_debug')
+    protocol_cache_file = LaunchConfiguration('protocol_cache_file')
+    manual_protocol_map_file = LaunchConfiguration('manual_protocol_map_file')
+    lx_id_ranges = LaunchConfiguration('lx_id_ranges')
+    zl_id_ranges = LaunchConfiguration('zl_id_ranges')
+    probe_on_startup = LaunchConfiguration('probe_on_startup')
+    probe_timeout_sec = LaunchConfiguration('probe_timeout_sec')
+    probe_on_unknown_command = LaunchConfiguration('probe_on_unknown_command')
+    probe_retry_interval_sec = LaunchConfiguration('probe_retry_interval_sec')
+    read_service_timeout_sec = LaunchConfiguration('read_service_timeout_sec')
     heartbeat_debug = LaunchConfiguration('heartbeat_debug')
     ws_debug = LaunchConfiguration('ws_debug')
     debug_aggregate = LaunchConfiguration('debug_aggregate')
@@ -392,8 +425,8 @@ def generate_launch_description():
         ]
     )
 
-    # 2. 动态创建总线舵机驱动节点（从 bus_servo_map.json 读取）
-    bus_servo_nodes = []
+    # 2. 动态创建总线舵机串口驱动节点（从 bus_servo_map.json 读取）
+    bus_port_nodes = []
     servo_info_lines = []
 
     for idx, (port, servo_ids) in enumerate(servo_map.items()):
@@ -407,28 +440,47 @@ def generate_launch_description():
         # 创建节点
         node = Node(
             package='servo_hardware',
-            executable='bus_servo_driver',
-            name=f'bus_servo_driver_{idx}',
+            executable='bus_port_driver',
+            name=f'bus_port_driver_{idx}',
             output='screen',
             parameters=[
                 {'port': port},
                 {'baudrate': baudrate},
                 {'default_speed': 100},
-                {'servo_ids': servo_ids},
-                {'limit_map': limit_map},
+                # 先将端口内ID注入两类协议集合，具体协议由router决定
+                {'zl_servo_ids': servo_ids},
+                {'lx_servo_ids': servo_ids},
                 {'debug': bus_servo_debug},
                 {'log_id': True}
-            ],
-            remappings=[
-                ('~/command', '/servo/command'),
-                ('~/state', '/servo/state'),
             ]
         )
-        bus_servo_nodes.append(node)
+        bus_port_nodes.append(node)
 
         # 生成启动信息行
         servo_ids_str = ', '.join(map(str, servo_ids))
         servo_info_lines.append(f'    - {port} @ 115200 bps (舵机ID: {servo_ids_str})\n')
+
+    # 2.1 总线协议路由节点（统一入口: /servo/command -> /servo/state）
+    bus_protocol_router_node = Node(
+        package='servo_hardware',
+        executable='bus_protocol_router',
+        name='bus_protocol_router',
+        output='screen',
+        parameters=[
+            {'bus_map_file': config_file},
+            {'protocol_cache_file': protocol_cache_file},
+            {'manual_protocol_map_file': manual_protocol_map_file},
+            {'lx_id_ranges': lx_id_ranges},
+            {'zl_id_ranges': zl_id_ranges},
+            {'probe_on_startup': probe_on_startup},
+            {'probe_timeout_sec': probe_timeout_sec},
+            {'probe_on_unknown_command': probe_on_unknown_command},
+            {'probe_retry_interval_sec': probe_retry_interval_sec},
+            {'read_service_timeout_sec': read_service_timeout_sec},
+            {'probe_wait_service_sec': 6.0},
+            {'debug': bus_servo_debug},
+        ],
+    )
 
     # 3. IMU 传感器串口驱动节点（使用串口而非I2C）
     imu_driver_node = Node(
@@ -488,6 +540,9 @@ def generate_launch_description():
             '    命令转发: ', sim_joint_cmd_topic, ' -> /servo/command\n',
             '    状态转发: /servo/state -> ', sim_joint_state_fb_topic, '\n',
             '  联调建议: enable_sim_cpp_bridge:=true 时设置 enable_isaac_bridge:=false\n',
+            '  总线协议路由: /servo/command -> bus_protocol_router -> /bus_port_driver_x/command_{zl,lx}\n',
+            '  全局读角度服务: /servo/read_position\n',
+            '  协议缓存文件: ', protocol_cache_file, '\n',
             '  总线舵机驱动板:\n',
             *servo_info_lines,  # 动态生成的舵机信息
             '  IMU传感器: ', imu_port, ' @ ', imu_baudrate, ' bps, 频率=', imu_publish_rate, 'Hz\n',
@@ -510,6 +565,15 @@ def generate_launch_description():
         debug_arg,
         bridge_debug_arg,
         bus_servo_debug_arg,
+        protocol_cache_file_arg,
+        manual_protocol_map_file_arg,
+        lx_id_ranges_arg,
+        zl_id_ranges_arg,
+        probe_on_startup_arg,
+        probe_timeout_sec_arg,
+        probe_on_unknown_command_arg,
+        probe_retry_interval_sec_arg,
+        read_service_timeout_sec_arg,
         heartbeat_debug_arg,
         ws_debug_arg,
         debug_aggregate_arg,
@@ -526,7 +590,6 @@ def generate_launch_description():
         sim_joint_cmd_topic_arg,
         sim_joint_state_fb_topic_arg,
         sim_publish_rate_hz_arg,
-        limit_map_arg,
         serial_port_arg,
         baudrate_arg,
         i2c_address_arg,
@@ -547,7 +610,8 @@ def generate_launch_description():
         bridge_node,
         isaac_bridge_node,
         sim_cpp_bridge_node,
-        *bus_servo_nodes,  # 动态生成的所有总线舵机驱动节点
+        *bus_port_nodes,   # 动态生成的所有总线舵机串口驱动节点
+        bus_protocol_router_node,
         imu_driver_node,   # IMU 传感器串口驱动节点
         # pca_servo_node,  # 已临时禁用 - I2C设备未连接
     ])

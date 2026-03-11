@@ -152,32 +152,67 @@ LAUNCH_WS_DEBUG=${LAUNCH_WS_DEBUG:-false}
 LAUNCH_DEBUG_AGGREGATE=${LAUNCH_DEBUG_AGGREGATE:-true}
 LAUNCH_DEBUG_AGGREGATE_PERIOD=${LAUNCH_DEBUG_AGGREGATE_PERIOD:-1.0}
 LAUNCH_DEBUG_AGGREGATE_MAX_LEN=${LAUNCH_DEBUG_AGGREGATE_MAX_LEN:-120}
+LAUNCH_PROTOCOL_CACHE_FILE=${LAUNCH_PROTOCOL_CACHE_FILE:-/root/ros_ws/src/websocket/config/bus_protocol_cache.json}
+LAUNCH_MANUAL_PROTOCOL_MAP_FILE=${LAUNCH_MANUAL_PROTOCOL_MAP_FILE:-}
+LAUNCH_LX_ID_RANGES=${LAUNCH_LX_ID_RANGES:-21-34}
+LAUNCH_ZL_ID_RANGES=${LAUNCH_ZL_ID_RANGES:-35-43}
+LAUNCH_PROBE_ON_STARTUP=${LAUNCH_PROBE_ON_STARTUP:-true}
+LAUNCH_PROBE_TIMEOUT_SEC=${LAUNCH_PROBE_TIMEOUT_SEC:-0.2}
+LAUNCH_PROBE_ON_UNKNOWN_COMMAND=${LAUNCH_PROBE_ON_UNKNOWN_COMMAND:-true}
+LAUNCH_PROBE_RETRY_INTERVAL_SEC=${LAUNCH_PROBE_RETRY_INTERVAL_SEC:-3.0}
+LAUNCH_READ_SERVICE_TIMEOUT_SEC=${LAUNCH_READ_SERVICE_TIMEOUT_SEC:-0.35}
 PARALLEL_INSTANCES_FILE=${PARALLEL_INSTANCES_FILE:-/root/ros_ws/src/parallel_3dof_controller/config/parallel_3dof_instances.yaml}
 
 if [ "$LAUNCH_MODE" = "multi" ]; then
     log_info "Launch mode: websocket_bus_servo + parallel_3dof_multi"
-    exec ros2 launch websocket_bridge websocket_bus_servo.launch.py \
-        instances_file:="$PARALLEL_INSTANCES_FILE" \
-        debug:="$LAUNCH_DEBUG" \
-        bridge_debug:="$LAUNCH_BRIDGE_DEBUG" \
-        bus_servo_debug:="$LAUNCH_BUS_SERVO_DEBUG" \
-        imu_debug:="$LAUNCH_IMU_DEBUG" \
-        heartbeat_debug:="$LAUNCH_HEARTBEAT_DEBUG" \
-        ws_debug:="$LAUNCH_WS_DEBUG" \
-        debug_aggregate:="$LAUNCH_DEBUG_AGGREGATE" \
-        debug_aggregate_period:="$LAUNCH_DEBUG_AGGREGATE_PERIOD" \
-        debug_aggregate_max_len:="$LAUNCH_DEBUG_AGGREGATE_MAX_LEN"
+    launch_cmd=(
+        ros2 launch websocket_bridge websocket_bus_servo.launch.py
+        "instances_file:=$PARALLEL_INSTANCES_FILE"
+        "debug:=$LAUNCH_DEBUG"
+        "bridge_debug:=$LAUNCH_BRIDGE_DEBUG"
+        "bus_servo_debug:=$LAUNCH_BUS_SERVO_DEBUG"
+        "imu_debug:=$LAUNCH_IMU_DEBUG"
+        "heartbeat_debug:=$LAUNCH_HEARTBEAT_DEBUG"
+        "ws_debug:=$LAUNCH_WS_DEBUG"
+        "debug_aggregate:=$LAUNCH_DEBUG_AGGREGATE"
+        "debug_aggregate_period:=$LAUNCH_DEBUG_AGGREGATE_PERIOD"
+        "debug_aggregate_max_len:=$LAUNCH_DEBUG_AGGREGATE_MAX_LEN"
+        "protocol_cache_file:=$LAUNCH_PROTOCOL_CACHE_FILE"
+        "lx_id_ranges:=$LAUNCH_LX_ID_RANGES"
+        "zl_id_ranges:=$LAUNCH_ZL_ID_RANGES"
+        "probe_on_startup:=$LAUNCH_PROBE_ON_STARTUP"
+        "probe_timeout_sec:=$LAUNCH_PROBE_TIMEOUT_SEC"
+        "probe_on_unknown_command:=$LAUNCH_PROBE_ON_UNKNOWN_COMMAND"
+        "probe_retry_interval_sec:=$LAUNCH_PROBE_RETRY_INTERVAL_SEC"
+        "read_service_timeout_sec:=$LAUNCH_READ_SERVICE_TIMEOUT_SEC"
+    )
 else
     log_info "Launch mode: full_system"
-    exec ros2 launch websocket_bridge full_system.launch.py \
-        debug:="$LAUNCH_DEBUG" \
-        bridge_debug:="$LAUNCH_BRIDGE_DEBUG" \
-        bus_servo_debug:="$LAUNCH_BUS_SERVO_DEBUG" \
-        imu_debug:="$LAUNCH_IMU_DEBUG" \
-        heartbeat_debug:="$LAUNCH_HEARTBEAT_DEBUG" \
-        pca_debug:="$LAUNCH_PCA_DEBUG" \
-        ws_debug:="$LAUNCH_WS_DEBUG" \
-        debug_aggregate:="$LAUNCH_DEBUG_AGGREGATE" \
-        debug_aggregate_period:="$LAUNCH_DEBUG_AGGREGATE_PERIOD" \
-        debug_aggregate_max_len:="$LAUNCH_DEBUG_AGGREGATE_MAX_LEN"
+    launch_cmd=(
+        ros2 launch websocket_bridge full_system.launch.py
+        "debug:=$LAUNCH_DEBUG"
+        "bridge_debug:=$LAUNCH_BRIDGE_DEBUG"
+        "bus_servo_debug:=$LAUNCH_BUS_SERVO_DEBUG"
+        "imu_debug:=$LAUNCH_IMU_DEBUG"
+        "heartbeat_debug:=$LAUNCH_HEARTBEAT_DEBUG"
+        "pca_debug:=$LAUNCH_PCA_DEBUG"
+        "ws_debug:=$LAUNCH_WS_DEBUG"
+        "debug_aggregate:=$LAUNCH_DEBUG_AGGREGATE"
+        "debug_aggregate_period:=$LAUNCH_DEBUG_AGGREGATE_PERIOD"
+        "debug_aggregate_max_len:=$LAUNCH_DEBUG_AGGREGATE_MAX_LEN"
+        "protocol_cache_file:=$LAUNCH_PROTOCOL_CACHE_FILE"
+        "lx_id_ranges:=$LAUNCH_LX_ID_RANGES"
+        "zl_id_ranges:=$LAUNCH_ZL_ID_RANGES"
+        "probe_on_startup:=$LAUNCH_PROBE_ON_STARTUP"
+        "probe_timeout_sec:=$LAUNCH_PROBE_TIMEOUT_SEC"
+        "probe_on_unknown_command:=$LAUNCH_PROBE_ON_UNKNOWN_COMMAND"
+        "probe_retry_interval_sec:=$LAUNCH_PROBE_RETRY_INTERVAL_SEC"
+        "read_service_timeout_sec:=$LAUNCH_READ_SERVICE_TIMEOUT_SEC"
+    )
 fi
+
+if [ -n "$LAUNCH_MANUAL_PROTOCOL_MAP_FILE" ]; then
+    launch_cmd+=("manual_protocol_map_file:=$LAUNCH_MANUAL_PROTOCOL_MAP_FILE")
+fi
+
+exec "${launch_cmd[@]}"
