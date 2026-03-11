@@ -9,6 +9,7 @@
 - ✅ **智能ID路由**: 基于Set的O(1)算法，零延迟增加
 - ✅ **双舵机类型**: 支持总线舵机和PCA9685 PWM舵机
 - ✅ **话题统一**: 使用remapping统一所有驱动节点到 `/servo/command` 和 `/servo/state`
+- ✅ **仿真集成桥接**: 支持 `/sim/servo_command` 与 `/sim/servo_state` 双向转发
 - ✅ **Docker部署**: 支持开发和生产两种模式
 - ✅ **实时反馈**: 舵机状态实时反馈到Web客户端
 
@@ -159,6 +160,7 @@ ros2 launch websocket_bridge full_system.launch.py \
   ws_host:=0.0.0.0 \
   ws_port:=9105 \
   device_id:=robot \
+  enable_isaac_bridge:=true \
   debug:=true \
   serial_port:=/dev/ttyAMA0 \
   baudrate:=115200
@@ -187,6 +189,9 @@ ros2 run servo_hardware bus_servo_driver
 
 # 3. 启动PCA舵机驱动
 ros2 run servo_hardware pca_servo_driver
+
+# 4. 启动 Isaac 桥接节点（可选，full_system 默认已启用）
+ros2 run websocket_bridge isaac_bridge_node
 ```
 
 ---
@@ -198,12 +203,14 @@ ros2 run servo_hardware pca_servo_driver
 | 话题             | 消息类型       | 说明         |
 | ---------------- | -------------- | ------------ |
 | `/servo/command` | `ServoCommand` | 舵机控制命令 |
+| `/sim/servo_state` | `ServoState` | 仿真侧状态反馈 |
 
 ### 订阅话题
 
 | 话题           | 消息类型     | 说明         |
 | -------------- | ------------ | ------------ |
 | `/servo/state` | `ServoState` | 舵机状态反馈 |
+| `/sim/servo_command` | `ServoCommand` | 仿真侧控制命令 |
 
 ### 查看话题
 

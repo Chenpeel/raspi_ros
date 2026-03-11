@@ -1,0 +1,17 @@
+sim_servo_bridge:
+  ros__parameters:
+    joint_cmd_topic: "/sim/joint_cmd"
+    joint_state_fb_topic: "/sim/joint_state_fb"
+    servo_cmd_topic: "/servo/command"
+    servo_state_topic: "/servo/state"
+    publish_rate_hz: 50.0
+    speed: 100
+    servo_type: "bus"
+    min_pulse_us: 500.0
+    max_pulse_us: 2500.0
+    center_pulse_us: 1500.0
+    us_per_rad: 636.6197723675814
+    joint_to_servo_id: [1, 2, 3, 4, 5, 6, 7, 8, -1, 9, 10, 11, 12, 13, 14, -1]
+    servo_ids_with_offset: []
+    servo_offsets_us: []
+    debug: false

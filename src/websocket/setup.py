@@ -34,6 +34,7 @@ setup(
         'console_scripts': [
             'ws_server=websocket_bridge.ws_server:main',
             'bridge_node=websocket_bridge.bridge_node:main',
+            'isaac_bridge_node=websocket_bridge.isaac_bridge_node:main',
         ],
     },
 )

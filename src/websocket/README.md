@@ -58,6 +58,23 @@ cd src/websocket
 python -m websocket_bridge.ws_server --host 0.0.0.0 --port 9102 --debug
 ```
 
+### 4. Isaac-ROS 桥接节点
+
+用于 Isaac 仿真侧与 ROS 舵机链路直连：
+
+```bash
+# 仅启动桥接节点
+ros2 run websocket_bridge isaac_bridge_node
+
+# 在完整系统中启用（默认已启用）
+ros2 launch websocket_bridge full_system.launch.py enable_isaac_bridge:=true
+```
+
+默认话题映射：
+
+- `/sim/servo_command` -> `/servo/command`
+- `/servo/state` -> `/sim/servo_state`
+
 ## 消息格式
 
 ### Web → ROS（舵机控制）
