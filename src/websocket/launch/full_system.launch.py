@@ -71,6 +71,36 @@ def generate_launch_description():
         'bus_protocol_cache.json'
     )
 
+    # 舵机安装偏移默认路径（与舵机映射配置同目录，便于现场持久化）
+    offset_deg_map_default = os.path.join(
+        os.path.dirname(config_file),
+        'servo_offset_deg_map.json'
+    )
+
+    # 舵机限位默认路径（优先源码路径，便于现场修改）
+    servo_limit_workspace_file = '/root/ros_ws/src/hardware/servo_hardware/config/servo_limit_map.json'
+    servo_limit_cwd_file = os.path.join(
+        Path.cwd(), 'src', 'hardware', 'servo_hardware', 'config', 'servo_limit_map.json'
+    )
+    servo_limit_installed_file = ''
+    try:
+        servo_hw_share = get_package_share_directory('servo_hardware')
+        servo_limit_installed_file = os.path.join(
+            servo_hw_share, 'config', 'servo_limit_map.json'
+        )
+    except Exception:
+        servo_limit_installed_file = ''
+
+    limit_map_candidates = [
+        servo_limit_workspace_file,
+        servo_limit_cwd_file,
+        servo_limit_installed_file,
+    ]
+    limit_map_default = next(
+        (path for path in limit_map_candidates if path and os.path.exists(path)),
+        servo_limit_cwd_file,
+    )
+
     # 声明Launch参数
     ws_host_arg = DeclareLaunchArgument(
         'ws_host',
@@ -118,6 +148,18 @@ def generate_launch_description():
         'manual_protocol_map_file',
         default_value='',
         description='手动协议映射文件(可选，优先级高于缓存/范围)'
+    )
+
+    offset_deg_map_file_arg = DeclareLaunchArgument(
+        'offset_deg_map_file',
+        default_value=offset_deg_map_default,
+        description='舵机安装偏移配置文件(单位: deg)'
+    )
+
+    limit_map_file_arg = DeclareLaunchArgument(
+        'limit_map_file',
+        default_value=limit_map_default,
+        description='舵机限位配置文件(脉宽域 500~2500)'
     )
 
     lx_id_ranges_arg = DeclareLaunchArgument(
@@ -344,6 +386,8 @@ def generate_launch_description():
     bus_servo_debug = LaunchConfiguration('bus_servo_debug')
     protocol_cache_file = LaunchConfiguration('protocol_cache_file')
     manual_protocol_map_file = LaunchConfiguration('manual_protocol_map_file')
+    offset_deg_map_file = LaunchConfiguration('offset_deg_map_file')
+    limit_map_file = LaunchConfiguration('limit_map_file')
     lx_id_ranges = LaunchConfiguration('lx_id_ranges')
     zl_id_ranges = LaunchConfiguration('zl_id_ranges')
     probe_on_startup = LaunchConfiguration('probe_on_startup')
@@ -460,6 +504,8 @@ def generate_launch_description():
                 # 先将端口内ID注入两类协议集合，具体协议由router决定
                 {'zl_servo_ids': servo_ids},
                 {'lx_servo_ids': servo_ids},
+                {'offset_map': offset_deg_map_file},
+                {'limit_map': limit_map_file},
                 {'debug': bus_servo_debug},
                 {'log_id': True}
             ]
@@ -579,6 +625,8 @@ def generate_launch_description():
         bus_servo_debug_arg,
         protocol_cache_file_arg,
         manual_protocol_map_file_arg,
+        offset_deg_map_file_arg,
+        limit_map_file_arg,
         lx_id_ranges_arg,
         zl_id_ranges_arg,
         probe_on_startup_arg,
