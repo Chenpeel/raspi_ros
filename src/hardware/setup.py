@@ -39,6 +39,7 @@ setup(
             'bus_protocol_router = servo_hardware.bus_protocol_router:main',
             'pca_servo_driver = servo_hardware.pca_servo:main',
             'servo_router = servo_hardware.servo_router:main',
+            'servo_offset_calibrator = servo_hardware.servo_offset_calibrator:main',
             'imu_driver = sensor_hardware.imu_driver:main',  # I2C 版本
             'imu_serial_driver = sensor_hardware.imu_serial_driver:main',  # 串口版本
         ],

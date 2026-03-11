@@ -8,9 +8,11 @@
 """
 
 import json
+import os
 import threading
 import time
 from inspect import Parameter, signature
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Set
 
 import rclpy
@@ -20,6 +22,11 @@ from servo_msgs.msg import ServoCommand, ServoState
 from servo_msgs.srv import ExecuteBusCommand, ReadServoPosition
 
 from .protocols import BusServoProtocol, LXBusServoProtocol, ZLBusServoProtocol
+
+try:
+    from ament_index_python.packages import get_package_share_directory
+except ImportError:  # pragma: no cover - fallback for non-ROS envs
+    get_package_share_directory = None
 
 
 class BusPortDriver(Node):
@@ -37,6 +44,9 @@ class BusPortDriver(Node):
         self.declare_parameter("log_id", True)
         self.declare_parameter("zl_servo_ids", [0])
         self.declare_parameter("lx_servo_ids", [0])
+        self.declare_parameter("offset_map", "")  # 舵机偏移配置文件(单位: deg)
+        self.declare_parameter("limit_map", "")  # 舵机限位配置文件(单位: pulse/us)
+        self.declare_parameter("config_reload_interval_sec", 1.0)  # 运行时自动重载配置文件
 
         self.port = str(self.get_parameter("port").value)
         self.baudrate = int(self.get_parameter("baudrate").value)
@@ -45,11 +55,34 @@ class BusPortDriver(Node):
         self.default_speed = int(self.get_parameter("default_speed").value)
         self.debug = bool(self.get_parameter("debug").value)
         self.log_id = bool(self.get_parameter("log_id").value)
+        offset_map_param = str(self.get_parameter("offset_map").value or "").strip()
+        limit_map_param = str(self.get_parameter("limit_map").value or "").strip()
+        self.config_reload_interval_sec = float(
+            self.get_parameter("config_reload_interval_sec").value
+        )
 
         zl_ids = self.get_parameter("zl_servo_ids").value
         lx_ids = self.get_parameter("lx_servo_ids").value
         self.zl_servo_ids: Set[int] = {int(x) for x in zl_ids if int(x) > 0}
         self.lx_servo_ids: Set[int] = {int(x) for x in lx_ids if int(x) > 0}
+
+        # 偏移量与限位配置
+        self.offset_map_path = ""
+        self.limit_map_path = ""
+        self._offset_map_mtime = 0.0
+        self._limit_map_mtime = 0.0
+        self.offset_map_deg = self._load_offset_map(override_path=offset_map_param)
+        self.limit_map = self._load_limit_map(override_path=limit_map_param)
+        self._offset_map_mtime = self._safe_get_mtime(self.offset_map_path)
+        self._limit_map_mtime = self._safe_get_mtime(self.limit_map_path)
+
+        # 用于支持“校准工具写入json后无需重启节点即可生效”
+        interval = float(self.config_reload_interval_sec)
+        if interval > 0:
+            self._reload_timer = self.create_timer(
+                max(0.2, interval),
+                self._maybe_reload_configs,
+            )
 
         self.protocols: Dict[str, BusServoProtocol] = {
             "zl": ZLBusServoProtocol(),
@@ -93,6 +126,227 @@ class BusPortDriver(Node):
             f"(zl_ids={sorted(self.zl_servo_ids) or 'ALL'}, "
             f"lx_ids={sorted(self.lx_servo_ids) or 'ALL'})"
         )
+
+    @staticmethod
+    def _deg_to_pulse_delta(offset_deg: float) -> float:
+        """将角度偏移(deg)转换为统一脉宽增量(500~2500域的 delta)。"""
+        try:
+            return float(offset_deg) * 2000.0 / 180.0
+        except Exception:
+            return 0.0
+
+    @staticmethod
+    def _pulse_delta_to_deg(offset_pulse: float) -> float:
+        """将统一脉宽增量转换为角度偏移(deg)。"""
+        try:
+            return float(offset_pulse) * 180.0 / 2000.0
+        except Exception:
+            return 0.0
+
+    @staticmethod
+    def _clamp_int(value: int, min_val: int, max_val: int) -> int:
+        return max(int(min_val), min(int(max_val), int(value)))
+
+    @staticmethod
+    def _safe_get_mtime(path: str) -> float:
+        path = str(path or "").strip()
+        if not path:
+            return 0.0
+        try:
+            return float(os.path.getmtime(path))
+        except Exception:
+            return 0.0
+
+    def _maybe_reload_configs(self):
+        """当 offset/limit 配置文件发生变化时自动重载。"""
+        try:
+            if self.offset_map_path:
+                mtime = self._safe_get_mtime(self.offset_map_path)
+                if mtime and mtime != self._offset_map_mtime:
+                    self.offset_map_deg = self._load_offset_map(
+                        override_path=self.offset_map_path
+                    )
+                    self._offset_map_mtime = mtime
+                    self.get_logger().info(f"已重载 offset_map: {self.offset_map_path}")
+
+            if self.limit_map_path:
+                mtime = self._safe_get_mtime(self.limit_map_path)
+                if mtime and mtime != self._limit_map_mtime:
+                    self.limit_map = self._load_limit_map(override_path=self.limit_map_path)
+                    self._limit_map_mtime = mtime
+                    self.get_logger().info(f"已重载 limit_map: {self.limit_map_path}")
+        except Exception as exc:
+            self.get_logger().warn(f"配置重载失败: {exc}")
+
+    @staticmethod
+    def apply_pulse_offset_and_limit(
+        base_pulse: int,
+        offset_deg: float,
+        limit_entry: Optional[Dict[str, Any]] = None,
+    ) -> int:
+        """对统一脉宽应用限位与偏移补偿，返回最终下发脉宽。
+
+        执行顺序（与需求保持一致）：
+        1) base_pulse 归一化到 [500, 2500]
+        2) 按 limit_entry 对“期望脉宽”限幅（仍在统一脉宽域）
+        3) 加上 offset_deg 对应的脉宽增量
+        4) 最终 clamp 到 [500, 2500]
+        """
+        try:
+            pulse = int(base_pulse)
+        except Exception:
+            pulse = 1500
+        pulse = BusPortDriver._clamp_int(pulse, 500, 2500)
+
+        # 先对期望值做限位（不包含 offset）
+        if isinstance(limit_entry, dict) and limit_entry:
+            min_val = None
+            max_val = None
+            raw_min = limit_entry.get("min")
+            raw_max = limit_entry.get("max")
+            try:
+                if raw_min is not None:
+                    min_val = int(round(float(raw_min)))
+            except Exception:
+                min_val = None
+            try:
+                if raw_max is not None:
+                    max_val = int(round(float(raw_max)))
+            except Exception:
+                max_val = None
+
+            if min_val is not None:
+                min_val = BusPortDriver._clamp_int(min_val, 500, 2500)
+            if max_val is not None:
+                max_val = BusPortDriver._clamp_int(max_val, 500, 2500)
+            if min_val is not None and max_val is not None and min_val > max_val:
+                min_val, max_val = max_val, min_val
+
+            if min_val is not None and pulse < min_val:
+                pulse = min_val
+            if max_val is not None and pulse > max_val:
+                pulse = max_val
+
+        # 再应用 offset（单位deg -> 统一脉宽增量）
+        pulse_delta = int(round(BusPortDriver._deg_to_pulse_delta(offset_deg)))
+        pulse = int(pulse) + int(pulse_delta)
+        return BusPortDriver._clamp_int(pulse, 500, 2500)
+
+    def _resolve_limit_map_path(self, override_path: str) -> str:
+        if override_path and os.path.exists(override_path):
+            return override_path
+
+        if get_package_share_directory:
+            try:
+                share_dir = get_package_share_directory("servo_hardware")
+                candidate = os.path.join(share_dir, "config", "servo_limit_map.json")
+                if os.path.exists(candidate):
+                    return candidate
+            except Exception:
+                pass
+
+        candidate = Path(__file__).resolve().parent / "config" / "servo_limit_map.json"
+        if candidate.exists():
+            return str(candidate)
+        return ""
+
+    def _load_limit_map(self, override_path: str) -> Dict[int, Dict[str, int]]:
+        path = self._resolve_limit_map_path(override_path)
+        self.limit_map_path = path
+        if not path:
+            return {}
+
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception as exc:
+            self.get_logger().warn(f"加载舵机限位配置失败: {exc}")
+            return {}
+
+        if isinstance(data, dict) and "servo_limits" in data:
+            data = data.get("servo_limits") or {}
+
+        limit_map: Dict[int, Dict[str, int]] = {}
+        if isinstance(data, dict) and "ids" in data:
+            ids = data.get("ids") or []
+            mins = data.get("mins") or []
+            maxs = data.get("maxs") or []
+            for idx, sid in enumerate(ids):
+                try:
+                    sid_int = int(sid)
+                except (TypeError, ValueError):
+                    continue
+                min_val = mins[idx] if idx < len(mins) else None
+                max_val = maxs[idx] if idx < len(maxs) else None
+                limit_map[sid_int] = {"min": min_val, "max": max_val}
+        elif isinstance(data, dict):
+            for key, value in data.items():
+                try:
+                    sid_int = int(key)
+                except (TypeError, ValueError):
+                    continue
+                if isinstance(value, dict):
+                    limit_map[sid_int] = {"min": value.get("min"), "max": value.get("max")}
+
+        if limit_map:
+            self.get_logger().info(f"已加载舵机限位配置: {path} (数量={len(limit_map)})")
+        return limit_map
+
+    def _resolve_offset_map_path(self, override_path: str) -> str:
+        if override_path and os.path.exists(override_path):
+            return override_path
+
+        # 偏移量文件默认不做隐式回退，避免误用其他驱动的 offset 配置造成危险动作。
+        return ""
+
+    def _load_offset_map(self, override_path: str) -> Dict[int, float]:
+        path = self._resolve_offset_map_path(override_path)
+        self.offset_map_path = path
+        if not path:
+            if override_path:
+                self.get_logger().warn(f"未找到舵机偏移配置文件: {override_path}")
+            return {}
+
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception as exc:
+            self.get_logger().warn(f"加载舵机偏移量失败: {exc}")
+            return {}
+
+        unit = "deg"
+        offsets_obj = data
+        if isinstance(data, dict) and "offsets" in data:
+            offsets_obj = data.get("offsets") or {}
+            unit = str(data.get("unit") or unit).strip().lower()
+
+        unit = unit.replace("degree", "deg").replace("degrees", "deg")
+        if unit in ("us", "pulse", "pwm", "ticks"):
+            unit = "pulse"
+        elif unit not in ("deg", "pulse"):
+            self.get_logger().warn(f"未知 offset unit={unit}，将按deg解析")
+            unit = "deg"
+
+        offset_map_deg: Dict[int, float] = {}
+        if isinstance(offsets_obj, dict):
+            for key, value in offsets_obj.items():
+                try:
+                    sid = int(key)
+                    raw_val = float(value)
+                except (TypeError, ValueError):
+                    continue
+                if unit == "pulse":
+                    offset_map_deg[sid] = self._pulse_delta_to_deg(raw_val)
+                else:
+                    offset_map_deg[sid] = raw_val
+
+        if offset_map_deg:
+            self.get_logger().info(
+                f"已加载舵机偏移量配置: {path} (数量={len(offset_map_deg)}, unit={unit})"
+            )
+        else:
+            self.get_logger().info(f"舵机偏移量为空: {path}")
+        return offset_map_deg
 
     @staticmethod
     def _build_command_specs() -> Dict[str, Dict[str, Dict[str, Any]]]:
@@ -386,7 +640,23 @@ class BusPortDriver(Node):
                 )
             return
 
-        proto_pos, pulse = self._normalize_move_target(protocol, position)
+        _proto_pos, base_pulse = self._normalize_move_target(protocol, position)
+        offset_deg = float(self.offset_map_deg.get(int(servo_id), 0.0) or 0.0)
+        limit_entry = self.limit_map.get(int(servo_id))
+        target_pulse = self.apply_pulse_offset_and_limit(
+            base_pulse=base_pulse,
+            offset_deg=0.0,
+            limit_entry=limit_entry,
+        )
+        adjusted_pulse = self.apply_pulse_offset_and_limit(
+            base_pulse=base_pulse,
+            offset_deg=offset_deg,
+            limit_entry=limit_entry,
+        )
+        if protocol == "lx":
+            proto_pos = self._pulse_to_lx_unit(adjusted_pulse)
+        else:
+            proto_pos = self._pulse_to_zl_position(adjusted_pulse)
         speed = max(0, min(30000, int(speed)))
 
         frame = self.protocols[protocol].encode_move_command(
@@ -395,7 +665,12 @@ class BusPortDriver(Node):
             speed=speed,
         )
         success = self._write_frame(frame)
-        self._publish_state(servo_id=servo_id, pulse=pulse, error_code=0 if success else 1)
+        # 注意：状态保持上层期望的 pulse（限幅后），不包含 offset。
+        self._publish_state(
+            servo_id=servo_id,
+            pulse=target_pulse,
+            error_code=0 if success else 1,
+        )
 
         if self.log_id:
             self.get_logger().info(
