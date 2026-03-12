@@ -189,10 +189,10 @@ class WebSocketROS2Bridge(Node):
         return max(0, min(65535, val))
 
     @staticmethod
-    def _map_centered_angle_to_pulse(angle: float) -> int:
-        """Map angle in [-90, 90] to pulse width 500-2500us."""
+    def _map_centered_angle_to_servo_angle(angle: float) -> int:
+        """Map centered angle in [-90, 90] to servo angle in [0, 180]."""
         angle = max(-90.0, min(90.0, angle))
-        return int(round(500 + (angle + 90.0) * (2000.0 / 180.0)))
+        return int(round(angle + 90.0))
 
     @staticmethod
     def _map_pulse_to_centered_angle(pulse: float) -> float:
@@ -212,6 +212,10 @@ class WebSocketROS2Bridge(Node):
                     "position": int,
                     "speed": int (可选，仅总线舵机)
                 }
+
+                bus 舵机:
+                - WebSocket 输入语义为中心角[-90, 90]
+                - 下传到 /servo/command 时会平移为[0, 180]
         """
         try:
             servo_type = servo_cmd.get("servo_type", "bus")
@@ -224,12 +228,16 @@ class WebSocketROS2Bridge(Node):
                 raise ValueError(f"非法 position: {raw_position}")
 
             if servo_type == "bus":
-                # 仅接受中心角 [-90, 90]，超出范围直接拒绝发送。
+                # WebSocket 入口使用中心角[-90, 90]语义，向驱动统一下传0~180角度。
                 if position_val < -90.0 or position_val > 90.0:
                     raise ValueError(
                         f"bus position 超出范围[-90, 90]: {position_val}"
                     )
-                position = self._map_centered_angle_to_pulse(position_val)
+                position = self._map_centered_angle_to_servo_angle(position_val)
+                self.get_logger().info(
+                    f'收到WS总线舵机角度: ID={servo_cmd["servo_id"]} '
+                    f'ANGLE={position_val:.2f}deg -> SERVO_ANGLE={position}'
+                )
             else:
                 # PCA 舵机只接受非负值
                 position = self._coerce_uint16(position_val, 0)

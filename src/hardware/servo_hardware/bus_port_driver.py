@@ -568,7 +568,9 @@ class BusPortDriver(Node):
     def _normalize_move_target(self, protocol: str, position: int) -> tuple[int, int]:
         pos = int(position)
         if protocol == "lx":
-            # 统一入口: 前端中心角[-90,90]经桥接后为脉宽500~2500。
+            # 统一入口:
+            # - WebSocket 路径会将中心角[-90, 90]平移为[0, 180]
+            # - 其他生产者仍可直接传统一脉宽500~2500或协议原生位置值
             if 500 <= pos <= 2500:
                 pulse = pos
                 return self._pulse_to_lx_unit(pulse), pulse
@@ -587,7 +589,9 @@ class BusPortDriver(Node):
             return clamped_unit, self._lx_unit_to_pulse(clamped_unit)
 
         if protocol == "zl":
-            # 统一入口: 前端中心角[-90,90]经桥接后为脉宽500~2500。
+            # 统一入口:
+            # - WebSocket 路径会将中心角[-90, 90]平移为[0, 180]
+            # - 其他生产者仍可直接传统一脉宽500~2500或协议原生位置值
             if 500 <= pos <= 2500:
                 pulse = pos
                 return self._pulse_to_zl_position(pulse), pulse
