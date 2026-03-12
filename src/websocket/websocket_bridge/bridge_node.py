@@ -72,8 +72,10 @@ class WebSocketROS2Bridge(Node):
         self.heartbeat_debug = self.get_parameter('heartbeat_debug').value
         self.ws_debug = self.get_parameter('ws_debug').value
         self.debug_aggregate = self.get_parameter('debug_aggregate').value
-        self.debug_aggregate_period = float(self.get_parameter('debug_aggregate_period').value)
-        self.debug_aggregate_max_len = int(self.get_parameter('debug_aggregate_max_len').value)
+        self.debug_aggregate_period = float(
+            self.get_parameter('debug_aggregate_period').value)
+        self.debug_aggregate_max_len = int(
+            self.get_parameter('debug_aggregate_max_len').value)
         self.bvh_action_file = self.get_parameter('bvh_action_file').value
 
         if self.debug_aggregate_period <= 0:
@@ -85,7 +87,8 @@ class WebSocketROS2Bridge(Node):
                 emit=self.get_logger().info,
                 max_len=self.debug_aggregate_max_len
             )
-            self.create_timer(self.debug_aggregate_period, self.debug_aggregator.flush)
+            self.create_timer(self.debug_aggregate_period,
+                              self.debug_aggregator.flush)
 
         # ROS 2话题
         # 发布舵机命令到驱动节点
@@ -149,7 +152,8 @@ class WebSocketROS2Bridge(Node):
             )
 
             # 注册回调
-            self.ws_server.set_servo_command_callback(self.handle_servo_command)
+            self.ws_server.set_servo_command_callback(
+                self.handle_servo_command)
             self.ws_server.set_heartbeat_callback(self.handle_heartbeat)
             self.ws_server.set_status_query_callback(self.handle_status_query)
             self.ws_server.set_bvh_play_callback(self.handle_bvh_play)
@@ -376,7 +380,8 @@ class WebSocketROS2Bridge(Node):
                         if self.debug:
                             self.get_logger().warning(f'无法广播状态（事件循环不可用）: {e}')
                 elif self.debug:
-                    self._debug_log("ws_broadcast_skip", "event loop not running", self.debug)
+                    self._debug_log("ws_broadcast_skip",
+                                    "event loop not running", self.debug)
 
         except Exception as e:
             self.get_logger().error(f'处理舵机状态回调异常: {e}')
@@ -454,7 +459,8 @@ class WebSocketROS2Bridge(Node):
                         )
                     except RuntimeError as e:
                         if self.imu_debug:
-                            self.get_logger().warning(f'无法广播 IMU 数据（事件循环不可用）: {e}')
+                            self.get_logger().warning(
+                                f'无法广播 IMU 数据（事件循环不可用）: {e}')
 
         except Exception as e:
             self.get_logger().error(f'处理 IMU 数据回调异常: {e}')
