@@ -50,17 +50,32 @@ def _build_bridge_stub():
 @pytest.mark.parametrize(
     ("centered_angle", "servo_angle"),
     [
-        (-90.0, 0),
-        (-45.0, 45),
+        (-90.0, 180),
+        (-45.0, 135),
         (0.0, 90),
-        (45.0, 135),
-        (90.0, 180),
+        (45.0, 45),
+        (90.0, 0),
     ],
 )
 def test_map_centered_angle_to_servo_angle(centered_angle, servo_angle):
     assert (
         WebSocketROS2Bridge._map_centered_angle_to_servo_angle(centered_angle)
         == servo_angle
+    )
+
+
+@pytest.mark.parametrize(
+    ("pulse", "centered_angle"),
+    [
+        (500, 90.0),
+        (1500, 0.0),
+        (2500, -90.0),
+    ],
+)
+def test_map_pulse_to_centered_angle(pulse, centered_angle):
+    assert (
+        WebSocketROS2Bridge._map_pulse_to_centered_angle(pulse)
+        == centered_angle
     )
 
 
@@ -81,10 +96,10 @@ async def test_handle_bus_servo_command_shifts_centered_angle_and_logs():
     msg = bridge.servo_command_pub.messages[0]
     assert msg.servo_type == "bus"
     assert msg.servo_id == 36
-    assert msg.position == 60
+    assert msg.position == 120
     assert msg.speed == 300
     assert bridge._logger.infos == [
-        "收到WS总线舵机角度: ID=36 ANGLE=-30.00deg -> SERVO_ANGLE=60"
+        "收到WS总线舵机角度: ID=36 RAW_WS_ANGLE=-30.00deg -> SERVO_ANGLE=120"
     ]
 
 
