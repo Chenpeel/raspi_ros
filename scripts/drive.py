@@ -538,6 +538,11 @@ class LXDriveServer:
         raw_message: str,
     ) -> None:
         """解析并处理一条客户端消息。"""
+        LOGGER.info(
+            "WS原始消息: remote=%s raw=%s",
+            websocket.remote_address,
+            raw_message,
+        )
         data = self.message_parser.parse_message(raw_message)
         if data is None:
             await self._send_json(
