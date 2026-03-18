@@ -54,8 +54,7 @@ docker compose --profile dev up -d ros2_servo_dev
 # 进入容器
 docker compose exec ros2_servo_dev bash
 
-# 在容器内：编译项目
-cd /root/ros_ws
+# 在容器内：默认已位于容器工作区根目录，直接编译
 colcon build --packages-select websocket_bridge servo_hardware
 
 # source环境
@@ -216,21 +215,21 @@ docker system prune -a --volumes
 
 ## 文件结构
 
-容器内的目录映射：
+容器工作区的目录映射：
 
 ```
-宿主机                      容器内
-./src                 → /root/ros_ws/src
-./build               → /root/ros_ws/build
-./install             → /root/ros_ws/install
-./log                 → /root/ros_ws/log
-./.claude             → /root/ros_ws/.claude
-./.TODOs              → /root/ros_ws/.TODOs
+宿主机                      容器工作区
+./src                 → 工作区/src
+./build               → 工作区/build
+./install             → 工作区/install
+./log                 → 工作区/log
+./scripts             → 工作区/scripts
 ```
 
 **注意**：
 - `src/`：源代码，可以在宿主机编辑
 - `build/`, `install/`, `log/`：编译输出，会自动同步
+- `scripts/`：启动和辅助脚本，会同步到容器工作区
 
 ## 网络配置
 
@@ -338,7 +337,6 @@ python3 --version  # 应该是3.12.x
 
 # 2. 进入容器编译
 docker compose exec ros2_servo_dev bash
-cd /root/ros_ws
 colcon build --packages-select websocket_bridge servo_hardware
 
 # 3. 测试
@@ -413,7 +411,8 @@ After=docker.service
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-WorkingDirectory=/home/pi/ros_project
+# 按实际部署目录替换
+WorkingDirectory=<项目目录>
 ExecStart=/usr/bin/docker compose --profile production up -d ros2_servo_prod
 ExecStop=/usr/bin/docker compose --profile production down
 Restart=always
@@ -435,7 +434,7 @@ sudo systemctl start ros2-servo.service
 ```bash
 # 备份docker-compose.yaml和源代码
 tar -czf ros2_backup_$(date +%Y%m%d).tar.gz \
-  docker-compose.yaml Dockerfile src/ .claude/
+  docker-compose.yaml Dockerfile README.md docs/ scripts/ src/
 ```
 
 ### 恢复

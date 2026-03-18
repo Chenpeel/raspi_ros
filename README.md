@@ -112,7 +112,7 @@ bus_protocol_router（协议识别 + ID路由）
 
 ```bash
 # 1. 构建镜像
-cd ~/work/repo/jiyuan/ros
+cd <仓库根目录>
 docker compose build
 
 # 2. （升级后推荐）先清理旧容器，避免端口冲突
@@ -140,7 +140,7 @@ sudo apt update
 sudo apt install -y python3-pip python3-websockets
 
 # 2. 进入工作区
-cd ~/work/repo/jiyuan/ros
+cd <仓库根目录>
 
 # 3. 安装ROS依赖
 rosdep install -i --from-paths src --rosdistro jazzy -y
@@ -198,7 +198,7 @@ ros2 run servo_hardware bus_port_driver --ros-args \
 
 # 2.1 启动总线协议路由
 ros2 run servo_hardware bus_protocol_router --ros-args \
-  -p bus_map_file:=/root/ros_ws/src/websocket/config/bus_servo_map.json
+  -p bus_map_file:=$PWD/src/websocket/config/bus_servo_map.json
 
 # 3. 启动PCA舵机驱动
 ros2 run servo_hardware pca_servo_driver
@@ -693,4 +693,3 @@ BSD-2.0
 ## 维护者
 
 chenpeel <chenpeel@foxmail.com>
-

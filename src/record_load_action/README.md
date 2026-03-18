@@ -23,14 +23,14 @@ Key fields:
 Directory default:
 
 ```
-src/record_load_action/config/bvh/
+config/bvh/
 ```
 
 Override the config path if needed:
 
 ```
 ros2 launch websocket_bridge full_system.launch.py \
-  bvh_action_file:=/path/to/bvh_action_map.json
+  bvh_action_file:=<配置文件路径>
 ```
 
 Example:
@@ -84,7 +84,7 @@ Notes:
 
 Optional flags:
 
-- `--output /path/to/bvh_action_map.frames.json`
+- `--output ./bvh_action_map.frames.json`
 - `--force` re-generate existing frames
 - `--drop-bvh-file` remove bvh_file/path fields
 - `--only walking,strafing` convert specific actions

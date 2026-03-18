@@ -13,7 +13,7 @@
 ### 1. 构建包
 
 ```bash
-cd /home/chenpeel/work/repo/jiyuan/ros
+cd <仓库根目录>
 colcon build --packages-select parallel_3dof_controller
 source install/setup.bash
 ```
@@ -129,7 +129,7 @@ ros2 topic echo /parallel_3dof_controller/ankle_theta
 ### 1. 测试运动学求解器
 
 ```bash
-cd /home/chenpeel/work/repo/jiyuan/ros/src/parallel_3dof_controller
+cd src/parallel_3dof_controller
 python3 parallel_3dof_controller/kinematics_solver.py
 ```
 
@@ -211,17 +211,12 @@ parallel_3dof_controller/
 3. **奇异性检测**：避免奇异位形
 4. **自适应标定**：在线调整几何参数
 
-## 参考文档
+## 参考资料
 
-- `/home/chenpeel/work/docs/algos_docs/kinematics/thdelta.md`：几何模型定义
-- `/home/chenpeel/work/docs/algos_docs/kinematics/res.md`：运动学推导
-- `.claude/ankle-kinematics-analysis.md`：深度分析报告
-- `.claude/context-summary-ankle-kinematics.md`：上下文摘要
+- `parallel_3dof_controller/kinematics_solver.py`：运动学求解与舵机映射实现
+- `parallel_3dof_controller/tdpm.py`：并联机构运动学模型
+- `config/ankle_params.yaml`：几何参数与运行配置
 
 ## 许可
 
 MIT License
-
-## 作者
-
-Generated with Claude Code

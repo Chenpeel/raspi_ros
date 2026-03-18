@@ -64,7 +64,7 @@
 3. **修改后需要重启系统**：修改配置后需要重新启动 ROS 2 launch 文件才能生效
 4. **开发环境 vs 安装环境**：
    - 开发环境：直接修改 `src/websocket/config/bus_servo_map.json`
-   - 安装环境：修改 `install/websocket_bridge/share/websocket_bridge/config/bus_servo_map.json`
+   - 安装环境：修改安装后的 `share/websocket_bridge/config/bus_servo_map.json`
 
 ### 重新编译和安装
 
@@ -80,7 +80,7 @@ source install/setup.bash
 启动系统后，launch 文件会打印加载的配置信息：
 
 ```
-✓ 已加载舵机映射配置: /path/to/bus_servo_map.json
+✓ 已加载舵机映射配置: <bus_servo_map.json 的实际路径>
   配置内容: {'/dev/ttyAMA0': [1, 2], ...}
 ```
 
@@ -98,7 +98,7 @@ source install/setup.bash
 如果配置文件加载失败，系统会使用默认配置并打印警告：
 
 ```
-⚠ 警告: 舵机映射配置文件不存在: /path/to/bus_servo_map.json
+⚠ 警告: 舵机映射配置文件不存在: <bus_servo_map.json 的实际路径>
   将使用默认配置
 ```
 
