@@ -7,7 +7,7 @@ from typing import Dict, List, Tuple
 
 def _default_config_path() -> Path:
     repo_root = Path(__file__).resolve().parents[1]
-    return repo_root / 'src' / 'websocket' / 'config' / 'bvh_action_map.json'
+    return repo_root / 'src' / 'record_load_action' / 'config' / 'bvh_action_map.json'
 
 
 def _load_json(path: Path) -> Dict:

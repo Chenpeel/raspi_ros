@@ -70,7 +70,7 @@ def generate_launch_description():
 
     protocol_cache_file_arg = DeclareLaunchArgument(
         'protocol_cache_file',
-        default_value='/root/ros_ws/src/websocket/config/bus_protocol_cache.json',
+        default_value='/root/ros_ws/src/hardware/servo_hardware/config/bus_protocol_cache.json',
         description='总线协议探测缓存文件路径'
     )
 

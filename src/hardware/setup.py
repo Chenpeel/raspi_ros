@@ -1,3 +1,6 @@
+import os
+from glob import glob
+
 from setuptools import find_packages, setup
 
 package_name = 'servo_hardware'
@@ -10,11 +13,10 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        ('share/' + package_name + '/config',
-            [
-                'servo_hardware/config/servo_offset_map.json',
-                'servo_hardware/config/servo_limit_map.json'
-            ]),
+        (
+            os.path.join('share', package_name, 'config'),
+            glob('servo_hardware/config/*.json') + glob('servo_hardware/config/*.md'),
+        ),
     ],
     install_requires=[
         'setuptools',

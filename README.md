@@ -198,7 +198,7 @@ ros2 run servo_hardware bus_port_driver --ros-args \
 
 # 2.1 启动总线协议路由
 ros2 run servo_hardware bus_protocol_router --ros-args \
-  -p bus_map_file:=$PWD/src/websocket/config/bus_servo_map.json
+  -p bus_map_file:=$PWD/src/hardware/servo_hardware/config/bus_servo_map.json
 
 # 3. 启动PCA舵机驱动
 ros2 run servo_hardware pca_servo_driver
@@ -279,11 +279,11 @@ ls -l /dev/ttyAMA*
 
 #### 3. 舵机ID映射
 
-根据 `src/websocket/config/bus_servo_map.json` 配置实际ID映射：
+根据 `src/hardware/servo_hardware/config/bus_servo_map.json` 配置实际ID映射：
 
 **注意**:
 - Web客户端只需发送舵机ID，系统自动路由到正确的串口
-- ID映射配置在 `src/websocket/config/bus_servo_map.json`
+- ID映射配置在 `src/hardware/servo_hardware/config/bus_servo_map.json`
 - 支持非连续ID分配（如[3, 7, 9, 10, 11]）
 
 ### I2C配置
@@ -449,6 +449,9 @@ ros/
 │   │   ├── bus_port_driver      # 串口驱动节点（按端口）
 │   │   ├── bus_protocol_router  # 协议识别与统一路由
 │   │   ├── pca_servo_driver     # PCA舵机节点
+│   │   ├── config/
+│   │   │   ├── bus_servo_map.json      # 舵机ID与串口映射
+│   │   │   └── manual_protocol_map.json # 手动协议映射
 │   │   └── package.xml
 │   │
 │   └── websocket_bridge/        # WebSocket桥接
@@ -458,7 +461,6 @@ ros/
 │       ├── config/              # 配置文件
 │       │   ├── std_web2ros_stream.json
 │       │   ├── std_ros2web_stream.json
-│       │   └── bus_servo_map.json  # 舵机ID映射配置
 │       ├── launch/
 │       │   ├── full_system.launch.py
 │       │   └── websocket_bus_servo.launch.py

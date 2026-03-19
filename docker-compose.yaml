@@ -59,7 +59,7 @@ services:
       DEVELOPMENT_MODE: "1"
       LAUNCH_DEBUG: "true"
       LAUNCH_IMU_DEBUG: "false"
-      LAUNCH_MANUAL_PROTOCOL_MAP_FILE: "/root/ros_ws/src/websocket/config/manual_protocol_map.json"
+      LAUNCH_MANUAL_PROTOCOL_MAP_FILE: "/root/ros_ws/src/hardware/servo_hardware/config/manual_protocol_map.json"
     command: bash /root/ros_ws/scripts/init.sh
     restart: unless-stopped
     profiles:
@@ -71,7 +71,7 @@ services:
     container_name: ros2
     environment:
       <<: *ros2_common_env
-      LAUNCH_MANUAL_PROTOCOL_MAP_FILE: "/root/ros_ws/src/websocket/config/manual_protocol_map.json"
+      LAUNCH_MANUAL_PROTOCOL_MAP_FILE: "/root/ros_ws/src/hardware/servo_hardware/config/manual_protocol_map.json"
     command: bash /root/ros_ws/scripts/init.sh
     restart: always
     healthcheck:

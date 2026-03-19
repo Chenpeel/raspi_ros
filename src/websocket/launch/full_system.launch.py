@@ -26,16 +26,22 @@ from launch_ros.actions import Node
 def generate_launch_description():
     """生成Launch描述"""
 
-    # 读取舵机映射配置（优先源码路径，确保与开发现场配置一致）
-    pkg_share = get_package_share_directory('websocket_bridge')
-    workspace_source_config_file = '/root/ros_ws/src/websocket/config/bus_servo_map.json'
+    # 读取硬件配置（优先源码路径，确保与开发现场配置一致）
+    hardware_pkg_share = get_package_share_directory('servo_hardware')
+    workspace_source_config_file = (
+        '/root/ros_ws/src/hardware/servo_hardware/config/bus_servo_map.json'
+    )
     cwd_source_config_file = os.path.join(
-        Path.cwd(), 'src', 'websocket', 'config', 'bus_servo_map.json'
+        Path.cwd(), 'src', 'hardware', 'servo_hardware', 'config', 'bus_servo_map.json'
     )
     source_config_file = os.path.join(
-        Path(__file__).resolve().parent.parent, 'config', 'bus_servo_map.json'
+        Path(__file__).resolve().parent.parent.parent,
+        'hardware',
+        'servo_hardware',
+        'config',
+        'bus_servo_map.json',
     )
-    installed_config_file = os.path.join(pkg_share, 'config', 'bus_servo_map.json')
+    installed_config_file = os.path.join(hardware_pkg_share, 'config', 'bus_servo_map.json')
     config_candidates = [
         workspace_source_config_file,
         cwd_source_config_file,

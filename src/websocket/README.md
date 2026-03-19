@@ -149,10 +149,15 @@ ros2 launch websocket_bridge full_system.launch.py enable_isaac_bridge:=true
 
 ## 配置
 
-配置文件位于 `config/` 目录:
+WebSocket 协议配置文件位于 `config/` 目录:
 
 - `std_web2ros_stream.json` - Web→ROS数据流格式定义
 - `std_ros2web_stream.json` - ROS→Web数据流格式定义
+
+硬件相关配置已迁移到 `src/hardware/servo_hardware/config/`：
+
+- `bus_servo_map.json` - 总线舵机串口映射
+- `manual_protocol_map.json` - 手动协议映射
 
 ## 测试
 
