@@ -1,455 +1,621 @@
-# Runtime Module Responsibilities
+# 运行时模块职责说明
 
-## Purpose
+## 1. 文档目的
 
-This document is the unified source of truth for module responsibilities in
-the ROS 2 runtime workspace. It uses the public names defined in `plan.md`
-and is intended to be split into future per-module files such as
-`{module}/docs/responsibilities.md`.
+本文是 ROS 2 运行时模块职责的统一事实来源。它与 `plan.md` 配套，用于
+约束后续的包拆分、接口设计、launch 组织以及 Python 到 C++ 的迁移。
 
-The goal is simple: each module must be understandable without relying on
-repository-specific history or private abbreviations.
+所有正式模块都必须满足一个基本要求：
 
-
-## System Boundary
-
-- This ROS 2 repository owns the internal real-time runtime.
-- The external task service stays outside this repository.
-- All external task requests must enter through `task_service_bridge`.
-- No module may bypass the declared interfaces to reach hardware directly.
+- 只看模块名就能理解职责。
+- 不依赖仓库历史缩写才能读懂。
+- 不因为实现语言变化而改变模块边界。
 
 
-## motion_control
+## 2. 系统总边界
 
-**Purpose**
+- 本仓库负责内部实时运行时。
+- 外部任务服务位于仓库外部。
+- 外部正式任务请求只能进入 `task_service_bridge`。
+- 人工遥控和调试请求只能进入 `teleoperation_bridge`。
+- 所有执行请求必须经过 `execution_manager` 才能触达驱动层。
+- 硬件驱动层不能自行暴露正式任务 API。
 
-- Own robot motion planning, inverse kinematics, constraints, trajectory
-  generation, and closed-loop control.
 
-**Inputs**
+## 3. 模块清单
 
-- Task-level execution goals from `task_service_bridge`
-- Perception updates from `vision_perception`
-- Execution feedback from `execution_manager`
+正式模块如下：
 
-**Outputs**
-
-- Motion commands to `execution_manager`
-- Task progress and control status to `task_service_bridge`
-
-**Dependencies**
-
-- `motion_msgs`
-- `perception_msgs`
+- `motion_control`
+- `speech_interface`
+- `vision_perception`
+- `execution_manager`
+- `servo_hardware`
+- `sensor_hardware`
+- `task_service_bridge`
+- `teleoperation_bridge`
+- `simulation_bridge`
 - `task_api_msgs`
-
-**Non-Responsibilities**
-
-- No direct serial access
-- No servo protocol logic
-- No speech, vision inference, or LLM integration
-
-**Failure Modes**
-
-- Invalid target
-- Constraint violation
-- Replan required
-- Control timeout
+- `motion_msgs`
+- `speech_msgs`
+- `perception_msgs`
+- `servo_msgs`
 
 
-## speech_interface
+## 4. motion_control
 
-**Purpose**
+### Purpose
 
-- Own audio capture, speech-to-text, and text-to-speech.
+- 负责运动学、轨迹生成、约束检查、闭环控制和执行状态产出。
 
-**Inputs**
+### Package Ownership
 
-- Microphone/audio stream
-- Speech synthesis requests
+- 目标 ROS 包：`motion_control`
+- 当前承接包：`parallel_3dof_controller`
+- 当前定位：控制原型，不是最终完整控制层
 
-**Outputs**
+### Inputs
 
-- Transcripts to `task_service_bridge`
-- Playback status if needed
+- 来自 `task_service_bridge` 的任务级目标
+- 来自 `vision_perception` 的感知更新
+- 来自 `execution_manager` 的执行反馈
 
-**Dependencies**
+### Outputs
+
+- 发往 `execution_manager` 的运动级命令
+- 发回 `task_service_bridge` 的任务进度和控制状态
+
+### Public Interfaces
+
+- 依赖 `motion_msgs`
+- 可依赖 `perception_msgs`
+- 与正式任务入口交互时依赖 `task_api_msgs`
+
+### Dependencies
+
+- 运动学求解器
+- 约束和轨迹模块
+- 必要的机器人参数和标定配置
+
+### Non-Responsibilities
+
+- 不直接访问串口、I2C、寄存器和驱动协议
+- 不直接发布 `ServoCommand`
+- 不处理语音识别、视觉推理、对外协议适配
+
+### Failure Modes
+
+- 目标不可达
+- 约束冲突
+- 重规划失败
+- 控制超时
+
+### Implementation Notes
+
+- 当前 `parallel_3dof_controller` 直接依赖 `servo_msgs`，这是过渡态。
+- 在 `execution_manager` 落地后，必须改为只输出 `motion_msgs`。
+- 高频控制内核是后续优先评估迁移到 C++ 的部分。
+
+
+## 5. speech_interface
+
+### Purpose
+
+- 负责音频输入、语音识别、语音合成和播放状态。
+
+### Package Ownership
+
+- 目标 ROS 包：`speech_interface`
+- 当前承接包：暂无
+
+### Inputs
+
+- 麦克风或音频流
+- 语音合成请求
+
+### Outputs
+
+- 转写结果
+- 播放状态
+
+### Public Interfaces
 
 - `speech_msgs`
 
-**Non-Responsibilities**
+### Dependencies
 
-- No task interpretation
-- No execution control
-- No dialogue policy
+- 音频设备
+- ASR / TTS 后端适配层
 
-**Failure Modes**
+### Non-Responsibilities
 
-- Recognition failure
-- Device unavailable
-- Synthesis failure
-- Interrupt or cancel
+- 不做任务理解
+- 不做控制决策
+- 不直接接入硬件执行链路
+
+### Failure Modes
+
+- 设备不可用
+- 识别失败
+- 合成失败
+- 中断或取消
+
+### Implementation Notes
+
+- 该模块更偏流程编排和外部能力适配，默认优先使用 Python 实现。
+- 如果后续引入 C++，也只能替换音频热点路径，不能改变 `speech_msgs`。
 
 
-## vision_perception
+## 6. vision_perception
 
-**Purpose**
+### Purpose
 
-- Own camera ingestion, object detection, tracking, pose estimation, and
-  scene summaries.
+- 负责图像接入、检测、跟踪、位姿估计和场景结构化输出。
 
-**Inputs**
+### Package Ownership
 
-- Image frames
-- Video streams
-- Camera calibration and sensor metadata
+- 目标 ROS 包：`vision_perception`
+- 当前承接包：暂无
 
-**Outputs**
+### Inputs
 
-- Structured object lists
-- Scene state summaries
-- Pose and tracking results
+- 图像帧
+- 视频流
+- 相机标定和传感器元数据
 
-**Dependencies**
+### Outputs
+
+- 目标列表
+- 场景状态摘要
+- 位姿或跟踪结果
+
+### Public Interfaces
 
 - `perception_msgs`
 
-**Non-Responsibilities**
+### Dependencies
 
-- No task planning
-- No servo control
-- No long-term memory or retrieval
+- 相机输入
+- 推理后端
+- 标定配置
 
-**Failure Modes**
+### Non-Responsibilities
 
-- Camera unavailable
-- Low-confidence detection
-- Tracking lost
-- Pose estimation failure
+- 不发布舵机命令
+- 不做任务规划
+- 不持有长期记忆
+
+### Failure Modes
+
+- 相机不可用
+- 检测低置信度
+- 跟踪丢失
+- 位姿估计失败
+
+### Implementation Notes
+
+- 模型推理和图像处理可能成为后续 C++ 或加速后端迁移热点。
+- 但对外必须始终维持结构化 `perception_msgs` 输出。
 
 
-## execution_manager
+## 7. execution_manager
 
-**Purpose**
+### Purpose
 
-- Own execution coordination between control and hardware.
-- Validate motion commands, dispatch them to drivers, and aggregate feedback.
-- Enforce safety at the execution boundary.
+- 负责执行协调、安全保护、控制权仲裁和驱动能力映射。
 
-**Inputs**
+### Package Ownership
 
-- Motion commands from `motion_control`
-- Hardware state from `servo_hardware` and `sensor_hardware`
+- 目标 ROS 包：`execution_manager`
+- 当前承接包：暂无
+- 当前缺口：这是现阶段最需要尽快补齐的模块
 
-**Outputs**
+### Inputs
 
-- Driver-level commands
-- Structured execution feedback
-- Execution result and safety events
+- 来自 `motion_control` 的运动级命令
+- 来自 `teleoperation_bridge` 的人工控制请求
+- 来自 `servo_hardware` 和 `sensor_hardware` 的状态反馈
 
-**Dependencies**
+### Outputs
 
-- `motion_msgs`
+- 发往驱动层的执行请求
+- 对上层发布的执行反馈、执行结果和安全事件
+
+### Public Interfaces
+
+- 上行依赖 `motion_msgs`
+- 下行依赖 `servo_msgs`
+
+### Dependencies
+
+- 仲裁状态机
+- 急停与超时控制
+- 驱动映射层
+
+### Non-Responsibilities
+
+- 不做任务语义理解
+- 不做轨迹生成
+- 不直接对外暴露任务级 API
+
+### Failure Modes
+
+- 控制权冲突
+- 非法命令
+- 驱动不可用
+- 急停或安全违规
+- 超时未响应
+
+### Implementation Notes
+
+- `execution_manager` 是正式任务入口和人工入口的唯一汇合点。
+- 它必须持有控制权，而不是把仲裁逻辑下放给桥接层。
+- 这是后续最优先考虑迁移到 C++ 的模块之一。
+
+
+## 8. servo_hardware
+
+### Purpose
+
+- 负责总线舵机、PCA 和相关执行器驱动。
+
+### Package Ownership
+
+- 目标 ROS 包：`servo_hardware`
+- 当前承接包：`servo_hardware`
+- 当前问题：与 `sensor_hardware` 混在同一个 ROS 包
+
+### Inputs
+
+- 来自 `execution_manager` 的驱动级执行请求
+
+### Outputs
+
+- 舵机状态
+- 驱动诊断
+- 协议错误和连接状态
+
+### Public Interfaces
+
 - `servo_msgs`
 
-**Non-Responsibilities**
+### Dependencies
 
-- No high-level task interpretation
-- No trajectory planning
-- No external task service integration
+- 串口、I2C、总线协议实现
+- 设备映射和限制配置
 
-**Failure Modes**
+### Non-Responsibilities
 
-- Invalid command
-- Driver unavailable
-- Emergency stop
-- Timeout or safety violation
+- 不理解任务语义
+- 不做轨迹规划
+- 不做正式对外 API 适配
 
+### Failure Modes
 
-## servo_hardware
+- 通信失败
+- 过载
+- 过热
+- ID 映射错误
+- 协议探测失败
 
-**Purpose**
+### Implementation Notes
 
-- Own bus servo, PWM servo, and related actuator driver logic.
-
-**Inputs**
-
-- Driver commands from `execution_manager`
-
-**Outputs**
-
-- Servo state
-- Hardware error and diagnostics
-
-**Dependencies**
-
-- `servo_msgs`
-
-**Non-Responsibilities**
-
-- No task semantics
-- No motion planning
-- No direct external API exposure
-
-**Failure Modes**
-
-- Communication error
-- Overload
-- Overheat
-- Invalid device mapping
+- 当前包中保留 IMU 节点是过渡态，必须拆出 `sensor_hardware`。
+- 高频状态聚合和高频路由如果成为瓶颈，可以评估迁移到 C++。
+- `servo_msgs` 是此模块对外唯一正式边界。
 
 
-## sensor_hardware
+## 9. sensor_hardware
 
-**Purpose**
+### Purpose
 
-- Own low-level sensor access such as IMU and future onboard sensors.
+- 负责 IMU 和未来板载传感器的底层接入。
 
-**Inputs**
+### Package Ownership
 
-- Sensor polling or hardware interrupts
+- 目标 ROS 包：`sensor_hardware`
+- 当前承接代码位置：`servo_hardware` 包中的 `sensor_hardware` Python 模块
+- 当前问题：尚未成为独立 ROS 包
 
-**Outputs**
+### Inputs
 
-- Raw or minimally processed sensor state
-- Driver diagnostics
+- 传感器轮询
+- 中断或串口读取
 
-**Dependencies**
+### Outputs
 
-- Sensor-specific messages or standard ROS sensor messages
+- 传感器原始状态
+- 最小必要预处理结果
+- 诊断信息
 
-**Non-Responsibilities**
+### Public Interfaces
 
-- No task-level reasoning
-- No perception inference
-- No control decision making
+- 标准 ROS 传感器消息或专用传感器消息
 
-**Failure Modes**
+### Dependencies
 
-- Read failure
-- Calibration error
-- Device disconnected
-- Timestamp drift
+- 串口或设备驱动
+- 标定配置
+
+### Non-Responsibilities
+
+- 不做任务推理
+- 不做视觉感知
+- 不做控制决策
+
+### Failure Modes
+
+- 读取失败
+- 设备断开
+- 标定错误
+- 时间戳漂移
+
+### Implementation Notes
+
+- 必须在 Phase 2 拆成独立 ROS 包。
+- 拆包后不得再通过 `servo_hardware` 的 `entry_points` 导出。
 
 
-## task_service_bridge
+## 10. task_service_bridge
 
-**Purpose**
+### Purpose
 
-- Serve as the only formal bridge between the external task service and the
-  ROS runtime.
+- 作为外部任务服务进入 ROS 运行时的唯一正式桥接层。
 
-**Inputs**
+### Package Ownership
 
-- External task requests
-- Session context signals
-- Internal status from `motion_control`
-- Optional transcripts and perception summaries
+- 目标 ROS 包：`task_service_bridge`
+- 当前承接包：暂无
 
-**Outputs**
+### Inputs
 
-- Task execution requests into ROS
-- Task status, dialogue replies, and result summaries back to the external
-  task service
+- 外部任务请求
+- 会话上下文
+- 来自 `motion_control` 的执行状态
+- 来自 `speech_interface` 和 `vision_perception` 的补充结果
 
-**Dependencies**
+### Outputs
+
+- 进入 ROS 内部的任务执行请求
+- 返回外部的任务状态、对话回复和结果摘要
+
+### Public Interfaces
 
 - `task_api_msgs`
-- `speech_msgs`
-- `perception_msgs`
+- 可读但不拥有 `speech_msgs`
+- 可读但不拥有 `perception_msgs`
 
-**Non-Responsibilities**
+### Dependencies
 
-- No direct driver control
-- No servo command publishing
-- No hardware protocol access
+- 外部任务协议适配层
+- 会话追踪和超时处理
 
-**Failure Modes**
+### Non-Responsibilities
 
-- Invalid task payload
-- Bridge timeout
-- Downstream module unavailable
-- Cancel or session mismatch
+- 不直接发 `ServoCommand`
+- 不直接访问硬件协议
+- 不绕过 `motion_control` 或 `execution_manager`
 
+### Failure Modes
 
-## teleoperation_bridge
+- 任务载荷非法
+- 下游模块超时
+- 会话不匹配
+- 取消或中断
 
-**Purpose**
+### Implementation Notes
 
-- Provide human teleoperation and debugging entry points.
-
-**Inputs**
-
-- WebSocket or other manual control streams
-
-**Outputs**
-
-- Teleoperation commands into the runtime
-- Debug status to operator tools
-
-**Dependencies**
-
-- `task_api_msgs` or debug-only internal interfaces
-
-**Non-Responsibilities**
-
-- No formal production task orchestration
-- No ownership of the main task execution path
-- No implicit control priority over autonomous execution
-
-**Failure Modes**
-
-- Connection drop
-- Invalid operator command
-- Arbitration rejection
-- Unsafe manual override
+- 该模块更适合保留 Python 实现。
+- 后续如果要迁移局部热点，公共动作接口 `task_api_msgs` 必须保持不变。
 
 
-## simulation_bridge
+## 11. teleoperation_bridge
 
-**Purpose**
+### Purpose
 
-- Bridge the runtime to simulators for testing, replay, and validation.
+- 提供人工遥控、调试和演示入口。
 
-**Inputs**
+### Package Ownership
 
-- Motion commands
-- Simulator configuration
+- 目标 ROS 包：`teleoperation_bridge`
+- 当前承接包：`websocket_bridge` 的主要桥接逻辑
+- 当前问题：与仿真桥、演示资源、硬件级控制逻辑混在一起
 
-**Outputs**
+### Inputs
 
-- Simulated state feedback
-- Simulated execution result
+- WebSocket 或其他人工操作流
 
-**Dependencies**
+### Outputs
 
-- `motion_msgs`
-- `servo_msgs` where compatibility is required
+- 进入运行时的人工控制请求
+- 返回操作态状态和调试信息
 
-**Non-Responsibilities**
+### Public Interfaces
 
-- No production hardware control
-- No task reasoning
-- No direct external service integration
+- 调试模式下可以使用内部控制接口
+- 正式模式下不得替代 `task_service_bridge`
 
-**Failure Modes**
+### Dependencies
 
-- Simulator unavailable
-- State sync mismatch
-- Unsupported command mode
+- WebSocket 服务端
+- 操作态认证或会话信息
+
+### Non-Responsibilities
+
+- 不负责正式任务编排
+- 不持有最终控制权
+- 不直接对硬件长期开放驱动接口
+
+### Failure Modes
+
+- 连接中断
+- 非法操作命令
+- 仲裁拒绝
+- 不安全人工接管
+
+### Implementation Notes
+
+- 当前 `websocket_bridge` 直接发布 `ServoCommand` 是过渡态。
+- 后续应先接到 `execution_manager`，再由执行层决定是否接纳。
+- WebSocket 服务和调试聚合保留 Python 实现通常更合适。
 
 
-## Interface Packages
+## 12. simulation_bridge
+
+### Purpose
+
+- 负责内部运行时与仿真器之间的命令和状态互通。
+
+### Package Ownership
+
+- 目标 ROS 包：`simulation_bridge`
+- 当前承接包：
+  - `sim_servo_bridge_cpp`
+  - `websocket_bridge` 中的 Isaac 相关桥接代码
+- 当前问题：仿真能力散落在多个包中
+
+### Inputs
+
+- 运动级命令或驱动级兼容命令
+- 仿真配置
+
+### Outputs
+
+- 仿真状态反馈
+- 仿真执行结果
+
+### Public Interfaces
+
+- 优先对接 `motion_msgs`
+- 必要时兼容 `servo_msgs`
+
+### Dependencies
+
+- 仿真器 API
+- 关节映射和限幅配置
+
+### Non-Responsibilities
+
+- 不直接控制生产硬件
+- 不承担任务服务入口职责
+- 不做任务语义理解
+
+### Failure Modes
+
+- 仿真器不可用
+- 状态同步不一致
+- 模式不支持
+
+### Implementation Notes
+
+- 该模块天然适合 C++ 实现，尤其在高频桥接场景下。
+- 但必须先统一对外接口和 launch 入口，再讨论实现语言统一。
+
+
+## 13. 接口包职责
 
 ### task_api_msgs
 
-**Purpose**
+Purpose：
 
-- Define the public ROS-facing contract used by the external task service.
+- 定义外部任务服务面向 ROS 的正式契约。
 
-**Owns**
+Owns：
 
-- Task action definitions
-- Task status messages
-- Dialogue reply messages
-- Context signal messages
+- 任务 Action
+- 任务状态
+- 对话回复
+- 上下文信号
 
-**Does Not Own**
+Does Not Own：
 
-- Driver-level control messages
-- Hardware diagnostics
-
+- 驱动级控制消息
+- 硬件诊断
 
 ### motion_msgs
 
-**Purpose**
+Purpose：
 
-- Define internal control and execution coordination messages.
+- 定义控制层和执行层之间的正式控制语义。
 
-**Owns**
+Owns：
 
-- Motion commands
-- State feedback
-- Execution results
+- 运动命令
+- 状态反馈
+- 执行结果
 
-**Does Not Own**
+Does Not Own：
 
-- Task dialogue
-- Raw hardware protocols
-
+- 任务对话
+- 驱动寄存器细节
 
 ### speech_msgs
 
-**Purpose**
+Purpose：
 
-- Define speech input/output contracts.
+- 定义语音输入输出契约。
 
-**Owns**
+Owns：
 
-- Transcript
-- Speech synthesis request
-- Optional speech status
+- 转写结果
+- 语音合成请求
+- 语音状态
 
-**Does Not Own**
+Does Not Own：
 
-- Task execution status
-- Motion commands
-
+- 任务执行状态
+- 运动命令
 
 ### perception_msgs
 
-**Purpose**
+Purpose：
 
-- Define structured perception contracts.
+- 定义感知结构化输出。
 
-**Owns**
+Owns：
 
-- Object list
-- Scene state
-- Pose or tracking summaries
+- 目标列表
+- 场景状态
+- 位姿和跟踪摘要
 
-**Does Not Own**
+Does Not Own：
 
-- Hardware driver state
-- Task dialogue
-
+- 驱动状态
+- 任务对话
 
 ### servo_msgs
 
-**Purpose**
+Purpose：
 
-- Define the low-level actuator contract used at the execution boundary.
+- 定义执行边界上的低层驱动契约。
 
-**Owns**
+Owns：
 
-- Servo command
-- Servo state
-- Servo services for diagnostics and reads
+- 舵机命令
+- 舵机状态
+- 驱动诊断和读取服务
 
-**Does Not Own**
+Does Not Own：
 
-- Task-level goals
-- Perception outputs
-- Dialogue or transcript messages
-
-
-## Cross-Module Rules
-
-1. `task_service_bridge` is the only formal external entry point.
-2. `motion_control` cannot talk to serial drivers directly.
-3. `execution_manager` cannot interpret task semantics.
-4. `servo_hardware` and `sensor_hardware` cannot expose private driver
-   details as public task APIs.
-5. `teleoperation_bridge` must remain a debug or manual-control path, not
-   the primary production task path.
-6. Every new module must document:
-   Purpose, Inputs, Outputs, Dependencies, Non-Responsibilities, and Failure
-   Modes.
+- 任务级目标
+- 感知输出
+- 对话或转写内容
 
 
-## Recommended Split
+## 14. 跨模块规则
 
-When the new directory structure is created, this file should be split into:
+1. `task_service_bridge` 是唯一正式外部入口。
+2. `teleoperation_bridge` 只能是人工和调试入口。
+3. `execution_manager` 是唯一控制仲裁边界。
+4. `motion_control` 不得直接访问串口驱动。
+5. `servo_hardware` 和 `sensor_hardware` 不得暴露任务级 API。
+6. 所有新增模块必须优先依赖接口包，而不是跨包直接引用内部实现。
+7. Python 到 C++ 的迁移不得改变公共接口。
+
+
+## 15. 推荐拆分结果
+
+当新目录结构落地后，本文应拆分为每个模块自己的职责文档：
 
 - `control/motion_control/docs/responsibilities.md`
 - `speech/speech_interface/docs/responsibilities.md`
@@ -461,4 +627,4 @@ When the new directory structure is created, this file should be split into:
 - `bridges/teleoperation_bridge/docs/responsibilities.md`
 - `bridges/simulation_bridge/docs/responsibilities.md`
 
-Until then, this document remains the unified responsibility reference.
+在拆分前，本文保持为统一职责总表。
