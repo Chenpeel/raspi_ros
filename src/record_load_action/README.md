@@ -30,7 +30,7 @@ Override the config path if needed:
 
 ```
 ros2 launch websocket_bridge full_system.launch.py \
-  bvh_action_file:=<配置文件路径>
+  bvh_action_file:=/path/to/{this_repo}/src/record_load_action/config/bvh_action_map.json
 ```
 
 Example:
