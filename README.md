@@ -112,7 +112,7 @@ bus_protocol_router（协议识别 + ID路由）
 
 ```bash
 # 1. 构建镜像
-cd <仓库根目录>
+cd /path/to/{this_repo}
 docker compose build
 
 # 2. （升级后推荐）先清理旧容器，避免端口冲突
@@ -140,7 +140,7 @@ sudo apt update
 sudo apt install -y python3-pip python3-websockets
 
 # 2. 进入工作区
-cd <仓库根目录>
+cd /path/to/{this_repo}
 
 # 3. 安装ROS依赖
 rosdep install -i --from-paths src --rosdistro jazzy -y
@@ -473,197 +473,7 @@ ros/
 └── README.md                    # 本文档
 ```
 
----
 
-## 常见问题
-
-### Q1: WebSocket端口冲突
-
-**问题**: `[Errno 98] address already in use`
-
-**解决**:
-```bash
-# 查看占用9105端口的进程
-ss -ltnp | grep ':9105'
-# 如系统已安装 lsof，也可用：
-# lsof -nP -iTCP:9105 -sTCP:LISTEN
-
-# 杀死进程或修改端口配置
-ros2 launch websocket_bridge full_system.launch.py ws_port:=9106
-```
-
-### Q2: 舵机无响应
-
-**问题**: 命令发送成功但舵机不动
-
-**可能原因**:
-1. 串口权限问题
-2. 舵机ID未包含在 `bus_servo_map.json` 任一端口映射中
-3. 话题命名空间不匹配
-4. 串口设备未正确映射
-
-**解决方案**:
-
-```bash
-# 1. 检查串口权限
-ls -l /dev/ttyAMA*
-
-# 2. 验证节点参数配置
-ros2 param get bus_port_driver_1 zl_servo_ids
-# 确认ID是否在列表中
-
-# 3. 检查话题映射
-ros2 topic info /servo/command
-# 应该看到 bus_protocol_router 为订阅者
-
-# 4. 启用调试模式观察ID路由
-ros2 launch websocket_bridge full_system.launch.py debug:=true
-# 观察哪个驱动节点处理了命令
-
-# 5. 测试特定ID
-ros2 topic pub --once /servo/command servo_msgs/msg/ServoCommand \
-  '{servo_type: "bus", servo_id: 7, position: 90, speed: 100}'
-```
-
-### Q3: I2C设备未找到
-
-**问题**: `[Errno 121] Remote I/O error`
-
-**解决**:
-```bash
-# 检查I2C是否启用
-sudo raspi-config
-
-# 扫描I2C设备
-i2cdetect -y 1
-
-# 检查设备权限
-ls -l /dev/i2c-1
-```
-
-### Q4: Docker容器权限问题
-
-**问题**: 编译时出现权限错误
-
-**解决**:
-```bash
-# 在容器外清理
-sudo rm -rf install build
-
-# 重新进入容器编译
-docker compose exec ros2_servo_dev bash
-colcon build
-```
-
-### Q5: 前端连接失败
-
-**问题**: 浏览器控制台显示WebSocket连接失败
-
-**解决**:
-1. 检查ROS2服务是否运行: `ros2 node list`
-2. 检查端口是否监听: `ss -ltnp | grep ':9105'`
-3. 检查防火墙: `sudo ufw status`
-4. 检查前端配置: `WS_SERVO_URL`是否正确
-
-### Q6: 如何修改舵机ID映射？
-
-**问题**: 需要调整舵机分配到不同的串口
-
-**解决方案**:
-
-1. **编辑配置文件**（推荐）:
-   编辑 `src/websocket/config/bus_servo_map.json`:
-   ```json
-   {
-       "/dev/ttyAMA0": [1, 2],
-       "/dev/ttyAMA1": [3, 7, 9, 10, 11],
-       "/dev/ttyAMA2": [4, 5],
-       "/dev/ttyAMA3": [6, 8, 12, 13, 14]
-   }
-   ```
-
-2. **无需修改Launch文件节点定义**:
-   `full_system.launch.py` 会自动读取 `bus_servo_map.json` 并动态创建
-   `bus_port_driver_x`，同时由 `bus_protocol_router` 统一路由。
-
-3. **重新编译并测试**:
-   ```bash
-   colcon build --packages-select websocket_bridge
-   source install/setup.bash
-   ros2 launch websocket_bridge full_system.launch.py
-   ```
-
-### Q7: 多串口会增加延迟吗？
-
-**答案**: 不会。ID路由过滤使用Set数据结构，时间复杂度O(1)，实际延迟<0.0001ms，可完全忽略。
-
-**延迟拆解**:
-- WebSocket网络: 1-10ms (0.1-1%)
-- JSON解析: 0.1-0.5ms (<0.1%)
-- ROS消息转换: 0.01-0.1ms (<0.01%)
-- **ID路由过滤（4节点）**: **0.0004ms** (<0.0001%)
-- 串口发送: 2-5ms (0.5-2%)
-- **舵机运动: 100-2000ms (96.5-99%)**
-
-**总延迟**: 103-2015ms（与单串口系统相同）
-
----
-
-## 性能优化
-
-### 减少日志输出
-
-```bash
-# 关闭调试模式
-ros2 launch websocket_bridge full_system.launch.py debug:=false
-
-# 或设置ROS日志级别
-export RCUTILS_CONSOLE_OUTPUT_FORMAT="[{severity}]: {message}"
-```
-
-### 提高舵机响应速度
-
-修改 `bridge_node.py`:
-
-```python
-# 降低心跳间隔 (默认15秒)
-self.heartbeat_interval = 5.0
-```
-
-修改 `bus_port_driver.py`:
-
-```python
-# 增加串口读取超时
-self.serial.timeout = 0.01  # 减少到10ms
-```
-
----
-
-## 扩展开发
-
-### 添加新的舵机驱动
-
-1. 在 `src/hardware/servo_hardware/` 创建新驱动类
-2. 继承基类并实现接口:
-   ```python
-   class MyServoDriver:
-       def set_position(self, servo_id, position, speed):
-           pass
-   
-       def get_position(self, servo_id):
-           pass
-   ```
-
-3. 创建ROS2节点包装器
-4. 在launch文件中添加节点配置
-
-### 添加新的消息类型
-
-1. 在 `src/servo_msgs/msg/` 创建 `.msg` 文件
-2. 修改 `CMakeLists.txt` 添加消息定义
-3. 重新编译: `colcon build --packages-select servo_msgs`
-
----
 
 ## 贡献指南
 

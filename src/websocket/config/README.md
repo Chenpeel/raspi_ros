@@ -80,7 +80,7 @@ source install/setup.bash
 启动系统后，launch 文件会打印加载的配置信息：
 
 ```
-✓ 已加载舵机映射配置: <bus_servo_map.json 的实际路径>
+✓ 已加载舵机映射配置: /path/to/{this_repo}/src/websocket/config/bus_servo_map.json
   配置内容: {'/dev/ttyAMA0': [1, 2], ...}
 ```
 
@@ -98,7 +98,7 @@ source install/setup.bash
 如果配置文件加载失败，系统会使用默认配置并打印警告：
 
 ```
-⚠ 警告: 舵机映射配置文件不存在: <bus_servo_map.json 的实际路径>
+⚠ 警告: 舵机映射配置文件不存在: /path/to/{this_repo}/src/websocket/config/bus_servo_map.json
   将使用默认配置
 ```
 

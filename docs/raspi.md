@@ -412,7 +412,7 @@ After=docker.service
 Type=oneshot
 RemainAfterExit=yes
 # 按实际部署目录替换
-WorkingDirectory=<项目目录>
+WorkingDirectory=/path/to/{this_repo}
 ExecStart=/usr/bin/docker compose --profile production up -d ros2_servo_prod
 ExecStop=/usr/bin/docker compose --profile production down
 Restart=always

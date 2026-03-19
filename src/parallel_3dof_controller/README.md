@@ -13,7 +13,7 @@
 ### 1. 构建包
 
 ```bash
-cd <仓库根目录>
+cd /path/to/{this_repo}
 colcon build --packages-select parallel_3dof_controller
 source install/setup.bash
 ```
